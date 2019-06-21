@@ -1,0 +1,15 @@
+Package: DDNTD
+Description: Research in the effects of density dependence (DD) on
+    optimal control and elimination strategies for neglected tropical diseases (NTDs)
+Title: Density Dependence in Neglected Tropical Diseases
+Version: 0.1.0
+License: CCO
+Type: Package
+Author@R: person("Christopher", "Hoover", email = "choover@berkeley.edu",
+                 role = c("aut", "cre"))
+Maintainer: Christopher Hoover <choover@berkeley.edu>
+Encoding: UTF-8
+LazyData: true
+Suggests:
+Depends:
+RoxygenNote: 6.0.1
