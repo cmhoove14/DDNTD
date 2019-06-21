@@ -15,5 +15,4 @@ Suggests:
 Depends:
     deSolve,
     dplyr
-    
 RoxygenNote: 6.1.1
