@@ -1,0 +1,17 @@
+---
+title: "Model Simulations"
+author: "Chris Hoover"
+date: "June 21, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+devtools::install("../../DDNTD")
+```
+
+```{r sim_dynamics}
+
+```
+

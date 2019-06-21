@@ -1,3 +1,4 @@
 Analysis
+data-raw
 ^.*\.Rproj$
 ^\.Rproj\.user$
