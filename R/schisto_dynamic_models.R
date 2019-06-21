@@ -11,7 +11,7 @@
 #' @return A matrix of the state variables at all requested time points
 #' @export
 
-base_mod = function(t, n, parameters) {
+schisto_base_mod = function(t, n, parameters) {
   with(as.list(parameters),{
 
     S=n[1]
@@ -22,13 +22,14 @@ base_mod = function(t, n, parameters) {
     N=S+E+I
 
     W=(cov*Wt) + ((1-cov)*Wu) #weighting treated and untreated populations
-    #Miracidia production; function of adult female worms alive in the system (W*H*0.5) assuming 1:1 sex ratio,
-  #DD functions
 
+
+  #Density dependencies based on worm burden
     f = f_Wgk(W, gam, k)
     R = R_Wv(W, v)
     phi = phi_Wk(W = W, k = k)  #Mating probability
 
+  #Miracidial estimate assuming 1:1 sex ratio, mating probability, density dependence
     M=((0.5*W*H)*phi*f)#*m*u_H*(v*vq)
 
 
@@ -39,11 +40,31 @@ base_mod = function(t, n, parameters) {
     dIdt= sigma*E - (mu_N+mu_I)*I #Infected snails
 
     #worm burden in human
-    dWtdt= (lamda*I*R) - ((mu_W+mu_H)*Wt)
-    dWudt= (lamda*I*R) - ((mu_W+mu_H)*Wu)
+    dWtdt= (lambda*I*R) - ((mu_W+mu_H)*Wt)
+    dWudt= (lambda*I*R) - ((mu_W+mu_H)*Wu)
 
 
 
     return(list(c(dSdt,dEdt,dIdt,dWtdt,dWudt)))
   })
+}
+
+#' Simulate the base schistosomiasis model
+#'
+#' Uses the `schisto_base_mod` function to simulate the model through time
+#' given parameter set, time frame, starting conditions, and potential events (e.g. MDA)
+#'
+#' @param nstart Named vector of starting values for state variables
+#' @param time Numeric vector of times at which state variables should be estimated
+#' @param model Name of the ode function to use, defaults to `schisto_base_mod`
+#' @param parameters Named vector or list of parameter values
+#'
+#' @return dataframe of state variable values at requested times
+#' @export
+#'
+sim_schisto_base_mod <- function(nstart,
+                                 time,
+                                 model = schisto_base_mod,
+                                 parameters){
+  as.data.frame(ode(nstart, time, model, parameters))
 }
