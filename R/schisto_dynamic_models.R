@@ -69,5 +69,5 @@ sim_schisto_base_mod <- function(nstart,
                                  parameters,
                                  events_df){
   as.data.frame(ode(nstart, time, model, parameters,
-                    events = list(data = events)))
+                    events = list(data = events_df)))
 }
