@@ -8,10 +8,21 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-devtools::install("../../DDNTD")
+#devtools::install("../../DDNTD")
+
+require(deSolve)
+require(rootSolve)
+require(dplyr)
+require(ggplot2)
+require(DDNTD)
 ```
 
 ```{r sim_dynamics}
+base_start <- c(S=5000, E=0, I=0, Wt=10, Wu=10)
+years <- 10
+base_time <- c(0:(365*years))
 
+base_eqbm <- runsteady(y = base_start, func = DDNTD::schisto_base_mod,
+                       parms = DDNTD::base_pars)
 ```
 
