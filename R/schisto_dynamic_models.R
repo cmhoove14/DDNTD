@@ -58,6 +58,7 @@ schisto_base_mod = function(t, n, parameters) {
 #' @param time Numeric vector of times at which state variables should be estimated
 #' @param model Name of the ode function to use, defaults to `schisto_base_mod`
 #' @param parameters Named vector or list of parameter values
+#' @param events_df Data frame of events such as MDA
 #'
 #' @return dataframe of state variable values at requested times
 #' @export
@@ -65,6 +66,8 @@ schisto_base_mod = function(t, n, parameters) {
 sim_schisto_base_mod <- function(nstart,
                                  time,
                                  model = schisto_base_mod,
-                                 parameters){
-  as.data.frame(ode(nstart, time, model, parameters))
+                                 parameters,
+                                 events_df){
+  as.data.frame(ode(nstart, time, model, parameters,
+                    events = list(data = events)))
 }
