@@ -4,4 +4,5 @@ First attempts at creating an R package as part of a project workflow. Also tryi
 Main goal for today was to transfer key functions from the [elimination feasibility project](https://github.com/cmhoove14/EliminationFeasibility) into this project in an attempt to better organize functions from that project that will be reused here. These functions include the dynamic model itself, the function to estimate $R_eff$, and helper functions used to estimate density dependencies
 
 # 6/26/19  
-Continued transferring over functions and simulations from previous work and started working on a document (`Analysis/Model_Sims.Rmd`) to demonstrate functionality and keep track of the functions implemented in the package and what they do  
+Continued transferring over functions and simulations from previous work and started working on a document (`Analysis/Model_Sims.Rmd`) to demonstrate functionality and keep track of the functions implemented in the package and what they do. Now able to produce generic $R_eff$ curve and simulate the model through time. Next want to use `gganimate` to show how $R_eff$ estimates change over the course of different intervention campaigns, e.g. annual MDA, MDA+snail control, MDA+prawn intervention, etc.
+

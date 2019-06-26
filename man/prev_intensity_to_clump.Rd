@@ -6,14 +6,15 @@
 \usage{
 prev_intensity_to_clump(W, Prev)
 }
+\arguments{
+\item{W}{Mean worm burden or infection intensity}
+
+\item{Prev}{Prevalence in th epopulation}
+}
+\value{
+Estimate of the clumping parameter
+}
 \description{
 Prevalence, mean intensity and the clumping parameter are all related,
-  therefore estimation of 1 can be achieved if the other two are known
-}
-\details{
-@param W Mean worm burden or infection intensity
- @param Prev Prevalence in th epopulation
-
-@return Estimate of the clumping parameter
- @export
+therefore estimation of 1 can be achieved if the other two are known
 }

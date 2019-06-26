@@ -17,6 +17,8 @@ require(tidyverse)
 require(DDNTD)
 ```
 
+## Test dynamic simulation through time  
+
 ```{r sim_dynamics}
 #Base time and starting values for state variables
 base_start <- c(S=5000, E=0, I=0, Wt=10, Wu=10)
@@ -63,16 +65,83 @@ schisto_base_sim %>%
               subtitle = paste0("Anual MDA for ", years/2, " years"))
 ```
 
+## Estimate relationship between clumping parameter ($\kappa$) and mean worm burden ($W$)   
+
+```{r k_w_relate}
+schisto_dat <- readr::read_csv("../data-raw/schistosoma_spp_infection_data.csv")
+
+s_haem <- schisto_dat %>% 
+  filter(Species == "S. haematobium" & 
+           Mean_type == "arithmetic" & 
+           !is.na(Intensity) &
+           Intensity > 0) %>% 
+  mutate(prev_sqrd = Prevalence^2,
+         worm_est = (Intensity / 3.6)*2,  #Convert egg output to worm burden estimate assuming 3.6 eggs/mL per mated adult female worm
+         clump_est = map2_dbl(worm_est, Prevalence, prev_intensity_to_clump))
+
+s_haem %>% 
+  ggplot(aes(x = Prevalence, y = Intensity, size = Sample_size)) + 
+    geom_point() + 
+    theme_classic() +
+    labs(title = expression(Prevalence~intensity~relationship~italic(S.~haematobium)),
+         subtitle = "Each point represents a population",
+         x = "Prevalence (%)",
+         y = "Egg Burden (eggs/10mL)") +
+    geom_smooth(method = "lm", formula = y ~ x + I(x^2))
+
+s_haem %>% 
+  ggplot(aes(x = worm_est, y = clump_est, size = Sample_size)) + 
+    geom_point() + 
+    theme_classic() +
+    labs(x = "Mean worm burden (W)",
+         y = expression(Clumping~Parameter~(italic(kappa)))) +
+    geom_smooth(method = "lm") +
+    geom_smooth(method = "lm", formula = y~x+I(x^2))
+
+clump_burden_lm_mod <- lm(clump_est ~ worm_est, data = s_haem)
+clump_burden_lm_mod2 <- lm(clump_est ~ worm_est + I(worm_est^2), data = s_haem)
+
+anova(clump_burden_lm_mod, clump_burden_lm_mod2)
+
+#Linear is a better/simpler model
+
+k_from_W <- function(W){
+  as.numeric(coef(clump_burden_lm_mod)[1] + coef(clump_burden_lm_mod)[2] * W)
+}
+  
+```
+
+
 ```{r Reff_curves}
 #Get values of mean worm burden to plot R effective curve over
-test_ws <- seq(0, sqrt(max(schisto_base_sim$Wu*2)), 
-               by = sqrt(max(schisto_base_sim$Wu*2))/1000)^2
+Reffs <- data.frame(test_ws = seq(1e-2, sqrt(max(schisto_base_sim$Wu*2)), 
+                                  by = sqrt(max(schisto_base_sim$Wu*2))/1000)^2) %>% 
+  mutate(base_ks = base_pars["k"],
+         w_det_ks = sapply(test_ws, k_from_W),
+         Reff_base = pmap_dbl(list(parameters = list(base_pars),
+                                   W = test_ws,
+                                   kap = base_ks), getReff),
+         Reff_no_pdd = pmap_dbl(list(parameters = list(base_pars),
+                                     W = test_ws,
+                                     kap = w_det_ks), getReff_noPDD),
+         Reff_k_from_W = pmap_dbl(list(parameters = list(base_pars),
+                                       W = test_ws,
+                                       kap = w_det_ks), getReff))
 
-test_Reffs <- sapply(test_ws,
-                     getReff,
-                     parameters = base_pars,
-                     k = base_pars["k"])
-
-
+Reffs %>% 
+  gather("Clumping_Function", "Reff", Reff_no_pdd:Reff_k_from_W) %>% 
+  ggplot(aes(x = test_ws, y = Reff, lty = Clumping_Function)) +
+    geom_line(size = 1.2) +
+    theme_classic() +
+    scale_x_continuous(trans = "log",
+                       breaks = c(0.001, 0.01, 0.1, 1, 10, 100),
+                       labels = c("0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(0.01, 200)) +
+    scale_y_continuous(breaks = c(0:3),
+                       limits = c(0,3)) +
+    geom_hline(yintercept = 1, lty = 2) +
+    labs(x = expression(Mean~Worm~Burden~(italic(W))),
+         y = expression(italic(R[eff]))) +
+    theme(legend.position = "none")
 ```
 
