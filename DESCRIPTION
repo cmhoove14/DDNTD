@@ -17,4 +17,5 @@ Suggests:
     ggplot2
 Depends:
     deSolve,
+    rootSolve,
     dplyr

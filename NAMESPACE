@@ -2,7 +2,7 @@
 
 export(R_Wv)
 export(f_Wgk)
-export(getReff_addNDD)
+export(getReff)
 export(phi_Wk)
 export(schisto_base_mod)
 export(sim_schisto_base_mod)

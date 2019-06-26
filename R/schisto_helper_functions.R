@@ -55,3 +55,43 @@ phi_Wk <- function(W, k) {
   R_Wv <- function(W,v){
     exp(1-v*W-exp(-v*W))
   }
+
+#' Estimate prevalence as function of clumping parameter and mean infection intensity
+#'
+#'   Prevalence, mean intensity and the clumping parameter are all related,
+#'   therefore estimation of 1 can be achieved if the other two are known
+#'
+#'  @param W Mean worm burden or infection intensity
+#'  @param k clumping parameter of the negative binomial distribution
+#'
+#'  @return Estimate of the prevalence
+#'  @export
+
+  est_prev_W_k <- function(W, k){
+    1-(1+W/k)^-k
+  }
+
+
+
+#' Estimate clumping parameter as function of prevalence and intensity
+#'
+#'   Prevalence, mean intensity and the clumping parameter are all related,
+#'   therefore estimation of 1 can be achieved if the other two are known
+#'
+#'  @param W Mean worm burden or infection intensity
+#'  @param Prev Prevalence in th epopulation
+#'
+#'  @return Estimate of the clumping parameter
+#'  @export
+
+  prev_intensity_to_clump <- function(W, Prev){
+    rootSolve::uniroot.all(function(x) 1-Prev-(1+W/x)^-x,
+                           interval = c(0,10))
+  }
+
+#' Clumping parameter as a function of worm burden
+#'
+#'   Relaxes the assumption of constant worm burden through time and
+#'   instead models the clumping parameter as a function of worm burden
+#'
+#'   @param
