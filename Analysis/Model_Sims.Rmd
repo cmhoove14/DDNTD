@@ -8,21 +8,71 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-#devtools::install("../../DDNTD")
+devtools::install("../../DDNTD")
 
 require(deSolve)
 require(rootSolve)
-require(dplyr)
 require(ggplot2)
+require(tidyverse)
 require(DDNTD)
 ```
 
 ```{r sim_dynamics}
+#Base time and starting values for state variables
 base_start <- c(S=5000, E=0, I=0, Wt=10, Wu=10)
 years <- 10
 base_time <- c(0:(365*years))
 
+#Run to equibrium with base parameter set
 base_eqbm <- runsteady(y = base_start, func = DDNTD::schisto_base_mod,
-                       parms = DDNTD::base_pars)
+                       parms = DDNTD::base_pars)[["y"]]
+
+#simulate annual MDA 
+eff = 0.93 #93% efficacy
+
+mda.events = data.frame(var = rep('Wt', years/2),
+                        time = c(1:(years/2))*365,
+                        value = rep((1 - eff), years/2),
+                        method = rep('mult', years/2))
+
+schisto_base_sim <- sim_schisto_base_mod(nstart = base_eqbm, time = base_time, 
+                                         parameters = base_pars,
+                                         events_df = mda.events)
+
+schisto_base_sim %>% 
+  gather("Snail_Infection", "Density", S:I) %>% 
+    ggplot(aes(x = time, y = Density, col = Snail_Infection)) +
+      geom_line(size = 1.2) +
+      scale_color_manual(values = c("S" = "green",
+                                    "E" = "orange",
+                                    "I" = "red")) +
+      theme_classic() +
+      ggtitle("Snail infection dynamics", 
+              subtitle = paste0("Anual MDA for ", years/2, " years"))
+
+schisto_base_sim %>% 
+  mutate(W = Wt*base_pars["cov"] + Wu*(1-base_pars["cov"])) %>% 
+  gather("Treatment_Group", "Worm_Burden", Wt:W) %>% 
+    ggplot(aes(x = time, y = Worm_Burden, lty = Treatment_Group)) +
+      geom_line(size = 1.2, col = "purple") +
+      scale_linetype_manual(values = c("W" = 1,
+                                       "Wt" = 2,
+                                       "Wu" = 3)) +
+      theme_classic() +
+      ggtitle("Human infection dynamics", 
+              subtitle = paste0("Anual MDA for ", years/2, " years"))
+```
+
+```{r Reff_curves}
+#Get values of mean worm burden to plot R effective curve over
+test_ws <- seq(0, sqrt(max(schisto_base_sim$Wu*2)), 
+               by = sqrt(max(schisto_base_sim$Wu*2))/1000)^2
+
+test_Reffs <- sapply(test_ws,
+                     getReff,
+                     parameters = base_pars,
+                     k = base_pars["k"])
+
+
 ```
 
