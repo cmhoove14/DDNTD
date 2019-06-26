@@ -25,7 +25,7 @@ schisto_base_mod = function(t, n, parameters) {
 
 
   #Density dependencies based on worm burden
-    f = f_Wgk(W, gam, k)
+    f = f_Wgk(W, gamma, k)
     R = R_Wv(W, v)
     phi = phi_Wk(W = W, k = k)  #Mating probability
 
