@@ -1,0 +1,150 @@
+Number,Source,Publication_year,Observation_year,Country,Site,Species,Age_group,Gender,Sample_size,Prevalence,Intensity,Mean_type,Method,Sampling,Includes_others
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001774,2012,2004,Mali,Segou,S. haematobium,7-14,Combined,224,0.987,325.7,arithmetic,Urine filtration,2x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001775,2012,2004,Mali,Macina,S. haematobium,7-14,Combined,212,0.84,75.8,arithmetic,Urine filtration,2x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001776,2012,2004,Mali,San,S. haematobium,7-14,Combined,212,0.759,51.2,arithmetic,Urine filtration,2x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001777,2012,2010,Mali,Segou,S. haematobium,7-14,Combined,221,0.878,67.4,arithmetic,Urine filtration,2x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001778,2012,2010,Mali,Macina,S. haematobium,7-14,Combined,213,0.559,6.3,arithmetic,Urine filtration,2x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001779,2012,2010,Mali,San,S. haematobium,7-14,Combined,206,0.291,4.1,arithmetic,Urine filtration,2x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001780,2012,2004,Mali,San,S. haematobium,7-14,Male,326,0.883,191.8,arithmetic,Urine filtration,2x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001781,2012,2010,Mali,San,S. haematobium,7-14,female,322,0.877,169,arithmetic,Urine filtration,2x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001782,2012,2004,Mali,San,S. haematobium,7-14,Male,336,0.636,37.5,arithmetic,Urine filtration,2x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001783,2012,2010,Mali,San,S. haematobium,7-14,Female,304,0.597,28.6,arithmetic,Urine filtration,2x2,
+3,https://www.ncbi.nlm.nih.gov/pubmed/28279453,2017,2011,Mozambique,Catambo,S. haematobium,9-12,Combined,85,0.89,53.8,arithmetic,Urine filtration,1x2,
+3,https://www.ncbi.nlm.nih.gov/pubmed/28279453,2017,2011,Mozambique,Copuito,S. haematobium,9-12,Combined,73,0.96,108,arithmetic,Urine filtration,1x2,
+3,https://www.ncbi.nlm.nih.gov/pubmed/28279453,2017,2012,Mozambique,Catambo,S. haematobium,9-12,Combined,82,0.61,11,arithmetic,Urine filtration,1x2,
+3,https://www.ncbi.nlm.nih.gov/pubmed/28279453,2017,2012,Mozambique,Copuito,S. haematobium,9-12,Combined,51,0.59,40,arithmetic,Urine filtration,1x2,
+4,https://www.ncbi.nlm.nih.gov/pubmed/29629689,2018,2010,South Africa,Ugu,S. haematobium,10-12,Female,108,0.38,18.4,geometric,Microscopy,1x3,
+4,https://www.ncbi.nlm.nih.gov/pubmed/29629689,2018,2010,South Africa,Ugu,S. haematobium,10-12,Female,76,0.132,9,geometric,Microscopy,1x3,
+4,https://www.ncbi.nlm.nih.gov/pubmed/29629689,2018,2011,South Africa,Ugu,S. haematobium,10-12,Female,108,0.296,14.9,geometric,Microscopy,1x3,
+4,https://www.ncbi.nlm.nih.gov/pubmed/29629689,2018,2011,South Africa,Ugu,S. haematobium,10-12,Female,76,0.118,12.9,geometric,Microscopy,1x3,
+5,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0002104,2013,2010,South Africa,Ugu,S. haematobium,10-12,Female,970,0.32,52,NA,Microscopy,1x3,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,5-8,Combined,7463,0.631,58.2,arithmetic,Microscopy,1x2,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,7317,0.666,71.9,arithmetic,Microscopy,1x2,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,13-14,Combined,5429,0.739,NA,arithmetic,Microscopy,1x2,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,20-55,Combined,4259,0.448,23.9,arithmetic,Microscopy,1x2,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,5-8,Female,3196,0.601,44.7,arithmetic,Microscopy,1x2,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,9-12,Female,3013,0.627,54.4,arithmetic,Microscopy,1x2,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,13-14,Female,2276,0.732,NA,arithmetic,Microscopy,1x2,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,20-55,Female,1329,0.421,22,arithmetic,Microscopy,1x2,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,5-8,Male,4261,0.653,68.1,arithmetic,Microscopy,1x2,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,9-12,Male,4239,0.695,84.9,arithmetic,Microscopy,1x2,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,13-14,Male,3153,0.743,NA,arithmetic,Microscopy,1x2,
+6,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2592-8?site=parasitesandvectors.biomedcentral.com,2018,2011,Mozambique,Cabo-delgado,S. haematobium,20-55,Male,2924,0.461,24.8,arithmetic,Microscopy,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006061,2017,2011,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,1270,0.705,77.8,arithmetic,Urine filtration,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006062,2017,2011,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,1081,0.666,77,arithmetic,Urine filtration,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006063,2017,2011,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,1208,0.618,71.9,arithmetic,Urine filtration,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006064,2017,2011,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,1421,0.617,47.3,arithmetic,Urine filtration,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006065,2017,2011,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,1287,0.688,70.9,arithmetic,Urine filtration,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006066,2017,2011,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,962,0.705,69.8,arithmetic,Urine filtration,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006061,2017,2016,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,1270,0.379,40.5,arithmetic,Urine filtration,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006062,2017,2016,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,1081,0.4,53.3,arithmetic,Urine filtration,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006063,2017,2016,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,1208,0.468,71.9,arithmetic,Urine filtration,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006064,2017,2016,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,1421,0.38,55.2,arithmetic,Urine filtration,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006065,2017,2016,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,1287,0.52,77,arithmetic,Urine filtration,1x2,
+7,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0006066,2017,2016,Mozambique,Cabo-delgado,S. haematobium,9-12,Combined,962,0.402,50.3,arithmetic,Urine filtration,1x2,
+8,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2284-4?site=parasitesandvectors.biomedcentral.com,2017,2014,Mauritania,Kaedi,S. haematobium,5-7,Combined,761,0.047,3.82,geometric,Urine filtration,1x1,
+8,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2284-4?site=parasitesandvectors.biomedcentral.com,2017,2014,Mauritania,Kaedi,S. haematobium,8-11,Combined,783,0.032,3.74,geometric,Urine filtration,1x1,
+8,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2284-4?site=parasitesandvectors.biomedcentral.com,2017,2014,Mauritania,Kaedi,S. haematobium,12-15,Combined,618,0.04,2.8,geometric,Urine filtration,1x1,
+10,https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5527040/pdf/IJPA-12-284.pdf,2017,2016,Sudan,Alsaial Alsagair,S. haematobium,7-10,Combined,207,0.019,43.5,NA,Microscopy,1x1,
+10,https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5527040/pdf/IJPA-12-284.pdf,2017,2016,Sudan,Alsaial Alsagair,S. haematobium,11-14,Combined,171,0.018,35.7,NA,Microscopy,1x1,
+10,https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5527040/pdf/IJPA-12-284.pdf,2017,2016,Sudan,Alsaial Alsagair,S. haematobium,>14,Combined,7,0,0,NA,Microscopy,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara central,S. haematobium,3-5,Combined,61,0.033,89.5,geometric,Urine filtration,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara central,S. haematobium,6-10,Combined,338,0.118,412.25,geometric,Urine filtration,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara central,S. haematobium,11-15,Combined,323,0.065,407.57,geometric,Urine filtration,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara central,S. haematobium,16-20,Combined,35,0.114,355.18,geometric,Urine filtration,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara north,S. haematobium,3-5,Combined,79,0.101,92.63,geometric,Urine filtration,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara north,S. haematobium,6-10,Combined,549,0.297,391.02,geometric,Urine filtration,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara north,S. haematobium,11-15,Combined,496,0.282,319.94,geometric,Urine filtration,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara north,S. haematobium,16-20,Combined,177,0.35,353.85,geometric,Urine filtration,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara south,S. haematobium,3-5,Combined,107,0.065,118.57,geometric,Urine filtration,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara south,S. haematobium,6-10,Combined,692,0.158,373.58,geometric,Urine filtration,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara south,S. haematobium,11-15,Combined,639,0.125,326.11,geometric,Urine filtration,1x1,
+11,http://thescipub.com/pdf/10.3844/ajidsp.2017.38.44,2017,NA,Nigeria,Kwara south,S. haematobium,16-20,Combined,261,0.13,272.12,geometric,Urine filtration,1x1,
+12,https://idpjournal.biomedcentral.com/track/pdf/10.1186/s40249-016-0158-1?site=idpjournal.biomedcentral.com,2016,2015,Nigeria,Dutsin-Ma,S. haematobium,12-25,Combined,402,0.2139,34.72,arithmetic,Microscopy,1x1,
+12,https://idpjournal.biomedcentral.com/track/pdf/10.1186/s40249-016-0158-1?site=idpjournal.biomedcentral.com,2016,2015,Nigeria,Safana,S. haematobium,12-25,Combined,243,0.0915,19.34,arithmetic,Microscopy,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Boucle du Mouhoun,S. haematobium,7-11,Combined,320,0.0625,9.86,arithmetic,Urine filtration,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Cascades,S. haematobium,7-11,Combined,160,0,0,arithmetic,Urine filtration,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Centre-Est,S. haematobium,7-11,Combined,320,0.3438,20.08,arithmetic,Urine filtration,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Centre-Nord,S. haematobium,7-11,Combined,320,0.05,1.72,arithmetic,Urine filtration,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Centre-Ouest,S. haematobium,7-11,Combined,320,0.0125,0.68,arithmetic,Urine filtration,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Centre-Sud,S. haematobium,7-11,Combined,320,0.0219,1.37,arithmetic,Urine filtration,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Est,S. haematobium,7-11,Combined,314,0.1815,6.6,arithmetic,Urine filtration,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Hauts Bassins,S. haematobium,7-11,Combined,480,0,0,arithmetic,Urine filtration,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Nord,S. haematobium,7-11,Combined,320,0.0156,1.11,arithmetic,Urine filtration,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Sahel,S. haematobium,7-11,Combined,320,0.2094,24.47,arithmetic,Urine filtration,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Sud_Ouest,S. haematobium,7-11,Combined,320,0.0031,0.1,arithmetic,Urine filtration,1x1,
+14,http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0133142,2015,2014,Ethiopia,Ambash,S. haematobium,5-16,Combined,40,0.125,0.4,NA,Urine filtration,1x1,0
+14,http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0133142,2015,2014,Ethiopia,Buri,S. haematobium,5-16,Combined,189,0.249,4.5,NA,Urine filtration,1x1,0
+14,http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0133142,2015,2014,Ethiopia,Hassoba,S. haematobium,5-16,Combined,254,0.37,7.7,NA,Urine filtration,1x1,0
+14,http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0133142,2015,2014,Ethiopia,Hanledebe,S. haematobium,5-16,Combined,149,0.235,4.2,NA,Urine filtration,1x1,0
+14,http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0133142,2015,2014,Ethiopia,Farma,S. haematobium,5-16,Combined,57,0.053,1.1,NA,Urine filtration,1x1,0
+14,http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0133142,2015,2014,Ethiopia,Dubti,S. haematobium,5-16,Combined,111,0,0,NA,Urine filtration,1x1,0
+14,http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0133142,2015,2014,Ethiopia,Asaita,S. haematobium,5-16,Combined,84,0,0,NA,Urine filtration,1x1,0
+14,http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0133142,2015,2014,Ethiopia,Non-school,S. haematobium,5-16,Combined,179,0.297,8,NA,Urine filtration,1x1,0
+15,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-015-0980-5?site=parasitesandvectors.biomedcentral.com,2015,2011,Senegal,Gajak,S. haematobium,5-15,Combined,98,0.786,169.8,geometric,Urine filtration,1x1,0
+15,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-015-0980-5?site=parasitesandvectors.biomedcentral.com,2015,2011,Senegal,Godel,S. haematobium,5-15,Combined,52,0.615,189.3,geometric,Urine filtration,1x1,0
+15,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-015-0980-5?site=parasitesandvectors.biomedcentral.com,2015,2011,Senegal,Logdir,S. haematobium,5-15,Combined,31,0.806,128.3,geometric,Urine filtration,1x1,0
+15,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-015-0980-5?site=parasitesandvectors.biomedcentral.com,2015,2011,Senegal,Puday,S. haematobium,5-15,Combined,52,0.711,966.6,geometric,Urine filtration,1x1,0
+15,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-015-0980-5?site=parasitesandvectors.biomedcentral.com,2015,2011,Senegal,Ngalagne,S. haematobium,5-15,Combined,52,0.923,1573.9,geometric,Urine filtration,1x1,0
+15,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-015-0980-5?site=parasitesandvectors.biomedcentral.com,2015,2011,Senegal,Sass njafaj,S. haematobium,5-15,Combined,44,0.5,276.8,geometric,Urine filtration,1x1,0
+16,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-015-0822-5?site=parasitesandvectors.biomedcentral.com,2015,2014,Ethiopia,Gambella,S. haematobium,7-14,Males,155,0.615,9.36,NA,Urine filtration,1x1,1
+16,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-015-0822-5?site=parasitesandvectors.biomedcentral.com,2015,2014,Ethiopia,Gambella,S. haematobium,7-14,Females,149,0.385,7.81,NA,Urine filtration,1x1,1
+16,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-015-0822-5?site=parasitesandvectors.biomedcentral.com,2015,2014,Ethiopia,Gambella,S. haematobium,7-14,Combined,304,0.359,8.76,NA,Urine filtration,1x1,1
+17,https://www.ncbi.nlm.nih.gov/pubmed/28911129,2017,2014,Nigeria,Biase,S. haematobium,2-4,Combined,40,0.25,7,NA,Urine filtration,1x2,0
+17,https://www.ncbi.nlm.nih.gov/pubmed/28911129,2017,2014,Nigeria,Biase,S. haematobium,5-7,Combined,160,0.237,9.9,NA,Urine filtration,1x2,0
+17,https://www.ncbi.nlm.nih.gov/pubmed/28911129,2017,2014,Nigeria,Biase,S. haematobium,8-10,Combined,160,0.35,6.1,NA,Urine filtration,1x2,0
+17,https://www.ncbi.nlm.nih.gov/pubmed/28911129,2017,2014,Nigeria,Biase,S. haematobium,11-13,Combined,160,0.375,7,NA,Urine filtration,1x2,0
+17,https://www.ncbi.nlm.nih.gov/pubmed/28911129,2017,2014,Nigeria,Biase,S. haematobium,14-16,Combined,76,0.421,7.8,NA,Urine filtration,1x2,0
+17,https://www.ncbi.nlm.nih.gov/pubmed/28911129,2017,2014,Nigeria,Biase,S. haematobium,2-16,Combined,596,0.328,7.4,NA,Urine filtration,1x2,1
+18,https://www.cambridge.org/core/journals/journal-of-helminthology/article/urogenital-schistosomiasis-in-women-of-reproductive-age-and-pregnant-mothers-in-kwale-county-kenya/456DEDB88927AF3D22BFF4BB3E5481AB,2015,2011,Kenya,Lutsangani,S. haematobium,16-45,Females,33,0.4286,34.19,NA,Urine filtration,1x2,0
+18,https://www.cambridge.org/core/journals/journal-of-helminthology/article/urogenital-schistosomiasis-in-women-of-reproductive-age-and-pregnant-mothers-in-kwale-county-kenya/456DEDB88927AF3D22BFF4BB3E5481AB,2015,2011,Kenya,Mwachinga,S. haematobium,16-45,Females,70,0.2909,50.53,NA,Urine filtration,1x2,0
+18,https://www.cambridge.org/core/journals/journal-of-helminthology/article/urogenital-schistosomiasis-in-women-of-reproductive-age-and-pregnant-mothers-in-kwale-county-kenya/456DEDB88927AF3D22BFF4BB3E5481AB,2015,2011,Kenya,Mwaluphamba,S. haematobium,16-45,Females,153,0.2759,13.14,NA,Urine filtration,1x2,0
+18,https://www.cambridge.org/core/journals/journal-of-helminthology/article/urogenital-schistosomiasis-in-women-of-reproductive-age-and-pregnant-mothers-in-kwale-county-kenya/456DEDB88927AF3D22BFF4BB3E5481AB,2015,2011,Kenya,Mienzeni,S. haematobium,16-45,Females,82,0.3953,103.47,NA,Urine filtration,1x2,0
+18,https://www.cambridge.org/core/journals/journal-of-helminthology/article/urogenital-schistosomiasis-in-women-of-reproductive-age-and-pregnant-mothers-in-kwale-county-kenya/456DEDB88927AF3D22BFF4BB3E5481AB,2015,2011,Kenya,Rabai,S. haematobium,16-45,Females,56,0.125,13.08,NA,Urine filtration,1x2,0
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001784,2012,2004,Mali,Segou,S. mansoni,7-14,Combined,224,0.031,4.7,arithmetic,Kato-katz,1x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001785,2012,2004,Mali,Macina,S. mansoni,7-14,Combined,212,0.665,372.1,arithmetic,Kato-katz,1x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001786,2012,2004,Mali,San,S. mansoni,7-14,Combined,212,0.019,1.2,arithmetic,Kato-katz,1x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001787,2012,2010,Mali,Segou,S. mansoni,7-14,Combined,221,0.054,3.5,arithmetic,Kato-katz,1x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001788,2012,2010,Mali,Macina,S. mansoni,7-14,Combined,213,0.477,194.4,arithmetic,Kato-katz,1x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001789,2012,2010,Mali,San,S. mansoni,7-14,Combined,206,0,0,arithmetic,Kato-katz,1x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001790,2012,2004,Mali,San,S. mansoni,7-14,Male,326,0.178,121.8,arithmetic,Kato-katz,1x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001791,2012,2010,Mali,San,S. mansoni,7-14,Female,322,0.169,54.4,arithmetic,Kato-katz,1x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001792,2012,2004,Mali,San,S. mansoni,7-14,Male,336,0.155,55.3,arithmetic,Kato-katz,1x2,
+1,http://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0001793,2012,2010,Mali,San,S. mansoni,7-14,Female,304,0.097,30.1,arithmetic,Kato-katz,1x2,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit1,S. mansoni,5-9,Male,46,0.543,260,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit2,S. mansoni,5-9,Male,23,0.435,149,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Selam,S. mansoni,5-9,Male,63,0.619,261,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit1,S. mansoni,5-9,Female,55,0.236,137,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit2,S. mansoni,5-9,Female,43,0.512,116,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Selam,S. mansoni,5-9,Female,60,0.517,250,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit1,S. mansoni,5-9,Combined,101,0.376,218,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit2,S. mansoni,5-9,Combined,66,0.489,126,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Selam,S. mansoni,5-9,Combined,123,0.569,256,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit1,S. mansoni,10-17,Male,21,0.667,193,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit2,S. mansoni,10-17,Male,60,0.383,243,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Selam,S. mansoni,10-17,Male,42,0.667,339,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit1,S. mansoni,10-17,Female,20,0.65,124,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit2,S. mansoni,10-17,Female,81,0.333,202,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Selam,S. mansoni,10-17,Female,36,0.667,95,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit1,S. mansoni,10-17,Combined,41,0.659,160,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit2,S. mansoni,10-17,Combined,141,0.355,221,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Selam,S. mansoni,10-17,Combined,78,0.667,232,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit1,S. mansoni,5-17,Combined,142,0.456,194,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Maksegnit2,S. mansoni,5-17,Combined,207,0.396,183,NA,Kato-katz,1x1,
+2,https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-015-1178-6,2015,2013,Ethiopia,Selam,S. mansoni,5-17,Combined,201,0.607,243,NA,Kato-katz,1x1,
+9,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2249-7?site=parasitesandvectors.biomedcentral.com,2017,2015,Madagascar,Antananarivo,S. mansoni,5-6,Combined,64,0.7656,138.5,NA,Kato-katz,1x1,
+9,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2249-7?site=parasitesandvectors.biomedcentral.com,2017,2015,Madagascar,Antananarivo,S. mansoni,7-8,Combined,85,0.8,394,NA,Kato-katz,1x1,
+9,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2249-7?site=parasitesandvectors.biomedcentral.com,2017,2015,Madagascar,Antananarivo,S. mansoni,9-10,Combined,85,0.8706,528.9,NA,Kato-katz,1x1,
+9,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2249-7?site=parasitesandvectors.biomedcentral.com,2017,2015,Madagascar,Antananarivo,S. mansoni,11-12,Combined,79,0.8228,434.7,NA,Kato-katz,1x1,
+9,https://parasitesandvectors.biomedcentral.com/track/pdf/10.1186/s13071-017-2249-7?site=parasitesandvectors.biomedcentral.com,2017,2015,Madagascar,Antananarivo,S. mansoni,13-14,Combined,83,0.8434,732.3,NA,Kato-katz,1x1,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Boucle du Mouhoun,S. mansoni,7-11,Combined,320,0,0,arithmetic,Kato-katz,1x2,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Cascades,S. mansoni,7-11,Combined,160,0,0,arithmetic,Kato-katz,1x2,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Centre-Est,S. mansoni,7-11,Combined,320,0,0,arithmetic,Kato-katz,1x2,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Centre-Nord,S. mansoni,7-11,Combined,320,0,0,arithmetic,Kato-katz,1x2,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Centre-Ouest,S. mansoni,7-11,Combined,320,0,0,arithmetic,Kato-katz,1x2,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Centre-Sud,S. mansoni,7-11,Combined,320,0.0031,0.15,arithmetic,Kato-katz,1x2,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Est,S. mansoni,7-11,Combined,314,0,0,arithmetic,Kato-katz,1x2,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Hauts Bassins,S. mansoni,7-11,Combined,480,0.0875,7.7,arithmetic,Kato-katz,1x2,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Nord,S. mansoni,7-11,Combined,320,0,0,arithmetic,Kato-katz,1x2,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Sahel,S. mansoni,7-11,Combined,320,0,0,arithmetic,Kato-katz,1x2,
+13,http://www.who.int/bulletin/volumes/94/1/15-161885.pdf,2016,2013,Burkina Faso,Sud_Ouest,S. mansoni,7-11,Combined,320,0,0,arithmetic,Kato-katz,1x2,
