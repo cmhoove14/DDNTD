@@ -20,4 +20,7 @@ A matrix of the state variables at all requested time points
 A dynamic schistosomiasis model with negative (crowding induced reductions in fecundity)
 and positive (mating limitation) density dependencies and functionality
 to simulate mass drug administration, snail control, and other interventions.
+Note this is a function that is wrapped into sim_schisto_base_mod which
+should be used to simulate the model, this function is fed into the ode solver
+from deSolve
 }

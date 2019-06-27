@@ -12,6 +12,7 @@ devtools::install("../../DDNTD")
 
 require(deSolve)
 require(rootSolve)
+require(adaptivetau)
 require(ggplot2)
 require(tidyverse)
 require(DDNTD)
@@ -22,7 +23,7 @@ require(DDNTD)
 ```{r sim_dynamics}
 #Base time and starting values for state variables
 base_start <- c(S=5000, E=0, I=0, Wt=10, Wu=10)
-years <- 10
+years <- 20
 base_time <- c(0:(365*years))
 
 #Run to equibrium with base parameter set
@@ -53,7 +54,7 @@ schisto_base_sim %>%
               subtitle = paste0("Anual MDA for ", years/2, " years"))
 
 schisto_base_sim %>% 
-  mutate(W = Wt*base_pars["cov"] + Wu*(1-base_pars["cov"])) %>% 
+  mutate(W = Wt*base_pars["cvrg"] + Wu*(1-base_pars["cvrg"])) %>% 
   gather("Treatment_Group", "Worm_Burden", Wt:W) %>% 
     ggplot(aes(x = time, y = Worm_Burden, lty = Treatment_Group)) +
       geom_line(size = 1.2, col = "purple") +
@@ -65,11 +66,18 @@ schisto_base_sim %>%
               subtitle = paste0("Anual MDA for ", years/2, " years"))
 ```
 
+## Simulate stochastic model  
+```{r stoch_mod_sim}
+sim_schisto_stoch_mod(nstart = round(base_eqbm),
+                      params = base_pars,
+                      tf = 365)
+```
+
+
+
 ## Estimate relationship between clumping parameter ($\kappa$) and mean worm burden ($W$)   
 
 ```{r k_w_relate}
-schisto_dat <- readr::read_csv("../data-raw/schistosoma_spp_infection_data.csv")
-
 s_haem <- schisto_dat %>% 
   filter(Species == "S. haematobium" & 
            Mean_type == "arithmetic" & 
@@ -111,7 +119,7 @@ k_from_W <- function(W){
   
 ```
 
-
+## Generate $R_eff$ curve  
 ```{r Reff_curves}
 #Get values of mean worm burden to plot R effective curve over
 Reffs <- data.frame(test_ws = seq(1e-2, sqrt(max(schisto_base_sim$Wu*2)), 
@@ -129,7 +137,7 @@ Reffs <- data.frame(test_ws = seq(1e-2, sqrt(max(schisto_base_sim$Wu*2)),
                                        kap = w_det_ks), getReff))
 
 Reffs %>% 
-  gather("Clumping_Function", "Reff", Reff_no_pdd:Reff_k_from_W) %>% 
+  gather("Clumping_Function", "Reff", Reff_base:Reff_k_from_W) %>% 
   ggplot(aes(x = test_ws, y = Reff, lty = Clumping_Function)) +
     geom_line(size = 1.2) +
     theme_classic() +

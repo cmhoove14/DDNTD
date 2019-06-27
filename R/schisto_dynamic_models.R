@@ -3,6 +3,9 @@
 #' A dynamic schistosomiasis model with negative (crowding induced reductions in fecundity)
 #' and positive (mating limitation) density dependencies and functionality
 #' to simulate mass drug administration, snail control, and other interventions.
+#' Note this is a function that is wrapped into sim_schisto_base_mod which
+#' should be used to simulate the model, this function is fed into the ode solver
+#' from deSolve
 #'
 #' @param t Vector of timepoints to return state variable estiamtes
 #' @param n Vector of state variable initial conditions
@@ -11,7 +14,7 @@
 #' @return A matrix of the state variables at all requested time points
 #' @export
 
-schisto_base_mod = function(t, n, parameters) {
+schisto_base_mod <- function(t, n, parameters) {
   with(as.list(parameters),{
 
     S=n[1]
@@ -21,7 +24,7 @@ schisto_base_mod = function(t, n, parameters) {
     Wu=n[5]
     N=S+E+I
 
-    W=(cov*Wt) + ((1-cov)*Wu) #weighting treated and untreated populations
+    W=(cvrg*Wt) + ((1-cvrg)*Wu) #weighting treated and untreated populations
 
 
   #Density dependencies based on worm burden
@@ -70,4 +73,70 @@ sim_schisto_base_mod <- function(nstart,
                                  events_df){
   as.data.frame(ode(nstart, time, model, parameters,
                     events = list(data = events_df)))
+}
+
+
+#' Stochastic version of the base schistosomiasis model
+#'
+#' A stochastic schistosomiasis model with same structure as the deterministic model
+#' but implemented with the adaptivetau package which uses tau leaping
+#' to simulate stochastic transmission. Note this is a function that is wrapped into
+#' sim_schisto_stoch_mod which should be used to simulate the model,
+#' this function is fed into the tau leaping algorithm from adaptivetau
+#'
+#' @param x vector of state variables
+#' @param p named vector of parameters
+#' @param t numeric indicating length of simulation
+#'
+#' @return vector of transition probabilities
+#' @export
+#'
+schisto_stoch_mod <- function(x, p, t){
+  S = x['S']
+  E = x['E']
+  I = x['I']
+  N = S + I + E
+  Wt = x['Wt']
+  Wu = x['Wu']
+  W = p$cvrg*Wt+(1-p$cvrg)*Wu
+
+  return(c(p$f_N * (1-N/p$C) * (S + E),   #Snail birth
+           p$mu_N * S,        #Susceptible snail death
+           p$beta * 0.5 * W * p$H * S * phi_Wk(W = W, k = p$k) * f_Wgk(W, p$gam, p$k),  #Snail exposure
+           p$mu_N * E,       #Exposed snail dies
+           p$sigma * E,      #Exposed snail becomes infected
+           (p$mu_N + p$mu_I) * I,   #Infected snail dies
+           p$lamda * I * R_Wv(W, p$v),        #infected snail produces adult worm
+           (p$mu_W + p$mu_H) * Wt,    #Adult worm in treated population dies
+           (p$mu_W + p$mu_H) * Wu))    #Adult worm in untreated population dies
+
+}
+
+#' Simulate the stochastic schistosomiasis model
+#'
+#' Uses the `schisto_stoch_mod` function to simulate the stochastic model through time
+#'
+#' @param nstart starting values of state variables, must be whole numbers
+#' @param transitions list of all possible transitions between state variables, defaults to transitions possible in `schisto_stoch_mod`
+#' @param sfx function to feed into adaptive tau, uses `schisto_stoch_mod` as default
+#' @param params named vector of parameter values used in model
+#' @param tf numeric of total time to run simulation
+#'
+#' @return matrix of state variables and values at time points up until tf
+#' @export
+#'
+sim_schisto_stoch_mod <- function(nstart,
+                                  transitions = list(c(S = 1),             #New snail born
+                                                     c(S = -1),            #Susceptible snail dies
+                                                     c(S = -1, E = 1),     #Susceptible snail becomes exposed
+                                                     c(E = -1),            #Exposed snail dies
+                                                     c(E = -1, I = 1),     #Exposed snail becomes Infected
+                                                     c(I = -1),            #Infected snail dies
+                                                     c(Wt = 1, Wu = 1),    #Infected snail emits cercaria that produces an adult worm
+                                                     c(Wt = -1),           #Adult worm in the treated population dies
+                                                     c(Wu = -1)),           #Adult worm in the untreated population dies
+                                  sfx = schisto_stoch_mod,
+                                  params,
+                                  tf){
+  adaptivetau::ssa.adaptivetau(nstart, transitions, sfx, params, tf)
 }

@@ -9,8 +9,8 @@ base_pars <- c("f_N" = 0.1,
                "k" = 0.08,
                "lambda" = 2.074609e-04,
                "beta" = 1.6e-6,
-               "cov" = 0.43,
+               "cvrg" = 0.43,
                "gamma" = 1e-3,
                "v" = 2.8e-3)
 
-usethis::use_data(base_pars)
+usethis::use_data(base_pars, overwrite = TRUE)
