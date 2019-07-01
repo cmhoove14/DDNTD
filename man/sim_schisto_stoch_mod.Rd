@@ -6,7 +6,8 @@
 \usage{
 sim_schisto_stoch_mod(nstart, transitions = list(c(S = 1), c(S = -1), c(S
   = -1, E = 1), c(E = -1), c(E = -1, I = 1), c(I = -1), c(Wt = 1, Wu = 1),
-  c(Wt = -1), c(Wu = -1)), sfx = schisto_stoch_mod, params, tf)
+  c(Wt = -1), c(Wu = -1)), sfx = schisto_stoch_mod, params, tf,
+  events_df = NA)
 }
 \arguments{
 \item{nstart}{starting values of state variables, must be whole numbers}
@@ -18,6 +19,8 @@ sim_schisto_stoch_mod(nstart, transitions = list(c(S = 1), c(S = -1), c(S
 \item{params}{named vector of parameter values used in model}
 
 \item{tf}{numeric of total time to run simulation}
+
+\item{events_df}{Data frame of events such as MDA with columns "var", "time", "value", and "method"}
 }
 \value{
 matrix of state variables and values at time points up until tf

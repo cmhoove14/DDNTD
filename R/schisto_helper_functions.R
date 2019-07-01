@@ -87,3 +87,17 @@ phi_Wk <- function(W, k) {
     rootSolve::uniroot.all(function(x) 1-Prev-(1+W/x)^-x,
                            interval = c(0,10))
   }
+
+#' Estimate clumping parameter as a function of log worm burden
+#'
+#' Function fit to our data from 16 communities in Senegal with annual MDA
+#' and egg burden assessed annually for three years
+#'
+#' @param W Mean worm burden or infection intensity
+#'
+#' @return Estimate of the clumping parameter of the negative binomial distribution
+#' @export
+
+  k_from_log_W <- function(W){
+    exp(-2.59748 + 0.41378*log(W))
+  }

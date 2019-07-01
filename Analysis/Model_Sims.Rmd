@@ -18,6 +18,8 @@ require(tidyverse)
 require(DDNTD)
 ```
 
+# Initial Simulations and Checks  
+
 ## Test dynamic simulation through time  
 
 ```{r sim_dynamics}
@@ -32,15 +34,18 @@ base_eqbm <- runsteady(y = base_start, func = DDNTD::schisto_base_mod,
 
 #simulate annual MDA 
 eff = 0.93 #93% efficacy
+base_pars["cvrg"] <- 0.8
 
 mda.events = data.frame(var = rep('Wt', years/2),
                         time = c(1:(years/2))*365,
                         value = rep((1 - eff), years/2),
                         method = rep('mult', years/2))
 
-schisto_base_sim <- sim_schisto_base_mod(nstart = base_eqbm, time = base_time, 
-                                         parameters = base_pars,
-                                         events_df = mda.events)
+schisto_base_sim <- sim_schisto_mod(nstart = base_eqbm, 
+                                    time = base_time, 
+                                    model = schisto_base_mod,
+                                    parameters = base_pars,
+                                    events_df = mda.events)
 
 schisto_base_sim %>% 
   gather("Snail_Infection", "Density", S:I) %>% 
@@ -61,6 +66,8 @@ schisto_base_sim %>%
       scale_linetype_manual(values = c("W" = 1,
                                        "Wt" = 2,
                                        "Wu" = 3)) +
+      scale_x_continuous(breaks = c(0:years)*365,
+                         labels = c(0:years)) +
       theme_classic() +
       ggtitle("Human infection dynamics", 
               subtitle = paste0("Anual MDA for ", years/2, " years"))
@@ -68,16 +75,27 @@ schisto_base_sim %>%
 
 ## Simulate stochastic model  
 ```{r stoch_mod_sim}
-sim_schisto_stoch_mod(nstart = round(base_eqbm),
-                      params = base_pars,
-                      tf = 365)
+set.seed(10)
+schisto_stoch_sim <- sim_schisto_stoch_mod(nstart = round(base_eqbm),
+                                           params = as.list(base_pars),
+                                           tf = max(base_time),
+                                           events_df = mda.events) %>% 
+  mutate(W = Wt*base_pars["cvrg"] + Wu*(1-base_pars["cvrg"]))
+
+schisto_stoch_sim %>% 
+  gather("Treatment_Group", "Worm_Burden", Wt:W) %>% 
+  ggplot(aes(x = time, y = Worm_Burden, lty = Treatment_Group)) +
+    geom_line(size = 1.1, col = "purple") +
+    scale_x_continuous(breaks = c(0:years)*365,
+                       labels = c(0:years)) +
+    theme_classic() +
+    labs(x = "time (years)",
+         y = expression(mean~worm~burden~(italic(W))),
+         title = "Human infection dynamics from stochastic model", 
+         subtitle = paste0("Anual MDA for ", years/2, " years"))
 ```
 
-
-
-## Estimate relationship between clumping parameter ($\kappa$) and mean worm burden ($W$)   
-
-```{r k_w_relate}
+```{r k_w_relate, include=FALSE}
 s_haem <- schisto_dat %>% 
   filter(Species == "S. haematobium" & 
            Mean_type == "arithmetic" & 
@@ -125,7 +143,7 @@ k_from_W <- function(W){
 Reffs <- data.frame(test_ws = seq(1e-2, sqrt(max(schisto_base_sim$Wu*2)), 
                                   by = sqrt(max(schisto_base_sim$Wu*2))/1000)^2) %>% 
   mutate(base_ks = base_pars["k"],
-         w_det_ks = sapply(test_ws, k_from_W),
+         w_det_ks = sapply(test_ws, k_from_log_W),
          Reff_base = pmap_dbl(list(parameters = list(base_pars),
                                    W = test_ws,
                                    kap = base_ks), getReff),
@@ -149,7 +167,28 @@ Reffs %>%
                        limits = c(0,3)) +
     geom_hline(yintercept = 1, lty = 2) +
     labs(x = expression(Mean~Worm~Burden~(italic(W))),
-         y = expression(italic(R[eff]))) +
-    theme(legend.position = "none")
+         y = expression(italic(R[eff]))) #+ theme(legend.position = "none")
+```
+
+### See how $R_eff$ changes over course of stochastic simulation    
+
+```{r stoch_reff_time}
+schisto_stoch_sim_reff <- schisto_stoch_sim %>% 
+  mutate(Reff = pmap_dbl(list(parameters = list(base_pars),
+                              W = W,
+                              kap = base_pars["k"]), getReff))
+
+schisto_stoch_sim_reff %>% 
+  ggplot(aes(x = time, y = Reff)) + 
+    geom_line() + 
+    theme_classic() +
+    labs(x = "time (years)",
+         y = expression(R[eff]),
+         title = "Effective reproduction number over MDA campaign", 
+         subtitle = paste0("Anual MDA for ", years/2, " years")) +
+    scale_x_continuous(breaks = c(0:years)*365,
+                       labels = c(0:years))
+
+
 ```
 
