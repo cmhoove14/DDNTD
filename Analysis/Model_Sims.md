@@ -1,28 +1,15 @@
----
-title: "Model Simulations"
-author: "Chris Hoover"
-date: "June 21, 2019"
-output: github_document
----
+Model Simulations
+================
+Chris Hoover
+June 21, 2019
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+Initial Simulations and Checks
+==============================
 
-devtools::load_all("../../DDNTD/")
+Test dynamic simulation through time
+------------------------------------
 
-require(deSolve)
-require(rootSolve)
-require(adaptivetau)
-require(ggplot2)
-require(tidyverse)
-require(DDNTD)
-```
-
-# Initial Simulations and Checks  
-
-## Test dynamic simulation through time  
-
-```{r sim_dynamics}
+``` r
 #Base time and starting values for state variables
 base_start <- c(S=5000, E=0, I=0, Wt=10, Wu=10)
 years <- 20
@@ -46,7 +33,12 @@ schisto_base_sim <- sim_schisto_mod(nstart = base_eqbm,
                                     model = schisto_base_mod,
                                     parameters = base_pars,
                                     events_df = mda.events)
+```
 
+    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
+    ## the first element will be used
+
+``` r
 schisto_base_sim %>% 
   gather("Snail_Infection", "Density", S:I) %>% 
     ggplot(aes(x = time, y = Density, col = Snail_Infection)) +
@@ -57,7 +49,11 @@ schisto_base_sim %>%
       theme_classic() +
       ggtitle("Snail infection dynamics", 
               subtitle = paste0("Anual MDA for ", years/2, " years"))
+```
 
+![](Model_Sims_files/figure-markdown_github/sim_dynamics-1.png)
+
+``` r
 schisto_base_sim %>% 
   mutate(W = Wt*base_pars["cvrg"] + Wu*(1-base_pars["cvrg"])) %>% 
   gather("Treatment_Group", "Worm_Burden", Wt:W) %>% 
@@ -73,15 +69,24 @@ schisto_base_sim %>%
               subtitle = paste0("Anual MDA for ", years/2, " years"))
 ```
 
-## Simulate stochastic model  
-```{r stoch_mod_sim}
+![](Model_Sims_files/figure-markdown_github/sim_dynamics-2.png)
+
+Simulate stochastic model
+-------------------------
+
+``` r
 set.seed(10)
 schisto_stoch_sim <- sim_schisto_stoch_mod(nstart = round(base_eqbm),
                                            params = as.list(base_pars),
                                            tf = max(base_time),
                                            events_df = mda.events) %>% 
   mutate(W = Wt*base_pars["cvrg"] + Wu*(1-base_pars["cvrg"]))
+```
 
+    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
+    ## the first element will be used
+
+``` r
 schisto_stoch_sim %>% 
   gather("Treatment_Group", "Worm_Burden", Wt:W) %>% 
   ggplot(aes(x = time, y = Worm_Burden, lty = Treatment_Group)) +
@@ -95,7 +100,9 @@ schisto_stoch_sim %>%
          subtitle = paste0("Anual MDA for ", years/2, " years"))
 ```
 
-```{r mate_prob_across_W, fig.height=5, fig.width=7, fig.cap="Influence of the clumping parameter on the mating probability of adult female worms, the source of positive density dependence. When the clumping parameter is allowed to vary dynamically as a function of W, it can be seen that the mating probability remains higher into lower worm burdens, which will decrease the breakpoint population size and therefore make elimination with MDA more difficult"}
+![](Model_Sims_files/figure-markdown_github/stoch_mod_sim-1.png)
+
+``` r
 test_ws <- seq(1e-2, sqrt(max(schisto_base_sim$Wu*2)), 
                by = sqrt(max(schisto_base_sim$Wu*2))/1000)^2
 
@@ -128,10 +135,13 @@ as.data.frame(cbind(test_ws,
          y = expression(Mating~Probability~(italic(Phi))),
          title = "Mating probability across clumping parameter",
          subtitle = "Influence of various formulations of clumping parameter") #+ theme(legend.position = "none")
-
 ```
 
-```{r worm_dist, fig.height=5, fig.width=7, fig.cap="Influence of the clumping parameter on the distribution of individual worm burdens across different values of the mean worm burden. At low mean worm burdens (e.g. W=1, left panel), lower values of kappa implying more dispersed individual worm burdens are favorable for transmission as more individuals are likely to have >= 2 adult worms"}
+    ## Warning: Removed 36 rows containing missing values (geom_path).
+
+![Influence of the clumping parameter on the mating probability of adult female worms, the source of positive density dependence. When the clumping parameter is allowed to vary dynamically as a function of W, it can be seen that the mating probability remains higher into lower worm burdens, which will decrease the breakpoint population size and therefore make elimination with MDA more difficult](Model_Sims_files/figure-markdown_github/mate_prob_across_W-1.png)
+
+``` r
 set.seed(10)
 
 w_k_dist <- as.data.frame(expand.grid(samp.size = 1000,
@@ -167,54 +177,14 @@ w_k_dist %>% ggplot(aes(x = w)) +
        x = expression(Individual~worm~burdens),
        title = "Distribution of individual worm burdens",
        subtitle = expression(Across~values~of~mean~worm~burden~(W)~and~clumping~parameter~(kappa)))
-
 ```
 
+![Influence of the clumping parameter on the distribution of individual worm burdens across different values of the mean worm burden. At low mean worm burdens (e.g. W=1, left panel), lower values of kappa implying more dispersed individual worm burdens are favorable for transmission as more individuals are likely to have &gt;= 2 adult worms](Model_Sims_files/figure-markdown_github/worm_dist-1.png)
 
-```{r k_w_relate2, include=FALSE}
-s_haem <- schisto_dat %>% 
-  filter(Species == "S. haematobium" & 
-           Mean_type == "arithmetic" & 
-           !is.na(Intensity) &
-           Intensity > 0) %>% 
-  mutate(prev_sqrd = Prevalence^2,
-         worm_est = (Intensity / 3.6)*2,  #Convert egg output to worm burden estimate assuming 3.6 eggs/mL per mated adult female worm
-         clump_est = map2_dbl(worm_est, Prevalence, prev_intensity_to_clump))
+Generate *R*<sub>*e**f**f*</sub> curve
+--------------------------------------
 
-s_haem %>% 
-  ggplot(aes(x = Prevalence, y = Intensity, size = Sample_size)) + 
-    geom_point() + 
-    theme_classic() +
-    labs(title = expression(Prevalence~intensity~relationship~italic(S.~haematobium)),
-         subtitle = "Each point represents a population",
-         x = "Prevalence (%)",
-         y = "Egg Burden (eggs/10mL)") +
-    geom_smooth(method = "lm", formula = y ~ x + I(x^2))
-
-s_haem %>% 
-  ggplot(aes(x = worm_est, y = clump_est, size = Sample_size)) + 
-    geom_point() + 
-    theme_classic() +
-    labs(x = "Mean worm burden (W)",
-         y = expression(Clumping~Parameter~(italic(kappa)))) +
-    geom_smooth(method = "lm") +
-    geom_smooth(method = "lm", formula = y~x+I(x^2))
-
-clump_burden_lm_mod <- lm(clump_est ~ worm_est, data = s_haem)
-clump_burden_lm_mod2 <- lm(clump_est ~ worm_est + I(worm_est^2), data = s_haem)
-
-anova(clump_burden_lm_mod, clump_burden_lm_mod2)
-
-#Linear is a better/simpler model
-
-k_from_W <- function(W){
-  as.numeric(coef(clump_burden_lm_mod)[1] + coef(clump_burden_lm_mod)[2] * W)
-}
-  
-```
-
-## Generate $R_{eff}$ curve  
-```{r Reff_curves, fig.height=5, fig.width=7, fig.cap="Influence of the clumping parameter on $R_{eff}$ curves. The dynamic clumping parameter (green line) makes things much worse, causing both a lower (harder to reach) breakpoint and a higher (more infection) endemic equilibrium)"}
+``` r
 #Get values of mean worm burden to plot R effective curve over
 Reffs <- data.frame(test_ws = test_ws) %>% 
   mutate(k0.1 = 0.1,
@@ -261,9 +231,13 @@ Reffs %>%
        color = "Clumping\nParameter") #+ theme(legend.position = "none")
 ```
 
-### See how $R_{eff}$ changes over course of stochastic simulation    
+    ## Warning: Removed 15 rows containing missing values (geom_path).
 
-```{r stoch_reff_time, fig.height=5, fig.width=7, fig.cap="Clear that at 80% coverage and 93% efficacy, we never get close to the breakpoint with 10 years of annual MDA. This indicated by the rise in $R_{eff}$ with no subsequent decrease (implying traversing the curve down towards the breakpoint). However, this implies that the 20% of the untreated population contributes to transmission just like the 80% that's treated. In reality, MDA is often administered to school-aged children (SAC) while adults are untreated, but SAC also contribute much more to transmission. To exlpore the influence of this, we'll next move to the age-distributed model."}
+![Influence of the clumping parameter on *R*<sub>*e**f**f*</sub> curves. The dynamic clumping parameter (green line) makes things much worse, causing both a lower (harder to reach) breakpoint and a higher (more infection) endemic equilibrium)](Model_Sims_files/figure-markdown_github/Reff_curves-1.png)
+
+### See how *R*<sub>*e**f**f*</sub> changes over course of stochastic simulation
+
+``` r
 schisto_stoch_sim_reff <- schisto_stoch_sim %>% 
   mutate(kap = map_dbl(W, k_from_log_W),
          Reff = pmap_dbl(list(parameters = list(base_pars),
@@ -280,7 +254,6 @@ schisto_stoch_sim_reff %>%
          subtitle = paste0("Anual MDA for ", years/2, " years")) +
     scale_x_continuous(breaks = c(0:years)*365,
                        labels = c(0:years))
-
-
 ```
 
+![](Model_Sims_files/figure-markdown_github/stoch_reff_time-1.png)
