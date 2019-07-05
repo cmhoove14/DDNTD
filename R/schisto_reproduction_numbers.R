@@ -13,7 +13,7 @@
 getReff<-function(parameters, W, kap){
   with(as.list(parameters),{
 
-  Num_1<-lambda*R_Wv(W, v)*(sigma/(mu_N+mu_I))*(beta*0.5*W*H*phi_Wk(W,kap)*f_Wgk(W, gamma, kap)/(mu_N+sigma))*C
+  Num_1<-lambda*R_Wv(W, xi)*(sigma/(mu_N+mu_I))*(beta*0.5*W*H*phi_Wk(W,kap)*f_Wgk(W, gamma, kap)/(mu_N+sigma))*C
 
   Num_2<- ( (1+(beta*0.5*W*H*phi_Wk(W,kap)*f_Wgk(W, gamma, kap)/(mu_N+sigma)))*f_N ) - ( mu_N + (beta*0.5*H*W*phi_Wk(W,kap)*f_Wgk(W, gamma, kap) ) )
 
@@ -41,7 +41,7 @@ getReff<-function(parameters, W, kap){
 getReff_noPDD<-function(parameters, W, kap){
   with(as.list(parameters),{
 
-  Num_1<-lambda*R_Wv(W, v)*(sigma/(mu_N+mu_I))*(beta*0.5*W*H*f_Wgk(W, gamma, kap)/(mu_N+sigma))*C
+  Num_1<-lambda*R_Wv(W, xi)*(sigma/(mu_N+mu_I))*(beta*0.5*W*H*f_Wgk(W, gamma, kap)/(mu_N+sigma))*C
 
   Num_2<- ( (1+(beta*0.5*W*H*f_Wgk(W, gamma, kap)/(mu_N+sigma)))*f_N ) - ( mu_N + (beta*0.5*H*W*f_Wgk(W, gamma, kap) ) )
 

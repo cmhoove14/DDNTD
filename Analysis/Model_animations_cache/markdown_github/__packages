@@ -1,0 +1,16 @@
+base
+deSolve
+rootSolve
+adaptivetau
+ggplot2
+tidyverse
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+gganimate
+magick
+DDNTD

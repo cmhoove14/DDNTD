@@ -4,7 +4,7 @@
 \alias{R_Wv}
 \title{Schistosomiasis acquired immunity}
 \usage{
-R_Wv(W, v)
+R_Wv(W, xi)
 }
 \arguments{
 \item{W}{mean worm burden in human population}

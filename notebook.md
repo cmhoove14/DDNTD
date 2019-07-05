@@ -12,9 +12,16 @@ Transferred over code for the stochastic model implemented in `adaptivetau`
 # 7/1/2019  
 Added deterministic and stochastic versions of an age stratified model with non-linear man-to-snail force of infection as described in [Gurarie et al 2018](https://doi.org/10.1371/journal.pntd.0006514) and functions to simulate it. Added functionality to simulate models with or without events. Modified base model to include clumping parameter responsive to mean worm burden. Incorporated clumping parameter function derived from Senegal data relationship between log of mean worm burden and clumping parameter
 
+# 7/2/2019  
+Added explorations of mating probability over different values of the clumping parameter to assess the impact of variable $\kappa$ on the breakpoint. Initial simulations of age structured model. Some restructuring/renaming of variables  
+
+# 7/3/2019  
+Added `Model_animations.Rmd` which uses the model functions to produce simulations and visualizations as animations of worm burdens and $R_{eff}$ estimates through time over the course of different types of intervention efforts. Added a few functions/tweaks to existing functions to enable these sims/viz as well.
+
 # To-dos  
-### Incorporate dynamic clumping parameter into $R_{eff}$ formulation
 ### Derive $R_{eff}$ for age stratified model  
-### Document deterministic models (equations, base parameters) in vignettes
+### Stochastic age stratified model  
+### Fit base model and age-stratified models to data  
+### Estimate BBR from Senegal human data  
+### Document deterministic models (equations, base parameters) in vignettes  
 #### Document derivation of $R_{eff}$  
-### Fit deterministic versions of models in .Rmds  

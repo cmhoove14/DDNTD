@@ -5,8 +5,8 @@
 \title{Simulate the stochastic schistosomiasis model}
 \usage{
 sim_schisto_stoch_mod(nstart, transitions = list(c(S = 1), c(S = -1), c(S
-  = -1, E = 1), c(E = -1), c(E = -1, I = 1), c(I = -1), c(Wt = 1, Wu = 1),
-  c(Wt = -1), c(Wu = -1)), sfx = schisto_stoch_mod, params, tf,
+  = -1, E = 1), c(E = -1), c(E = -1, I = 1), c(I = -1), c(Wt = 1), c(Wu =
+  1), c(Wt = -1), c(Wu = -1)), sfx = schisto_stoch_mod, params, tf,
   events_df = NA)
 }
 \arguments{

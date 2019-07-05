@@ -1,6 +1,57 @@
+#' Barebones schistosomiasis model
+#'
+#' A dynamic schistosomiasis model with SEI snail infection dynamics, a single mean worm burden population,
+#' negative (crowding induced reductions in fecundity)
+#' and positive (mating limitation) density dependencies and functionality
+#' to simulate mass drug administration, snail control, and other interventions.
+#' Note this is a function that is wrapped into `sim_schisto_base_mod`` which
+#' should be used to simulate the model, this function is fed into the ode solver
+#' from deSolve
+#'
+#' @param t Vector of timepoints to return state variable estiamtes
+#' @param n Vector of state variable initial conditions
+#' @param parameters Named vector of model parameters
+#'
+#' @return A matrix of the state variables at all requested time points
+#' @export
+
+schisto_mod <- function(t, n, parameters) {
+  with(as.list(parameters),{
+
+    S=n[1]
+    E=n[2]
+    I=n[3]
+    W=n[4]
+
+    N=S+E+I
+
+  #Clumping parameters based on worm burden
+    k_W = k_from_log_W(W)
+
+  #Miracidial estimate from treated and untreated populations assuming 1:1 sex ratio, mating probability, density dependence
+    M = (0.5*W*H)*phi_Wk(W, k_W)*f_Wgk(W, gamma, k_W)
+
+  #Snail infection dynamics
+    dSdt= f_N*(1-(N/C))*(S+E) - mu_N*S - beta*M*S #Susceptible snails
+
+    dEdt= beta*M*S - (mu_N+sigma)*E #Exposed snails
+
+    dIdt= sigma*E - (mu_N+mu_I)*I #Infected snails
+
+  #worm burden in humans
+    dWdt= (lambda*I*R_Wv(W, xi)) - ((mu_W+mu_H)*W)
+
+
+    return(list(c(dSdt,dEdt,dIdt,dWdt)))
+  })
+}
+
+
 #' Basic schistosomiasis model
 #'
-#' A dynamic schistosomiasis model with negative (crowding induced reductions in fecundity)
+#' A dynamic schistosomiasis model with SEI snail infection dynamics, separate
+#' compartments for the mean worm burden in treated and untreated segments of the
+#' human population, negative (crowding induced reductions in fecundity)
 #' and positive (mating limitation) density dependencies and functionality
 #' to simulate mass drug administration, snail control, and other interventions.
 #' Note this is a function that is wrapped into `sim_schisto_base_mod`` which
@@ -15,7 +66,20 @@
 #' @export
 
 schisto_base_mod <- function(t, n, parameters) {
-  with(as.list(parameters),{
+
+  f_N <- parameters["f_N"]
+  C <- parameters["C"]
+  mu_N <- parameters["mu_N"]
+  sigma <- parameters["sigma"]
+  mu_I <- parameters["mu_I"]
+  mu_W <- parameters["mu_W"]
+  H <- parameters["H"]
+  mu_H <- parameters["mu_H"]
+  lambda <- parameters["lambda"]
+  beta <- parameters["beta"]
+  cvrg <- parameters["cvrg"]
+  gamma <- parameters["gamma"]
+  xi <- parameters["xi"]
 
     S=n[1]
     E=n[2]
@@ -43,13 +107,12 @@ schisto_base_mod <- function(t, n, parameters) {
     dIdt= sigma*E - (mu_N+mu_I)*I #Infected snails
 
     #worm burden in human
-    dWtdt= (lambda*I*R_Wv(Wt, v)) - ((mu_W+mu_H)*Wt)
-    dWudt= (lambda*I*R_Wv(Wu, v)) - ((mu_W+mu_H)*Wu)
+    dWtdt= (lambda*I*R_Wv(Wt, xi)) - ((mu_W+mu_H)*Wt)
+    dWudt= (lambda*I*R_Wv(Wu, xi)) - ((mu_W+mu_H)*Wu)
 
 
 
     return(list(c(dSdt,dEdt,dIdt,dWtdt,dWudt)))
-  })
 }
 
 #' Age-stratified schistosomiasis model
@@ -95,10 +158,10 @@ schisto_age_strat_mod <- function(t, n, parameters) {
 
 
     #Update clumping parameter, k from estimate of eggs burden per 10mL estimate
-      k_t_SAC = k_from_log_w(Wt_SAC)
-      k_u_SAC = k_from_log_w(Wu_SAC)
-      k_t_adult = k_from_log_w(Wt_adult)
-      k_u_adult = k_from_log_w(Wu_adult)
+      k_t_SAC = k_from_log_W(Wt_SAC)
+      k_u_SAC = k_from_log_W(Wu_SAC)
+      k_t_adult = k_from_log_W(Wt_adult)
+      k_u_adult = k_from_log_W(Wu_adult)
 
     #Estimate mating probability within each strata
       phi_Wt_SAC = phi_Wk(W = Wt_SAC, k = k_t_SAC)  #Mating probability in treated SAC population
@@ -121,34 +184,34 @@ schisto_age_strat_mod <- function(t, n, parameters) {
 
     #Estimate miracidia produced by each strata as product of
     # mean eggs per 10 mL urine for individuals in each strata,
-    # mean mL urine produced by an average individual in each group/10,
     # number of people in each strata,
+    # egg viability
+    # mean mL urine produced by an average individual in each group/10,
     # contamination coefficient for SAC/adults,
-    # and egg viability
 
-      M_Wt_SAC = eggs_Wt_SAC * ((H*prop_SAC)*cvrg_SAC) * p * u_SAC * rho_SAC
+      M_Wt_SAC = eggs_Wt_SAC * ((H*prop_SAC)*cvrg_SAC) * v * u_SAC * rho_SAC
 
-      M_Wu_SAC = eggs_Wu_SAC * ((H*prop_SAC)*(1-cvrg_SAC)) * p * u_SAC * rho_SAC
+      M_Wu_SAC = eggs_Wu_SAC * ((H*prop_SAC)*(1-cvrg_SAC)) * v * u_SAC * rho_SAC
 
-      M_Wt_adult = eggs_Wt_adult * ((H*prop_adult)*cvrg_adult) * p * u_adult * rho_adult
+      M_Wt_adult = eggs_Wt_adult * ((H*prop_adult)*cvrg_adult) * v * u_adult * rho_adult
 
-      M_Wu_adult = eggs_Wu_adult * ((H*prop_adult)*(1-cvrg_adult)) * p * u_adult * rho_adult
+      M_Wu_adult = eggs_Wu_adult * ((H*prop_adult)*(1-cvrg_adult)) * v * u_adult * rho_adult
 
     # Estimate total miracidia entering snail habitat
       M_tot = M_Wt_SAC + M_Wu_SAC + M_Wt_adult + M_Wu_adult
 
     # Snail infection dynamics
-      dSdt= f_N*(1-(N/C))*(S+E) - mu_N*S - beta*(1-exp(-M/N))*S #Susceptible snails
+      dSdt= f_N*(1-(N/C))*(S+E) - mu_N*S - beta*(1-exp(-M_tot/N))*S #Susceptible snails
 
-      dEdt= beta*(1-exp(-M/N))*S - (mu_N+sigma)*E #Exposed snails
+      dEdt= beta*(1-exp(-M_tot/N))*S - (mu_N+sigma)*E #Exposed snails
 
       dIdt= sigma*E - (mu_N+mu_I)*I #Infected snails
 
     #worm burden in human populations
-      dWt_SACdt= (omega_SAC*lambda*I*R_Wv(Wt_SAC, v)) - (mu_W*Wt_SAC)
-      dWu_SACdt= (omega_SAC*lambda*I*R_Wv(Wu_SAC, v)) - (mu_W*Wu_SAC)
-      dWt_adultdt= (omega_adult*lambda*I*R_Wv(Wt_adult, v)) - (mu_W*Wt_adult)
-      dWu_adultdt= (omega_adult*lambda*I*R_Wv(Wu_adult, v)) - (mu_W*Wu_adult)
+      dWt_SACdt= (omega_SAC*lambda*I*R_Wv(Wt_SAC, xi)) - (mu_W*Wt_SAC)
+      dWu_SACdt= (omega_SAC*lambda*I*R_Wv(Wu_SAC, xi)) - (mu_W*Wu_SAC)
+      dWt_adultdt= (omega_adult*lambda*I*R_Wv(Wt_adult, xi)) - (mu_W*Wt_adult)
+      dWu_adultdt= (omega_adult*lambda*I*R_Wv(Wu_adult, xi)) - (mu_W*Wu_adult)
 
     return(list(c(dSdt,dEdt,dIdt,
                   dWt_SACdt,dWu_SACdt,
@@ -217,8 +280,8 @@ schisto_stoch_mod <- function(x, p, t){
            p$mu_N * E,       #Exposed snail dies
            p$sigma * E,      #Exposed snail becomes infected
            (p$mu_N + p$mu_I) * I,   #Infected snail dies
-           p$lambda * I * R_Wv(Wt, p$v), #infected snail produces adult worm in treated population
-           p$lambda * I * R_Wv(Wu, p$v), #infected snail produces adult worm in untreated population
+           p$lambda * I * R_Wv(Wt, p$xi), #infected snail produces adult worm in treated population
+           p$lambda * I * R_Wv(Wu, p$xi), #infected snail produces adult worm in untreated population
            (p$mu_W + p$mu_H) * Wt,    #Adult worm in treated population dies
            (p$mu_W + p$mu_H) * Wu))    #Adult worm in untreated population dies
 

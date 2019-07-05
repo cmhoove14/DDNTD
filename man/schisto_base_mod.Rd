@@ -17,7 +17,9 @@ schisto_base_mod(t, n, parameters)
 A matrix of the state variables at all requested time points
 }
 \description{
-A dynamic schistosomiasis model with negative (crowding induced reductions in fecundity)
+A dynamic schistosomiasis model with SEI snail infection dynamics, separate
+compartments for the mean worm burden in treated and untreated segments of the
+human population, negative (crowding induced reductions in fecundity)
 and positive (mating limitation) density dependencies and functionality
 to simulate mass drug administration, snail control, and other interventions.
 Note this is a function that is wrapped into `sim_schisto_base_mod`` which

@@ -3,108 +3,15 @@ Model Simulations
 Chris Hoover
 June 21, 2019
 
-Initial Simulations and Checks
-==============================
+Background and questions
+========================
 
-Test dynamic simulation through time
-------------------------------------
-
-``` r
-#Base time and starting values for state variables
-base_start <- c(S=5000, E=0, I=0, Wt=10, Wu=10)
-years <- 20
-base_time <- c(0:(365*years))
-
-#Run to equibrium with base parameter set
-base_eqbm <- runsteady(y = base_start, func = DDNTD::schisto_base_mod,
-                       parms = DDNTD::base_pars)[["y"]]
-
-#simulate annual MDA 
-eff = 0.93 #93% efficacy
-base_pars["cvrg"] <- 0.8
-
-mda.events = data.frame(var = rep('Wt', years/2),
-                        time = c(1:(years/2))*365,
-                        value = rep((1 - eff), years/2),
-                        method = rep('mult', years/2))
-
-schisto_base_sim <- sim_schisto_mod(nstart = base_eqbm, 
-                                    time = base_time, 
-                                    model = schisto_base_mod,
-                                    parameters = base_pars,
-                                    events_df = mda.events)
-```
-
-    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
-    ## the first element will be used
+Worm aggregation and mating probability
+---------------------------------------
 
 ``` r
-schisto_base_sim %>% 
-  gather("Snail_Infection", "Density", S:I) %>% 
-    ggplot(aes(x = time, y = Density, col = Snail_Infection)) +
-      geom_line(size = 1.2) +
-      scale_color_manual(values = c("S" = "green",
-                                    "E" = "orange",
-                                    "I" = "red")) +
-      theme_classic() +
-      ggtitle("Snail infection dynamics", 
-              subtitle = paste0("Anual MDA for ", years/2, " years"))
-```
-
-![](Model_Sims_files/figure-markdown_github/sim_dynamics-1.png)
-
-``` r
-schisto_base_sim %>% 
-  mutate(W = Wt*base_pars["cvrg"] + Wu*(1-base_pars["cvrg"])) %>% 
-  gather("Treatment_Group", "Worm_Burden", Wt:W) %>% 
-    ggplot(aes(x = time, y = Worm_Burden, lty = Treatment_Group)) +
-      geom_line(size = 1.2, col = "purple") +
-      scale_linetype_manual(values = c("W" = 1,
-                                       "Wt" = 2,
-                                       "Wu" = 3)) +
-      scale_x_continuous(breaks = c(0:years)*365,
-                         labels = c(0:years)) +
-      theme_classic() +
-      ggtitle("Human infection dynamics", 
-              subtitle = paste0("Anual MDA for ", years/2, " years"))
-```
-
-![](Model_Sims_files/figure-markdown_github/sim_dynamics-2.png)
-
-Simulate stochastic model
--------------------------
-
-``` r
-set.seed(10)
-schisto_stoch_sim <- sim_schisto_stoch_mod(nstart = round(base_eqbm),
-                                           params = as.list(base_pars),
-                                           tf = max(base_time),
-                                           events_df = mda.events) %>% 
-  mutate(W = Wt*base_pars["cvrg"] + Wu*(1-base_pars["cvrg"]))
-```
-
-    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
-    ## the first element will be used
-
-``` r
-schisto_stoch_sim %>% 
-  gather("Treatment_Group", "Worm_Burden", Wt:W) %>% 
-  ggplot(aes(x = time, y = Worm_Burden, lty = Treatment_Group)) +
-    geom_line(size = 1.1, col = "purple") +
-    scale_x_continuous(breaks = c(0:years)*365,
-                       labels = c(0:years)) +
-    theme_classic() +
-    labs(x = "time (years)",
-         y = expression(mean~worm~burden~(italic(W))),
-         title = "Human infection dynamics from stochastic model", 
-         subtitle = paste0("Anual MDA for ", years/2, " years"))
-```
-
-![](Model_Sims_files/figure-markdown_github/stoch_mod_sim-1.png)
-
-``` r
-test_ws <- seq(1e-2, sqrt(max(schisto_base_sim$Wu*2)), 
-               by = sqrt(max(schisto_base_sim$Wu*2))/1000)^2
+test_ws <- seq(1e-2, sqrt(100), 
+               by = sqrt(100*2)/1000)^2
 
 phi_k0.1 <- sapply(test_ws, phi_Wk, k = 0.1)
 phi_k1 <- sapply(test_ws, phi_Wk, k = 1)
@@ -137,9 +44,9 @@ as.data.frame(cbind(test_ws,
          subtitle = "Influence of various formulations of clumping parameter") #+ theme(legend.position = "none")
 ```
 
-    ## Warning: Removed 36 rows containing missing values (geom_path).
+![](Model_Sims_files/figure-markdown_github/mate_prob_across_W-1.png)
 
-![Influence of the clumping parameter on the mating probability of adult female worms, the source of positive density dependence. When the clumping parameter is allowed to vary dynamically as a function of W, it can be seen that the mating probability remains higher into lower worm burdens, which will decrease the breakpoint population size and therefore make elimination with MDA more difficult](Model_Sims_files/figure-markdown_github/mate_prob_across_W-1.png)
+Influence of the clumping parameter on the mating probability of adult female worms, the source of positive density dependence. When the clumping parameter is allowed to vary dynamically as a function of W, it can be seen that the mating probability remains higher into lower worm burdens, which will decrease the breakpoint population size and therefore make elimination with MDA more difficult
 
 ``` r
 set.seed(10)
@@ -179,7 +86,102 @@ w_k_dist %>% ggplot(aes(x = w)) +
        subtitle = expression(Across~values~of~mean~worm~burden~(W)~and~clumping~parameter~(kappa)))
 ```
 
-![Influence of the clumping parameter on the distribution of individual worm burdens across different values of the mean worm burden. At low mean worm burdens (e.g. W=1, left panel), lower values of kappa implying more dispersed individual worm burdens are favorable for transmission as more individuals are likely to have &gt;= 2 adult worms](Model_Sims_files/figure-markdown_github/worm_dist-1.png)
+![](Model_Sims_files/figure-markdown_github/worm_dist-1.png)
+
+Influence of the clumping parameter on the distribution of individual worm burdens across different values of the mean worm burden. At low mean worm burdens (e.g. W=1, left panel), lower values of kappa implying more dispersed individual worm burdens are favorable for transmission as more individuals are likely to have &gt;= 2 adult worms
+
+Initial Simulations and Checks
+==============================
+
+Test dynamic model through time
+-------------------------------
+
+``` r
+#Base time and starting values for state variables
+base_start <- c(S=5000, E=0, I=0, Wt=10, Wu=10)
+years <- 20
+base_time <- c(0:(365*years))
+
+#Run to equibrium with base parameter set
+base_eqbm <- runsteady(y = base_start, func = DDNTD::schisto_base_mod,
+                       parms = DDNTD::base_pars)[["y"]]
+
+#simulate annual MDA 
+eff = 0.93 #93% efficacy
+base_pars["cvrg"] <- 0.8
+
+mda.events = data.frame(var = rep('Wt', years/2),
+                        time = c(1:(years/2))*365,
+                        value = rep((1 - eff), years/2),
+                        method = rep('mult', years/2))
+
+schisto_base_sim <- sim_schisto_mod(nstart = base_eqbm, 
+                                    time = base_time, 
+                                    model = schisto_base_mod,
+                                    parameters = base_pars,
+                                    events_df = mda.events)
+
+schisto_base_sim %>% 
+  gather("Snail_Infection", "Density", S:I) %>% 
+    ggplot(aes(x = time, y = Density, col = Snail_Infection)) +
+      geom_line(size = 1.2) +
+      scale_color_manual(values = c("S" = "green",
+                                    "E" = "orange",
+                                    "I" = "red")) +
+      theme_classic() +
+      ggtitle("Snail infection dynamics", 
+              subtitle = paste0("Anual MDA for ", years/2, " years"))
+```
+
+![](Model_Sims_files/figure-markdown_github/sim_dynamics-1.png)
+
+``` r
+schisto_base_sim %>% 
+  mutate(W = Wt*base_pars["cvrg"] + Wu*(1-base_pars["cvrg"])) %>% 
+  gather("Treatment_Group", "Worm_Burden", Wt:W) %>% 
+    ggplot(aes(x = time, y = Worm_Burden, lty = Treatment_Group)) +
+    annotate("rect", xmin = 365, xmax = max(mda.events$time), ymin = -Inf, ymax = Inf,
+             alpha = .2) +
+      geom_line(size = 1.2, col = "purple") +
+      scale_linetype_manual(values = c("W" = 1,
+                                       "Wt" = 2,
+                                       "Wu" = 3)) +
+      scale_x_continuous(breaks = c(0:years)*365,
+                         labels = c(-1:(years-1))) +
+      theme_classic() +
+      ggtitle("Human infection dynamics", 
+              subtitle = paste0("Anual MDA for ", years/2, " years"))
+```
+
+![](Model_Sims_files/figure-markdown_github/sim_dynamics-2.png)
+
+Test stochastic model through time
+----------------------------------
+
+``` r
+set.seed(10)
+schisto_stoch_sim <- sim_schisto_stoch_mod(nstart = round(base_eqbm),
+                                           params = as.list(base_pars),
+                                           tf = max(base_time),
+                                           events_df = mda.events) %>% 
+  mutate(W = Wt*base_pars["cvrg"] + Wu*(1-base_pars["cvrg"]))
+
+schisto_stoch_sim %>% 
+  gather("Treatment_Group", "Worm_Burden", Wt:W) %>% 
+  ggplot(aes(x = time, y = Worm_Burden, lty = Treatment_Group)) +
+    annotate("rect", xmin = 365, xmax = max(mda.events$time), ymin = -Inf, ymax = Inf,
+             alpha = .2) +
+    geom_line(size = 1.1, col = "purple") +
+    scale_x_continuous(breaks = c(0:years)*365,
+                       labels = c(-1:(years-1))) +
+    theme_classic() +
+    labs(x = "time (years)",
+         y = expression(mean~worm~burden~(italic(W))),
+         title = "Human infection dynamics from stochastic model", 
+         subtitle = paste0("Anual MDA for ", years/2, " years"))
+```
+
+![](Model_Sims_files/figure-markdown_github/stoch_mod_sim-1.png)
 
 Generate *R*<sub>*e**f**f*</sub> curve
 --------------------------------------
@@ -231,9 +233,9 @@ Reffs %>%
        color = "Clumping\nParameter") #+ theme(legend.position = "none")
 ```
 
-    ## Warning: Removed 15 rows containing missing values (geom_path).
+![](Model_Sims_files/figure-markdown_github/Reff_curves-1.png)
 
-![Influence of the clumping parameter on *R*<sub>*e**f**f*</sub> curves. The dynamic clumping parameter (green line) makes things much worse, causing both a lower (harder to reach) breakpoint and a higher (more infection) endemic equilibrium)](Model_Sims_files/figure-markdown_github/Reff_curves-1.png)
+Influence of the clumping parameter on *R*<sub>*e**f**f*</sub> curves. The dynamic clumping parameter (green line) makes things much worse, causing both a lower (harder to reach) breakpoint and a higher (more infection) endemic equilibrium)
 
 ### See how *R*<sub>*e**f**f*</sub> changes over course of stochastic simulation
 
@@ -246,14 +248,21 @@ schisto_stoch_sim_reff <- schisto_stoch_sim %>%
 
 schisto_stoch_sim_reff %>% 
   ggplot(aes(x = time, y = Reff)) + 
-    geom_line() + 
+  annotate("rect", xmin = 365, xmax = max(mda.events$time), ymin = -Inf, ymax = Inf,
+           alpha = .2) +
+  geom_line() + 
     theme_classic() +
     labs(x = "time (years)",
          y = expression(R[eff]),
          title = "Effective reproduction number over MDA campaign", 
          subtitle = paste0("Anual MDA for ", years/2, " years")) +
     scale_x_continuous(breaks = c(0:years)*365,
-                       labels = c(0:years))
+                       labels = c(-1:(years-1)))
 ```
 
 ![](Model_Sims_files/figure-markdown_github/stoch_reff_time-1.png)
+
+Clear that at 80% coverage and 93% efficacy, we never get close to the breakpoint with 10 years of annual MDA. This indicated by the rise in *R*<sub>*e**f**f*</sub> with no subsequent decrease (implying traversing the curve down towards the breakpoint). However, this implies that the 20% of the untreated population contributes to transmission just like the 80% that's treated. In reality, MDA is often administered to school-aged children (SAC) while adults are untreated, but SAC also contribute much more to transmission. To exlpore the influence of this, we'll next move to the age-distributed model.
+
+Age structured model
+====================
