@@ -18,6 +18,9 @@ Added explorations of mating probability over different values of the clumping p
 # 7/3/2019  
 Added `Model_animations.Rmd` which uses the model functions to produce simulations and visualizations as animations of worm burdens and $R_{eff}$ estimates through time over the course of different types of intervention efforts. Added a few functions/tweaks to existing functions to enable these sims/viz as well.
 
+# 7/5/2019  
+Worked on revamping and updating simulations with the simple model presented in [Garchitorena et al](http://rstb.royalsocietypublishing.org/content/372/1722/20160128). New document `Garch_Mod.md` reflects these efforts. 
+
 # To-dos  
 ### Derive $R_{eff}$ for age stratified model  
 ### Stochastic age stratified model  

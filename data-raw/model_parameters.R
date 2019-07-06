@@ -53,3 +53,17 @@ age_strat_pars <- c(
 )
 
 usethis::use_data(age_strat_pars, overwrite = TRUE)
+
+
+garch_pars <- c(
+  beta_e = 4.06e-5, #environmental reservoir to human transmission rate
+  beta_d = 0, #human to human transmission rate
+  gamma = 1/(365*3), #rate of recover from infected to susceptible
+  omega = 0, #recruitment of infectious agents not dependent on human infection (exogenous propogules)
+  V = 1, #abundance of vectors/intermediate hosts/suitable environment for transmission
+  lambda = 1, #recruitment rate of infectious agents by infectious individuals
+  sigma = 1, #fraction of infectious agents produced that reach the environment
+  rho = 1/90 #mortality rate of infectious agents in the environment
+)
+
+usethis::use_data(garch_pars, overwrite = TRUE)
