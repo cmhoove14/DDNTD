@@ -1,0 +1,23 @@
+---
+title: "Garchitorena et al model optimize across {$R_0$, P} parameter space"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+devtools::load_all("../../DDNTD")
+
+#Define function for equations in github_documents
+
+latexImg = function(latex){
+
+    link = paste0('http://latex.codecogs.com/gif.latex?',
+           gsub('\\=','%3D',URLencode(latex)))
+
+    link = gsub("(%..)","\\U\\1",link,perl=TRUE)
+    return(paste0('![](',link,')'))
+}
+```
+
+`r latexImg("a=\\frac{b}{c}")`

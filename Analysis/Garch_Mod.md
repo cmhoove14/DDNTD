@@ -12,13 +12,13 @@ Using a simple, generalizable model of NTD transmission presented in [Garchitore
 
 The model consists of two state variables, *I* and *W*, that correspond to the prevalence of infection in the human population (i.e. proportion infected at time=*t*) and the degree of contamination of the environment with the disease-causing agent, respectively. We make the simplifying assumption that individuals can only be susceptible, *S*, or infected, *I*, meaning *S* + *I* = 1 and eliminating the need for a recovered *R* compartment as is typical of SIR models but would complicate things here. The model equations then are:
 
-$$\\frac{dI}{dt}=(\\beta\_EW+\\beta\_DI)(1-I)-\\gamma I $$
+![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdI%7D%7Bdt%7D%3D(%5Cbeta_EW+%5Cbeta_DI)(1-I)-%5Cgamma%20I)
 
-$$\\frac{dW}{dt}=\\Omega+V\\sigma\\lambda I-\\rho W $$
+![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdW%7D%7Bdt%7D%3D%5COmega+V%5Csigma%5Clambda%20I-%5Crho%20W)
 
 For most environmentally mediated infectious diseases, transmission to humans is exclusively from the environment and there is no exogenous production of infectious agents in the environment (i.e. *Ω* = 0 and *β*<sub>*D*</sub> = 0. We can derive *R*<sub>0</sub> for this system quite simply since transmission is only determined by the environmental component:
 
-$$R\_0=\\frac{V\\sigma\\lambda\\beta\_E}{\\gamma\\delta}$$
+![](http://latex.codecogs.com/gif.latex?R_0%3D%5Cfrac%7BV%5Csigma%5Clambda%5Cbeta_E%7D%7B%5Cgamma%5Cdelta%7D)
 
 with parameter definitions and values in table 1, we have *R*<sub>0</sub>≈ 4
 
@@ -117,13 +117,18 @@ Translate the model into a Markov Decision Process (MDP) solvable with stochasti
 Next we want to translate our system of continuous time differential equations into a Markov Decision Process (MDP) consisting of **1)** a Markov chain in which the state of the system at time *t* + 1 is dependent only on the current state of the system (i.e. the state at *t*) and **2)** a decision or control action that is being made at each state transition (i.e. from *t* to *t* + 1). We therefore want a single, discrete time equation that captures about the same dynamics of our simple disease system.
 
 We'll start with the assumption that the dynamics of the infectious agents in the environment are faster than the dynamics of the prevalence in the human population, therefore they reach a steady state equilibrium:
-$$W^\*=\\frac{V\\sigma\\lambda I}{\\rho}$$
- Again, substituting we get:
-$$\\frac{dI}{dt}=\\Big(\\frac{\\beta\_EV\\sigma\\lambda I}{\\rho}\\Big)\\Big(1-I\\Big)-\\gamma I $$
+
+![](http://latex.codecogs.com/gif.latex?W%5E*%3D%5Cfrac%7BV%5Csigma%5Clambda%20I%7D%7B%5Crho%7D)
+
+Again, substituting we get:
+
+![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdI%7D%7Bdt%7D%3D%5CBig(%5Cfrac%7B%5Cbeta_EV%5Csigma%5Clambda%20I%7D%7B%5Crho%7D%5CBig)%5CBig(1-I%5CBig)-%5Cgamma%20I)
 
 which can be translated to a discrete time model as:
-$$I\_{t+1}=I\_t+\\Big(\\frac{\\beta\_EV\\sigma\\lambda I}{\\rho}\\Big)\\Big(1-I\_t\\Big)-\\gamma I\_t $$
- let's check to make sure that the dynamics of the continuous time model hold in this simplified, discrete time version of the model.
+
+![](http://latex.codecogs.com/gif.latex?I_%7Bt+1%7D%3DI_t+%5CBig(%5Cfrac%7B%5Cbeta_EV%5Csigma%5Clambda%20I%7D%7B%5Crho%7D%5CBig)%5CBig(1-I_t%5CBig)-%5Cgamma%20I_t)
+
+let's check to make sure that the dynamics of the continuous time model hold in this simplified, discrete time version of the model.
 
 ``` r
 discrete_sim <- sim_discrete_mod(I_0 = 0.75,
@@ -162,16 +167,22 @@ Now we'll work through the "Six steps of stochastic dynamic programming" as desc
 
 4.  **Build a transition model describing the system's dynamics as a function of the decision variable and the system state in the prior time step**
     Beginning with the discrete time model above, we have:
-    $$I\_{t+1}=I\_t+\\Big(\\frac{\\beta\_EV\\sigma\\lambda I}{\\rho}\\Big)\\Big(1-I\_t\\Big)-\\gamma I\_t $$
-     Incorporating interventions based on our decision variable, *A*<sub>*t*</sub> gives us:
-    $$I\_{t+1}=I\_t+\\Big(\\frac{\\beta\_EV\\sigma\\lambda IM(1-A\_t)\\mu}{\\rho}\\Big)\\Big(1-I\_t\\Big)-I\_t(\\gamma+MA\_t\\theta) $$
-     Where *θ* is a constant that converts capital, *M*, to units of prevalence and *μ* is a constant that converts *M* to the same units as the parameter being intervened on with possibilities being *β*<sub>*E*</sub>, *V*, *σ*.
 
-5.  **Define the utility function *U*<sub>*t*</sub>(*X*<sub>*t*</sub>, *A*<sub>*t*</sub>) representing the desirability of acting in a given state**
-    $$\\max\_{A}C=\\max\_{A}\\sum\_0^T\\frac{{-\\Pi(I\_t)}}{\\delta\_t}$$
-     where *Π*(*I*<sub>*t*</sub>)=*d**I*<sub>*t*</sub> + *M*, *d* is the cost associated with having prevalence of *I*<sub>*t*</sub> and *M* is the capital spent on intervention. We assume capital spent each year is the same and therefore only consider the cost of infection, *d**I*<sub>*t*</sub>. We're also maximizing the negative costs, aka minimizing the costs here.
+![](http://latex.codecogs.com/gif.latex?I_%7Bt+1%7D%3DI_t+%5CBig(%5Cfrac%7B%5Cbeta_EV%5Csigma%5Clambda%20I%7D%7B%5Crho%7D%5CBig)%5CBig(1-I_t%5CBig)-%5Cgamma%20I_t)
 
-6.  **Determine the optimal solution of the optimization problem**
+Incorporating interventions based on our decision variable, *A*<sub>*t*</sub> gives us:
+
+![](http://latex.codecogs.com/gif.latex?I_%7Bt+1%7D%3DI_t+%5CBig(%5Cfrac%7B%5Cbeta_EV%5Csigma%5Clambda%20IM(1-A_t)%5Cmu%7D%7B%5Crho%7D%5CBig)%5CBig(1-I_t%5CBig)-I_t(%5Cgamma+MA_t%5Ctheta))
+
+Where *θ* is a constant that converts capital, *M*, to units of prevalence and *μ* is a constant that converts *M* to the same units as the parameter being intervened on with possibilities being *β*<sub>*E*</sub>, *V*, *σ*.
+
+1.  **Define the utility function *U*<sub>*t*</sub>(*X*<sub>*t*</sub>, *A*<sub>*t*</sub>) representing the desirability of acting in a given state**
+
+![](http://latex.codecogs.com/gif.latex?%5Cmax_%7BA%7DC%3D%5Cmax_%7BA%7D%5Csum_0%5ET%5Cfrac%7B%7B-%5CPi(I_t)%7D%7D%7B%5Cdelta_t%7D)
+
+where *Π*(*I*<sub>*t*</sub>)=*d**I*<sub>*t*</sub> + *M*, *d* is the cost associated with having prevalence of *I*<sub>*t*</sub> and *M* is the capital spent on intervention. We assume capital spent each year is the same and therefore only consider the cost of infection, *d**I*<sub>*t*</sub>. We're also maximizing the negative costs, aka minimizing the costs here.
+
+1.  **Determine the optimal solution of the optimization problem**
     Step 6 is Part 3 below
 
 Find the optimal solution using SDP in the `MDPtoolbox` R package
@@ -185,7 +196,7 @@ states <- seq(0.01, 1, 0.01)
 
 #Vector of possible actions, A_t, ranging from total investment in drugs (M=1) 
 #  to total investment in environmental intervention (M=0)  
-A <- seq(0, 1, 0.01)
+decisions <- seq(0, 1, 0.01)
 
 #Intervention costs, available capital, and conversion parameters
 H <- 1000      # number of people
@@ -208,10 +219,10 @@ mdp_pars <- c(garch_pars,
               "delta" = 0.9)  #Arbitrary discounting rate  
 
 #Initialize transition matrix across I states and A actions
-transition <- array(0, dim = c(length(states), length(states), length(A)))
+transition <- array(0, dim = c(length(states), length(states), length(decisions)))
 
 # Initialize utility matrix
-utility <- array(0, dim = c(length(states), length(A)))
+utility <- array(0, dim = c(length(states), length(decisions)))
 ```
 
 ``` r
@@ -220,10 +231,10 @@ utility <- array(0, dim = c(length(states), length(A)))
 for (i in 1:length(states)) {
 
     # Loop on all actions
-    for (a in 1:length(A)) {
+    for (a in 1:length(decisions)) {
 
 # Calculate the transition state at the next step, given the current state i and the intervention, a
-        nextpop <- round(sim_int_choice(A_t = A[a], 
+        nextpop <- round(sim_int_choice(A_t = decisions[a], 
                                         I_0 = states[i],
                                         int_par = "V",
                                         time = 365,
@@ -235,7 +246,7 @@ for (i in 1:length(states)) {
 
 # Compute utility as exponentially increasing function of prevalence
     # Implying higher prevalence values are increasingly worse
-        utility[i,a] <- -mdp_pars["d"]*nextpop^2
+        utility[i,a] <- -1*(mdp_pars["d"]*nextpop)^1.5
 
     } # end of action loop
 } # end of state loop
@@ -256,12 +267,12 @@ We then use the `MDPtoolbox::mdp_finite_horizon` function to identify the optima
 #optimize over 10 years
 t_opt <- 10
 
-#Get optimal intervention strategies
+#Get optimal intervention strategy given t_opt
 opt1 <- mdp_finite_horizon(transition, utility, 
                            mdp_pars["delta"], t_opt)
 
 #Implement example optimal intervention
-opt_p50 <- sim_opt_choice(A_vec = A,
+opt_p50 <- sim_opt_choice(A_vec = decisions,
                           opt_list = opt1,
                           states = states,
                           p_start = 100,
@@ -276,4 +287,24 @@ opt_p50 %>%
     ylim(c(0,1))
 ```
 
-![](Garch_Mod_files/figure-markdown_github/get_opt-1.png)
+![](Garch_Mod_files/figure-markdown_github/get_opt_finite-1.png)
+
+``` r
+#Get optimal intervention strategy using value iteration
+opt2 <- mdp_value_iteration(transition, utility, 
+                            discount = mdp_pars["delta"], epsilon = 0.001)
+```
+
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+
+``` r
+opt2["policy"]
+```
+
+    ## $policy
+    ##   [1]  94  80  94 100  93  98 100  96  99 101  98  99 101  98  99 101  99
+    ##  [18] 100 100 101 100 100 101 100 100 101 101 100 101 101 100 100 101 101
+    ##  [35] 100 101 101 100 101 101 101 100 101 101 101 100 101 101 101 101 101
+    ##  [52] 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101
+    ##  [69] 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101
+    ##  [86] 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101
