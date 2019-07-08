@@ -3,6 +3,9 @@ Model Animations
 Chris Hoover
 July 3, 2019
 
+Effects of MDA on *R*<sub>*e**f**f*</sub>
+=========================================
+
 Basic schistosomiasis model simulation with MDA administered to treated segment of the population and untreated segment of the population left alone
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -233,211 +236,7 @@ reff_anim
 ``` r
 w_gif <- image_read(animate(w_anim, width = 720, height = 360))
 reff_gif <- image_read(animate(reff_anim, width = 720, height = 360))
-```
 
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-    ## Warning: Removed 2 rows containing missing values (geom_path).
-
-``` r
 comb_gif <- image_append(c(w_gif[1], reff_gif[1]), stack = TRUE)
 
 for(i in 2:100){
@@ -449,6 +248,64 @@ comb_gif
 ```
 
 ![](Model_animations_files/figure-markdown_github/both_through_time-1.gif)
+
+Stochastic schisto model
+------------------------
+
+``` r
+set.seed(10)
+sim_schisto_stoch <- function(sim){
+  sim_schisto_stoch_mod(nstart = round(base_eqbm),
+                                           params = as.list(base_pars_cvrg80),
+                                           tf = max(base_time),
+                                           events_df = mda.events) %>% 
+  mutate(W = Wt*base_pars_cvrg80["cvrg"] + Wu*(1-base_pars_cvrg80["cvrg"]),
+         kap = map_dbl(W, k_from_log_W),
+         Reff = pmap_dbl(list(parameters = list(base_pars_cvrg80),
+                              W = W,
+                              kap = kap), getReff),
+         sim = sim)
+}
+
+schisto_stoch_sims <- bind_rows(map_df(c(1:10), sim_schisto_stoch)) %>% 
+  mutate(W = if_else(is.nan(Reff), 0.005, W),
+         Reff = if_else(is.nan(Reff), 
+                        getReff(base_pars_cvrg80, 0.005, k_from_log_W(0.005)), 
+                        Reff))
+
+schisto_stoch_sims_plot <- schisto_stoch_sims %>% 
+  ggplot(aes(x = time, y = W, col = as.factor(sim))) +
+    annotate("rect", xmin = 365, xmax = max(mda.events$time), ymin = -Inf, ymax = Inf,
+             alpha = .2) +
+    geom_line(size = 1.1) +
+    scale_x_continuous(breaks = c(0:years)*365,
+                       labels = c(-1:(years-1))) +
+    theme_classic() +
+    theme(legend.position = "none") +
+    labs(x = "time (years)",
+         y = expression(mean~worm~burden~(italic(W))),
+         title = "Human infection dynamics from stochastic model", 
+         subtitle = paste0("Anual MDA for ", years/2, " years at ", base_pars_cvrg80["cvrg"]*100, " % coverage"))
+
+schisto_stoch_sims_plot +
+  transition_reveal(time)
+```
+
+![](Model_animations_files/figure-markdown_github/stoch_schisto-1.gif)
+
+``` r
+base_reff +
+  geom_point(data = schisto_stoch_sims, aes(x = W, y = Reff, col = as.factor(sim)),
+             size = 4) +
+  theme(legend.position = "none") +
+  transition_time(time) +
+  labs(title = "Effective reproduction number year {round(frame_time/365,2)}")
+```
+
+![](Model_animations_files/figure-markdown_github/reff_stoch-1.gif)
+
+Effects of snail habitat reduction on *R*<sub>*e**f**f*</sub>
+=============================================================
 
 Now look into interventions other than MDA that "push the curve down" rather than acting on the state variable *W*
 ------------------------------------------------------------------------------------------------------------------
@@ -578,8 +435,7 @@ schisto_C_force_sim <- sim_schisto_mod(nstart = base_eqbm,
                                        parameters = base_pars,
                                        events_df = NA) %>% 
   mutate(W = Wt*base_pars["cvrg"] + Wu*(1-base_pars["cvrg"]),
-         kap = map_dbl(W, k_from_log_W),
-         C = map_dbl(time, C_force_fx))
+         kap = map_dbl(W, k_from_log_W))
 
 schisto_C_force_sim_Reffs <- numeric()
 
@@ -640,211 +496,7 @@ reff_anim_C_force
 ``` r
 schisto_C_force_gif <- image_read(animate(schisto_C_force_anim, width = 720, height = 360))
 reff_C_force_gif <- image_read(animate(reff_anim_C_force, width = 720, height = 360))
-```
 
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-    ## Warning: Removed 12 rows containing missing values (geom_path).
-
-``` r
 comb_C_force_gif <- image_append(c(schisto_C_force_gif[1], reff_C_force_gif[1]), stack = TRUE)
 
 for(i in 2:100){
@@ -856,3 +508,104 @@ comb_C_force_gif
 ```
 
 ![](Model_animations_files/figure-markdown_github/C_force_through_time-1.gif)
+
+Effects of combined interventions on *R*<sub>*e**f**f*</sub>
+============================================================
+
+MDA + Snail habitat control
+---------------------------
+
+``` r
+schisto_cvrg_C_red_fx <- function(pars){
+  schisto_sim <- sim_schisto_mod(nstart = base_eqbm, 
+                                      time = base_time, 
+                                      model = schisto_base_mod_C_force_fx,
+                                      parameters = pars,
+                                      events_df = mda.events) %>% 
+  mutate(W = Wt*pars["cvrg"] + Wu*(1-pars["cvrg"]),
+         kap = map_dbl(W, k_from_log_W))
+  
+  schisto_sim_Reffs <- numeric()
+
+for(i in 1:max(base_time)){
+  schisto_sim_Reffs[i] <- getReff(as.list(C_force_pars[i,]), schisto_sim$W[i], schisto_sim$kap[i])
+}
+
+schisto_sim <- schisto_sim %>% 
+  mutate(Reff = schisto_sim_Reffs,
+         Coverage = pars["cvrg"])
+
+  return(schisto_sim)
+}
+
+schisto_cvrg60_C_red_sim <- schisto_cvrg_C_red_fx(base_pars_cvrg60)
+```
+
+    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
+    ## the first element will be used
+
+``` r
+schisto_cvrg70_C_red_sim <- schisto_cvrg_C_red_fx(base_pars_cvrg70)
+```
+
+    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
+    ## the first element will be used
+
+``` r
+schisto_cvrg80_C_red_sim <- schisto_cvrg_C_red_fx(base_pars_cvrg80)
+```
+
+    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
+    ## the first element will be used
+
+``` r
+schisto_cvrg90_C_red_sim <- schisto_cvrg_C_red_fx(base_pars_cvrg90)
+```
+
+    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
+    ## the first element will be used
+
+``` r
+schisto_cvrg99_C_red_sim <- schisto_cvrg_C_red_fx(base_pars_cvrg99)
+```
+
+    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
+    ## the first element will be used
+
+``` r
+schisto_cvrgs_C_red_df <- rbind(schisto_C_force_sim %>% mutate(Coverage = 0),
+                                schisto_cvrg60_C_red_sim, 
+                                schisto_cvrg70_C_red_sim,
+                                schisto_cvrg80_C_red_sim,
+                                schisto_cvrg90_C_red_sim,
+                                schisto_cvrg99_C_red_sim)
+
+schisto_cvrgs_C_red_plot <- schisto_cvrgs_C_red_df %>% 
+  ggplot(aes(x = time, y = W, col = as.factor(Coverage))) +
+    annotate("rect", xmin = 365, xmax = max(mda.events$time), ymin = -Inf, ymax = Inf,
+             alpha = .2) +
+      geom_line(size = 1.2) +
+      scale_x_continuous(breaks = c(0:years)*365,
+                         labels = c(-1:(years-1))) +
+      theme_classic() +
+      labs(title = "Human infection dynamics", 
+           subtitle = paste0("Anual MDA for ", years/2, " years at variable coverage AND annual snail habitat reduction"),
+           x = "Time (years)",
+           color = "Coverage")
+
+schisto_cvrgs_C_red_plot
+```
+
+![](Model_animations_files/figure-markdown_github/combined_int-1.png)
+
+``` r
+reff_MDA_C_red_anim <- base_reff +
+  geom_point(data = schisto_cvrgs_C_red_df, aes(x = W, y = Reff, col = as.factor(Coverage)),
+             size = 4) +
+  theme(legend.position = "none") +
+  transition_time(time)
+
+reff_MDA_C_red_anim
+```
+
+![](Model_animations_files/figure-markdown_github/reff_through_time_C_red_anim-1.gif)

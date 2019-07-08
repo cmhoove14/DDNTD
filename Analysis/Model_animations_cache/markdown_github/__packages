@@ -14,3 +14,7 @@ forcats
 gganimate
 magick
 DDNTD
+Matrix
+lpSolve
+linprog
+MDPtoolbox

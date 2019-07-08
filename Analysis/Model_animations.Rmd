@@ -144,7 +144,7 @@ schisto_cvrgs_plot
 ```
 
 ## Animate worm burden simulations through time at different coverages  
-```{r w_through_time}
+```{r w_through_time, warning=FALSE}
 w_anim <- schisto_cvrgs_plot +
   transition_reveal(time)
 
@@ -193,7 +193,7 @@ reff_anim
 ```
 
 ### Combine two animations in single image  
-```{r both_through_time}
+```{r both_through_time, warning=FALSE}
 w_gif <- image_read(animate(w_anim, width = 720, height = 360))
 reff_gif <- image_read(animate(reff_anim, width = 720, height = 360))
 
@@ -208,7 +208,7 @@ comb_gif
 ```
 
 ## Stochastic schisto model  
-```{r stoch_schisto, cache = TRUE}
+```{r stoch_schisto, cache = TRUE, warning=FALSE}
 set.seed(10)
 sim_schisto_stoch <- function(sim){
   sim_schisto_stoch_mod(nstart = round(base_eqbm),
@@ -224,10 +224,10 @@ sim_schisto_stoch <- function(sim){
 }
 
 schisto_stoch_sims <- bind_rows(map_df(c(1:10), sim_schisto_stoch)) %>% 
-  mutate(Reff = if_else(is.nan(Reff), 
+  mutate(W = if_else(is.nan(Reff), 0.005, W),
+         Reff = if_else(is.nan(Reff), 
                         getReff(base_pars_cvrg80, 0.005, k_from_log_W(0.005)), 
-                        Reff),
-         W = if_else(is.nan(Reff), 0.005, W))
+                        Reff))
 
 schisto_stoch_sims_plot <- schisto_stoch_sims %>% 
   ggplot(aes(x = time, y = W, col = as.factor(sim))) +
@@ -247,7 +247,7 @@ schisto_stoch_sims_plot +
   transition_reveal(time)
 ```
 
-```{r reff_stoch, message = FALSE}
+```{r reff_stoch, message = FALSE, warning=FALSE}
 base_reff +
   geom_point(data = schisto_stoch_sims, aes(x = W, y = Reff, col = as.factor(sim)),
              size = 4) +
@@ -414,7 +414,7 @@ schisto_C_force_sim_plot
 ```
 
 ### Animate worm burden simulations through time with snail habitat reduction intervention  
-```{r C_force_anim}
+```{r C_force_anim, warning=FALSE}
 schisto_C_force_anim <- schisto_C_force_sim_plot +
   transition_reveal(time)
 
@@ -432,7 +432,7 @@ reff_anim_C_force
 ```
 
 ### Combine two animations in single image  
-```{r C_force_through_time}
+```{r C_force_through_time, warning=FALSE}
 schisto_C_force_gif <- image_read(animate(schisto_C_force_anim, width = 720, height = 360))
 reff_C_force_gif <- image_read(animate(reff_anim_C_force, width = 720, height = 360))
 
@@ -501,7 +501,7 @@ schisto_cvrgs_C_red_plot <- schisto_cvrgs_C_red_df %>%
 schisto_cvrgs_C_red_plot
 ```
 
-```{r reff_through_time, warning=FALSE}
+```{r reff_through_time_C_red_anim, warning=FALSE}
 reff_MDA_C_red_anim <- base_reff +
   geom_point(data = schisto_cvrgs_C_red_df, aes(x = W, y = Reff, col = as.factor(Coverage)),
              size = 4) +

@@ -194,9 +194,9 @@ where $\Pi(I_t)=dI_t+M$, $d$ is the cost associated with having prevalence of $I
 6. **Determine the optimal solution of the optimization problem**  
 Step 6 is Part 3 below
 
-## Part 3: Find the optimal solution using SDP in the `MDPtoolbox` R package  
+## Find the optimal solution using SDP in the `MDPtoolbox` R package  
 
-Let's translate the problem outlined above into code, borrowing from the wolf culling example in [Marescot et al.](https://doi.org/10.1111/2041-210X.12082) We also want to define some new parameters that control how the interventions act in the model. For MDA, we'll assume that if all capital is devoted to MDA, we get an instantaneous 75% reduction in prevalence (pretty ambitious, but in the realm of possibility). For the environmental intervention, we'll parameterize the effect based on the conversion parameter, $\mu$, depending on the parameter we choose to target ($\beta_E$, $V$, $\sigma$), therefore we actually have three different parameters, $\mu_{\beta_E}$, $\mu_V$, $\mu_\sigma$. 
+Let's translate the problem outlined above into code and also define some new parameters that control how the interventions act in the model. For the environmental intervention, we'll parameterize the effect based on the conversion parameter, $\mu$, depending on the parameter we choose to target ($\beta_E$, $V$, $\sigma$), therefore we actually have three different parameters, $\mu_{\beta_E}$, $\mu_V$, $\mu_\sigma$. These parameters simply convert capital allocated towards the intervention into the same units as the parameter in the model on which the intervention acts (i.e. converts capital to units of snail mortality or snail carrying capacity). We'll also need a paramter that does this for the MDA intervention, we'll assign $\theta$ for this purpose.
 
 ```{r opt_setup}
 #Vector of all possible states, i.e. prevalence ranging from 0 to 1  
@@ -265,7 +265,7 @@ mdp_check(transition, utility)
 
 ```
 
-Now we have the transition and utility matrices. The transition matrix indicates for a given starting prevalence, $I_t$, and action $A_t$, the probability of the state at $I_{t+1}$. Since this model is deterministic, the transition matrix contains a whole bunch of 0s and some 1s that indicate the value $I_{t+1}|I_t,A_t$. Future models will incorporate stochasticity in transmission to spread the probability around. The utility matrix simply represents the utility of each action, $A_t$ applied to each starting prevalence, $I_t$.
+Now we have the transition and utility matrices. The transition matrix indicates for a given starting prevalence, $I_t$, and action $A_t$, the probability of the state at $I_{t+1}$. Since this model is deterministic, the transition matrix contains a whole bunch of 0s and some 1s that indicate the value $I_{t+1}|I_t,A_t$. Future models will incorporate stochasticity in transmission to spread the probability around. The utility matrix simply represents the utility of each action, $A_t$ applied to each prevalence value, $I_t$.
 
 We then use the `MDPtoolbox::mdp_finite_horizon` function to identify the optimal policy for each starting condition. This function returns a list with three elements:  
 * The valuation matrix, **V**, in which rows represent starting states, columns represent the time steps at which actions occur, and cell values indicate the value of the objective function  
