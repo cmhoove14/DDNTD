@@ -271,13 +271,34 @@ We then use the `MDPtoolbox::mdp_finite_horizon` function to identify the optima
 * The valuation matrix, **V**, in which rows represent starting states, columns represent the time steps at which actions occur, and cell values indicate the value of the objective function  
 * The policy matrix, **P**, in which rows again represent starting states, columns again represent the time steps at which actions occur, and cell values indicate the *index* of the decision vector (i.e. if the cell value is 50, the optimal decision variable at time step [column] for starting state [row] is the 50th entry of the decision vector) 
 
-```{r get_opt}
+```{r get_opt_finite}
 #optimize over 10 years
 t_opt <- 10
 
-#Get optimal intervention strategies
+#Get optimal intervention strategy given t_opt
 opt1 <- mdp_finite_horizon(transition, utility, 
                            mdp_pars["delta"], t_opt)
+
+#Implement example optimal intervention
+opt_p50 <- sim_opt_choice(A_vec = A,
+                          opt_list = opt1,
+                          states = states,
+                          p_start = 100,
+                          t_per_step = 365,
+                          int_par = "V",
+                          parameters = mdp_pars)
+
+opt_p50 %>% 
+  ggplot(aes(x = time, y = I)) +
+    geom_line() + 
+    theme_classic() +
+    ylim(c(0,1))
+```
+
+```{r get_opt_value_iteration}
+#Get optimal intervention strategy using value iteration
+opt2 <- mdp_relative_value_iteration(transition, utility, 
+                                     epsilon = 0.001)
 
 #Implement example optimal intervention
 opt_p50 <- sim_opt_choice(A_vec = A,

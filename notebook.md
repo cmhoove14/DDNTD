@@ -21,6 +21,9 @@ Added `Model_animations.Rmd` which uses the model functions to produce simulatio
 # 7/5/2019  
 Worked on revamping and updating simulations with the simple model presented in [Garchitorena et al](http://rstb.royalsocietypublishing.org/content/372/1722/20160128). New document `Garch_Mod.md` reflects these efforts. 
 
+# 7/8/2019  
+Worked on presentation for NIMBioS July 2019 talk. Realized that discrete time model isn't necessary to build transition and utility matrices for MDPtoolbox and extracting relevant values of $I_t$ and $W_t$ in the Garchitorena et al model at relevant time steps to construct these matrices actually gives way more flexibility in terms of implementing interventions
+
 # To-dos  
 ### Derive $R_{eff}$ for age stratified model  
 ### Stochastic age stratified model  
