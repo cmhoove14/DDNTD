@@ -2,7 +2,7 @@
 title: "Optimal control of neglected tropical diseases using a simple dynamic model"
 author: "Chris Hoover"
 date: "May 18, 2018"
-output: pdf_document 
+output: github_document 
 geometry: margin=0.5in
 ---
 
