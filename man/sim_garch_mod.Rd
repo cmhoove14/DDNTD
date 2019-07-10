@@ -12,7 +12,7 @@ sim_garch_mod(nstart, time, model = garch_mod, parameters,
 
 \item{time}{Numeric vector of times at which state variables should be estimated}
 
-\item{model}{Name of the ode function to use, defaults to `schisto_base_mod`}
+\item{model}{Name of the ode function to use, defaults to `garch_mod`}
 
 \item{parameters}{Named vector or list of parameter values}
 

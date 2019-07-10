@@ -24,6 +24,9 @@ Worked on revamping and updating simulations with the simple model presented in 
 # 7/8/2019  
 Worked on presentation for NIMBioS July 2019 talk. Realized that discrete time model isn't necessary to build transition and utility matrices for MDPtoolbox and extracting relevant values of $I_t$ and $W_t$ in the Garchitorena et al model at relevant time steps to construct these matrices actually gives way more flexibility in terms of implementing interventions
 
+# 7/9/2019  
+Ran simulations using differential equation model to identify optimal treatment allocations over values of $\mathcalP$, $R_0$, $T$, and $M$. Added function to simulate transmission through time with these inputs and return best treatment allocation $A_t$. Added density-dependent version of Garchitorena et al model with human to environment transmission a parabolic function of prevalence in the human population such that it decreases towards 0 at 0 prevalence and at 1 prevalence and peaks at 0.5 prevalence, simulating effects of both positive and negative density dependence
+
 # To-dos  
 ### Derive $R_{eff}$ for age stratified model  
 ### Stochastic age stratified model  

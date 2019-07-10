@@ -22,6 +22,34 @@ garch_mod = function(t, n, p){
   })
 }
 
+#' Garchitorena et al model for environmentally transmitted infectious diseases
+#' augmented with density dependent function
+#'
+#' Deterministic version of the simple, two-differential-equation model
+#' presented in Garchitorena et al 2018 with a function dependent on
+#' prevalence (I) that represents a density dependence in transmission
+#' and gives rise to a transmission breakpoint and endemic equilibrium
+#'
+#' @param t Vector of timepoints to return state variable estiamtes
+#' @param n Vector of state variable initial conditions
+#' @param p Named vector of model parameters
+#'
+#' @return A matrix of the state variables at all requested time points
+#' @export
+#'
+garch_mod_dd = function(t, n, p){
+  with(as.list(p),{
+    I = n[1]
+    W = n[2]
+
+    dIdt = (beta_e*W + beta_d*I)*(1-I) - gamma*I
+    dWdt = omega + V*sigma*lambda*I*(4*I*(1-I)) - rho*W
+
+    return(list(c(dIdt, dWdt)))
+  })
+}
+
+
 #' Simulate the garchitorena model
 #'
 #' Simulate garchitorena deterministic model through time using `ode` function
@@ -29,7 +57,7 @@ garch_mod = function(t, n, p){
 #'
 #' @param nstart Named vector of starting values for state variables
 #' @param time Numeric vector of times at which state variables should be estimated
-#' @param model Name of the ode function to use, defaults to `schisto_base_mod`
+#' @param model Name of the ode function to use, defaults to `garch_mod`
 #' @param parameters Named vector or list of parameter values
 #' @param events_df Data frame of events such as MDA with columns "var", "time", "value", and "method"
 #'
@@ -41,11 +69,11 @@ sim_garch_mod <- function(nstart,
                             model = garch_mod,
                             parameters,
                             events_df = NA){
-  if(is.na(events_df)){
-    as.data.frame(ode(nstart, time, model, parameters))
-  } else {
+  if(is.data.frame(events_df)){
     as.data.frame(ode(nstart, time, model, parameters,
                       events = list(data = events_df)))
+  } else {
+    as.data.frame(ode(nstart, time, model, parameters))
   }
 }
 
@@ -71,6 +99,58 @@ garch_r0 <- function(p){
   r0d + r0e
   })
 }
+
+#' Simulate transmission and intervention through time with variable inputs
+#'
+#' For the simple, two-equation infectious disease model in
+#' `garch_mod`, simulate transmission and intervention with choices
+#' for transmission intensity (R0), relative cost of environmental to human
+#' intervention (script_P), timeframe, capital available, allocation of capital,
+#' parameters, and model formulation
+#'
+#' @param R0 transmission intensity
+#' @param script_P relative cost of environmental to human intervention
+#' @param T_frame total time frame to simulate
+#' @param freq frequency of intervention
+#' @param M total capital available per intervention
+#' @param A numeric between 0 and 1 of proportion of capital to go towards human intervention (remainder goes towards environmental intervention)
+#' @param pars parameter set with remainin transmission parameters
+#' @param mod model formulation (e.g. with density dependence `garch_mod_pdd` or not `garch_mod`)
+#'
+#' @return estimate of utility associated with inputs. Measured as the sum over time of prevalence^1.5 (penalizes higher prevalence values)
+#' @export
+#'
+
+sim_w_inputs <- function(R0, script_P, T_frame, freq, M, A, pars, mod){
+  pars["beta_e"] <- (pars["gamma"] * pars["rho"]) * R0
+  pars["mu"] <- pars["theta"]*script_P
+
+  #Get reductions in prevalence based on capital and allocation
+  M_A_W <- M*(1-A)/pars["mu"]*0.01
+  M_A_I <- M*A/pars["theta"]*0.01
+
+  #Create events dataframes based on capital allocation decisions
+  W_events <- data.frame(var=rep('W', times = round(T_frame/freq)),
+                         time = c(1:round(T_frame/freq))*freq,
+                         value = rep(M_A_W, times = round(T_frame/freq)),
+                         method = rep("mult", times = round(T_frame/freq)))
+
+  I_events <- data.frame(var=rep('I', times = round(T_frame/freq)),
+                         time = c(1:round(T_frame/freq))*freq,
+                         value = rep(M_A_I, times = round(T_frame/freq)),
+                         method = rep("mult", times = round(T_frame/freq)))
+
+  eq_vals <- runsteady(y = c(I = 0.5, W = 20), func = mod,
+                       parms = pars)[["y"]]
+
+  sim <- as.data.frame(ode(eq_vals, c(1:T_frame), mod, pars,
+                           events = list(data = rbind(W_events, I_events) %>% arrange(time))))
+
+  U <- -sum((sim$I*100)^1.5)
+
+  return(U)
+}
+
 
 #' Garchitorena discrete time simulator
 #'
@@ -160,17 +240,17 @@ sim_int_choice <- function(A_t,
 
   #Adjust parameters based on intervention allocation
     use_pars <- parameters
-    use_pars[int_par] <- parameters[int_par] * (1-(1-A_t)*parameters["M"]*parameters["mu"])
+    use_pars[int_par] <- parameters[int_par] * (1-(1-A_t)*(parameters["M"]/parameters["mu"])*0.01)
 
   #Implement MDA based on capital allocation in the first time step
-   fill[2] <- garch_discrete_mod(fill[1], use_pars) - fill[1]*A_t*parameters["M"]*use_pars["theta"]
+   fill[2] <- garch_discrete_mod(fill[1], use_pars) - fill[1]*(A_t*use_pars["M"]/use_pars["theta"])*0.01
 
   #Run the model out for a year
     for(t in 3:(time+2)){
       fill[t] <- garch_discrete_mod(fill[t-1], use_pars)
     }
 
-  return(fill[(time+2)])
+  return(fill)
 }
 
 #' Implement an optimal policy identified with MDPtoolbox through time
@@ -211,14 +291,14 @@ sim_opt_choice <- function(A_vec,
     #optimal allocation at time step
       A_t <- A_vec[opt_list[["policy"]][p_start, i]]
 
-    #Adjust parameters based on intervention allocation
-      use_pars <- parameters
-      use_pars[int_par] <- parameters[int_par] * (1-(1-A_t)*parameters["M"]*parameters["mu"])
+  #Adjust parameters based on intervention allocation
+    use_pars <- parameters
+    use_pars[int_par] <- as.numeric(parameters[int_par] * (1-(1-A_t)*(parameters["M"]/parameters["mu"])*0.01))
 
     #Implement MDA based on capital allocation in the time step
       fill_next <- numeric()
       fill_next[1] <- fill[[i]][["I"]][t_per_step]
-      fill_next[1] <- garch_discrete_mod(fill_next[1], use_pars) - fill_next[1]*A_t*parameters["M"]*use_pars["theta"]
+      fill_next[1] <- garch_discrete_mod(fill_next[1], use_pars) - fill_next[1]*(A_t*use_pars["M"]/use_pars["theta"])*0.01
 
     #Run the model out for a year
       for(t in 2:t_per_step){
