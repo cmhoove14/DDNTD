@@ -1,15 +1,22 @@
 ---
 title: "Garchitorena et al model optimize across {$R_0$, P} parameter space"
-output: github_document
+output: 
+  github_document:
+    toc: true
+    toc_depth: 3
+  
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+require(viridis)
+require(furrr)
+require(tidyverse)
+
 devtools::load_all("../../DDNTD")
 
-#Define function for equations in github_documents
-
+#Define function for equations in github_documents from https://github.com/STAT545-UBC/Discussion/issues/102
 latexImg = function(latex){
 
     link = paste0('http://latex.codecogs.com/gif.latex?',
@@ -20,4 +27,209 @@ latexImg = function(latex){
 }
 ```
 
-`r latexImg("a=\\frac{b}{c}")`
+# Garchitorena et al simplified model  
+Using a simple, generalizable model of NTD transmission presented in [Garchitorena et al](http://rstb.royalsocietypublishing.org/content/372/1722/20160128):
+
+The model consists of two state variables, $I$ and $W$, that correspond to the prevalence of infection in the human population (i.e. proportion infected at time=$t$) and the degree of contamination of the environment with the disease-causing agent, respectively. We make the simplifying assumption that individuals can only be susceptible, $S$, or infected, $I$, meaning $S+I=1$ and eliminating the need for a recovered $R$ compartment as is typical of SIR models but would complicate things here. The model equations then are:  
+
+`r latexImg("\\frac{dI}{dt}=(\\beta_EW+\\beta_DI)(1-I)-\\gamma I") `
+
+`r latexImg("\\frac{dW}{dt}=\\Omega+V\\sigma\\lambda I-\\rho W") `
+
+For most environmentally mediated infectious diseases, transmission to humans is exclusively from the environment and there is no exogenous production of infectious agents in the environment (i.e. $\Omega=0$ and $\beta_D=0$. We can derive $R_0$ for this system quite simply since transmission is only determined by the environmental component: 
+
+`r latexImg("R_0=\\frac{V\\sigma\\lambda\\beta_E}{\\gamma\\delta}")`
+
+with parameter definitions and values in table 1, we have $R_0\approx$ `r round(garch_r0(garch_pars), 1)`
+
+```{r table1, echo = FALSE}
+tab1 <- data.frame(val = as.character(round(garch_pars,5)), 
+                   des = c("Transmission rate from environment to human population",
+                           "Human to human transmission rate",
+                           "Rate of recovery from infected back to susceptible",
+                           "Recruitment rate of infectious agents in the environment",
+                           "Abundance of vectors/intermediate hosts/suitable environment",
+                           "Recruitment rate of infectious agents by infectious individuals",
+                           "Fraction of infectious agents produced that reach the environment",
+                           "Mortality rate of infectious agents in the environment"))
+
+rownames(tab1) <- c("$\\beta_E$","$\\beta_D$","$\\gamma$","$\\Omega$",
+                     "$V$","$\\lambda$","$\\sigma$","$\\rho$")
+
+knitr::kable(tab1, row.names = TRUE, 
+             col.names = c("Value", "Description"), 
+             format = "markdown", escape = FALSE, 
+             caption = "Parameter values and descriptions used in the model")
+```
+
+## Example Dynamics  
+### Without dd  
+```{r mod_example}
+#Get equilibrium estimates for state variables
+garch_eq <- runsteady(y = c(I = 0.5, W = 20), func = DDNTD::garch_mod,
+                      parms = DDNTD::garch_pars)[["y"]]
+
+#Events representing interventions to implement in the model
+n_years <- 20                  #Simulate 10 years of annual intervention
+drug_efficacy <- 0.75            #75% reduction in prevalence at each drug treatment
+run_time <- c(1:(365*n_years)) #Run model for 10 years
+
+#data frame with event times for drug administration
+drugs <- data.frame(var=rep('I', times = n_years/2),
+                    time = c(1:(n_years/2))*365,
+                    value = rep((1-drug_efficacy), times = n_years/2),
+                    method = rep("mult", times = (n_years/2)))
+    
+#Run model with annual drug administration intervention
+drug_only <- sim_garch_mod(garch_eq, run_time, garch_mod, garch_pars,
+                           events_df = drugs)
+
+#Reduce vector/intermediate host population
+pars_env <- garch_pars
+pars_env["V"] <- garch_pars["V"] * 0.8 
+
+#Run model with annual drug administration and environmental intervention 
+drug_env <- sim_garch_mod(garch_eq, run_time, garch_mod, pars_env,
+                           events_df = drugs)
+
+#Plot results
+rbind(drug_env, drug_only) %>% 
+  mutate(Intervention = c(rep("Drug + Env", length(run_time)),
+                          rep("Drug", length(run_time)))) %>% 
+  ggplot(aes(x = time/365, y = I, lty = Intervention)) + 
+    theme_classic() + theme(legend.position = c(0.5,0.85)) +
+    geom_line(size = 0.75) + 
+  labs(x = "time (years)", 
+       y = "Prevalence",
+       title = "Model dynamics with annual MDA",
+       subtitle = "with and without environmental intervention")
+  
+```
+
+### With dd  
+```{r dd_mod_reff}
+#Get equilibrium estimates for state variables
+garch_eq_dd <- runsteady(y = c(I = 0.5, W = 20), func = DDNTD::garch_mod_dd,
+                      parms = DDNTD::garch_pars)[["y"]]
+
+plot(seq(0,1,0.01), sapply(seq(0,1,0.01), function(I) garch_r0(garch_pars) * (4*I*(1-I))),
+     xlab = "Prevalence (I)", ylab = expression(R[eff]), type = "l")
+
+```
+
+```{r example_dd}
+#Run model with annual drug administration intervention
+drug_only_dd <- sim_garch_mod(garch_eq, run_time, garch_mod_dd, garch_pars,
+                           events_df = drugs)
+
+#Run model with annual drug administration and environmental intervention 
+drug_env_dd <- sim_garch_mod(garch_eq, run_time, garch_mod_dd, pars_env,
+                           events_df = drugs)
+
+#Plot results
+rbind(drug_env, drug_only) %>% 
+  mutate(Intervention = c(rep("Drug + Env", length(run_time)),
+                          rep("Drug", length(run_time)))) %>% 
+  ggplot(aes(x = time/365, y = I, lty = Intervention)) + 
+    theme_classic() + theme(legend.position = c(0.5,0.85)) +
+    geom_line(size = 0.75) + 
+  labs(x = "time (years)", 
+       y = "Prevalence",
+       title = "Model dynamics with annual MDA",
+       subtitle = "with and without environmental intervention")
+
+```
+
+# Optimal control framework  
+
+```{r opt_setup}
+#Intervention costs, available capital, and conversion parameters
+H <- 1000      # number of people
+M <- 1.5*H     # available capital, here modeled as $1.50 per person
+
+theta <- 1.8   #cost of 1% reduction in prevalence
+mu <- theta    #cost of 1% reduction in W*
+  
+  
+#Parameters for the model and utility function: 
+mdp_pars <- c(garch_pars, 
+              "d" = 100,      # Arbitrary cost of having prevalence of I_t
+              "M" = M,        # Capital available to spend on MDA
+              "theta" = theta, # Scaling of capital spent on MDA to reduction in prevalence, 
+              "mu" = mu,    # Scaling of environmental intervention to cost (impact per cost)
+              "delta" = 0.95)  #Arbitrary discounting rate  
+
+test_grid <- expand.grid(R0 = c(1:10),
+                         script_P = exp(seq(log(0.01), log(100), length.out = 20)),
+                         T_frame = c(2, 10, 20)*365,
+                         freq = 365,
+                         M = c(500, 1000, 1500),
+                         A = seq(0,1,0.025))
+```
+
+## Identify optimal control strategy with no density dependence  
+```{r opt_no_dd, cache = T}
+plan(multiprocess)
+#tic()
+test_Us <- future_pmap_dbl(as.list(test_grid), sim_w_inputs, pars = mdp_pars, mod = garch_mod)
+#toc()
+
+test_fin <- cbind(test_grid, test_Us)
+
+```
+
+```{r opt_no_dd_plot}
+test_fin %>% 
+  group_by(R0, script_P, T_frame, M) %>% 
+  summarise(U = max(test_Us),
+            A_opt = A[which(test_Us == U)]) %>% 
+  mutate(C_labs = paste0("C = ", M),
+         C_labs = factor(C_labs, levels = c("C = 500", "C = 1000", "C = 1500")),
+         T_labs = paste0("T = ", T_frame/365),
+         T_labs = factor(T_labs, levels = c("T = 2", "T = 10", "T = 20"))) %>% 
+  ggplot(aes(x = R0, y = script_P, z = A_opt)) +
+    facet_grid(C_labs ~ T_labs) +
+    geom_tile(aes(fill = A_opt)) +
+    theme_classic() +
+    scale_fill_viridis(option = "magma", direction = 1) +
+    scale_x_continuous(breaks = c(1, 5, 10)) +
+    scale_y_continuous(trans = "log",
+                       breaks = c(0.01,0.1,1,10,100),
+                       labels = c(0.01,0.1,1,10,100)) +
+    labs(x = expression(R[0]),
+         y = expression(italic(Rho)),
+         fill = expression(italic(A)))
+
+```
+
+
+## Identify optimal control strategy with density dependence  
+
+```{r opt_dd, cache = T}
+plan(multiprocess)
+#tic()
+test_Us_dd <- future_pmap_dbl(as.list(test_grid), sim_w_inputs, pars = mdp_pars, mod = garch_mod_dd)
+#toc()
+
+test_fin_dd <- cbind(test_grid, test_Us_dd)
+```
+
+```{r opt_dd_plot}
+test_fin_dd %>% 
+  group_by(R0, script_P, T_frame, M) %>% 
+  summarise(U = max(test_Us_dd),
+            A_opt = A[which(test_Us_dd == U)]) %>% 
+  ggplot(aes(x = R0, y = script_P, z = A_opt)) +
+    facet_grid(M ~ T_frame) +
+    geom_tile(aes(fill = A_opt)) +
+    theme_classic() +
+    scale_fill_viridis(option = "magma", direction = 1) +
+    scale_y_continuous(trans = "log",
+                       breaks = c(0.01,0.1,1,10,100),
+                       labels = c(0.01,0.1,1,10,100)) +
+    labs(x = expression(R[0]),
+         y = expression(italic(Rho)),
+         fill = expression(italic(A)))
+
+```
+

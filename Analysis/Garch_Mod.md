@@ -22,6 +22,17 @@ For most environmentally mediated infectious diseases, transmission to humans is
 
 with parameter definitions and values in table 1, we have *R*<sub>0</sub>≈ 4
 
+|                   | Value   | Description                                                       |
+|:------------------|:--------|:------------------------------------------------------------------|
+| *β*<sub>*E*</sub> | 4e-05   | Transmission rate from environment to human population            |
+| *β*<sub>*D*</sub> | 0       | Human to human transmission rate                                  |
+| *γ*               | 0.00091 | Rate of recovery from infected back to susceptible                |
+| *Ω*               | 0       | Recruitment rate of infectious agents in the environment          |
+| *V*               | 1       | Abundance of vectors/intermediate hosts/suitable environment      |
+| *λ*               | 1       | Recruitment rate of infectious agents by infectious individuals   |
+| *σ*               | 1       | Fraction of infectious agents produced that reach the environment |
+| *ρ*               | 0.01111 | Mortality rate of infectious agents in the environment            |
+
 Effects of parameter changes on *R*<sub>0</sub>
 -----------------------------------------------
 
@@ -131,13 +142,13 @@ which can be translated to a discrete time model as:
 let's check to make sure that the dynamics of the continuous time model hold in this simplified, discrete time version of the model.
 
 ``` r
-discrete_sim <- sim_discrete_mod(I_0 = 0.75,
+discrete_sim <- sim_discrete_mod(I_0 = garch_eq["I"],
                                  time = max(run_time),
                                  parameters = garch_pars,
                                  events_df = drugs) %>% 
   mutate(Intervention = "Drug")
 
-discrete_env_sim <- sim_discrete_mod(I_0 = 0.75,
+discrete_env_sim <- sim_discrete_mod(I_0 = garch_eq["I"],
                                      time = max(run_time),
                                      parameters = pars_env,
                                      events_df = drugs) %>% 
@@ -192,7 +203,7 @@ Let's translate the problem outlined above into code and also define some new pa
 
 ``` r
 #Vector of all possible states, i.e. prevalence ranging from 0 to 1  
-states <- seq(0.01, 1, 0.01)
+states <- seq(0, 1, 0.01)
 
 #Vector of possible actions, A_t, ranging from total investment in drugs (M=1) 
 #  to total investment in environmental intervention (M=0)  
@@ -202,21 +213,18 @@ decisions <- seq(0, 1, 0.01)
 H <- 1000      # number of people
 M <- 1.5*H     # available capital, here modeled as $1.50 per person
 
-mda_cost <- 1.71 # Cost per person for community-wide MDA from Lo et al 2018 PNAS
-
-V_cost <- 400    # Cost for an average annual 10% (mu_V) reduction in vector/intermediate host abundance, loosely based on Lo et al 2018 PNAS
-mu_V <- 0.1
-
-mu_beta_e <- NA #TBD
-mu_sigma <- NA #TBD
-
+theta <- H*0.01*1.8  #cost of 1% reduction in prevalence (if M goes towards reducing prevalence, 80% reduction)
+mu <- theta        #cost of 1% reduction in W*
+  
+  
 #Parameters for the model and utility function: 
 mdp_pars <- c(garch_pars, 
+              "H" = H,        #Number of people in community
               "d" = 100,      # Arbitrary cost of having prevalence of I_t
               "M" = M,        # Capital available to spend on MDA
-              "theta" = (1/H)*(1/mda_cost), # Scaling of capital spent on MDA to reduction in prevalence, 
-              "mu" = mu_V/V_cost,    # Scaling of environmental intervention to cost (impact per cost)
-              "delta" = 0.9)  #Arbitrary discounting rate  
+              "theta" = theta, # Scaling of capital spent on MDA to reduction in prevalence, 
+              "mu" = mu,    # Scaling of environmental intervention to cost (impact per cost)
+              "delta" = 0.95)  #Arbitrary discounting rate  
 
 #Initialize transition matrix across I states and A actions
 transition <- array(0, dim = c(length(states), length(states), length(decisions)))
@@ -224,6 +232,27 @@ transition <- array(0, dim = c(length(states), length(states), length(decisions)
 # Initialize utility matrix
 utility <- array(0, dim = c(length(states), length(decisions)))
 ```
+
+``` r
+test_choices <- as.data.frame(sapply(c(0,0.5,1), sim_int_choice,
+                                     I_0 = garch_eq["I"],
+                                     int_par = "V",
+                                     time = 365,
+                                     parameters = mdp_pars)) %>% 
+  mutate("time" = c(1:367))
+colnames(test_choices) <- c("A0", "A0.5", "A1", "time")
+
+test_choices %>% 
+  gather("A", "Val", A0:A1) %>% 
+  ggplot(aes(x = time, y = Val, col = A)) +
+    theme_classic() +
+    labs(x = "time (days)",
+         y = "prevalence",
+         title = "Prevalence trajectories after different decisions (A)") +
+    geom_line(size = 1.2)
+```
+
+![](Garch_Mod_files/figure-markdown_github/opt_test_viz-1.png)
 
 ``` r
 # Fill in the transition and utility matrices
@@ -238,7 +267,7 @@ for (i in 1:length(states)) {
                                         I_0 = states[i],
                                         int_par = "V",
                                         time = 365,
-                                        parameters = mdp_pars), 2)
+                                        parameters = mdp_pars)[365+2], 2)
         nextind <- pmatch(nextpop, states) #replace which[] with pmatch to ensure proper indexing
         
 #Since this model is deterministic, assign probability of 1 to value of I_t+1, everything else =0       
@@ -275,7 +304,7 @@ opt1 <- mdp_finite_horizon(transition, utility,
 opt_p50 <- sim_opt_choice(A_vec = decisions,
                           opt_list = opt1,
                           states = states,
-                          p_start = 100,
+                          p_start = 75,
                           t_per_step = 365,
                           int_par = "V",
                           parameters = mdp_pars)
@@ -302,9 +331,186 @@ opt2["policy"]
 ```
 
     ## $policy
-    ##   [1]  94  80  94 100  93  98 100  96  99 101  98  99 101  98  99 101  99
-    ##  [18] 100 100 101 100 100 101 100 100 101 101 100 101 101 100 100 101 101
-    ##  [35] 100 101 101 100 101 101 101 100 101 101 101 100 101 101 101 101 101
-    ##  [52] 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101
-    ##  [69] 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101
-    ##  [86] 101 101 101 101 101 101 101 101 101 101 101 101 101 101 101
+    ##   [1]  99  78  99  90  98  92  98  94  98 101  98 100  97 100  97  99 101
+    ##  [18]  99 100  98 100 101  99 100 101 100 101  99 100 101 100 100 101 100
+    ##  [35] 101 101 100 101 101 100 101 101 100 101 101 100 101 101 100 101 101
+    ##  [52] 100 101 101 100 101 101 100 101 101 101 100 101 101 100 101 101 101
+    ##  [69] 101 101 101 100 101 101 101 100 101 101 101 101 101 101 100 101 101
+    ##  [86] 101 100 101 101 101 100 101 101 101 101 101 101 101 101 101
+
+Explore optimal interventions across values of *R*<sub>0</sub> and 𝒫
+--------------------------------------------------------------------
+
+``` r
+opt_pol_fx <- function(beta_e, script_P, pars, decisions, states){
+  pars["beta_e"] <- beta_e
+  pars["mu"] <- pars["theta"]*script_P
+  
+  r0 <- garch_r0(pars)
+  
+  eq <- runsteady(y = c(I = 0.5, W = 20), func = DDNTD::garch_mod,
+                  parms = pars)[["y"]]
+  
+  #Initialize transition matrix across I states and A actions
+  trans_mat <- array(0, dim = c(length(states), length(states), length(decisions)))
+  
+  # Initialize utility matrix
+  util_mat <- array(0, dim = c(length(states), length(decisions)))
+  
+  
+  for (i in 1:length(states)) {
+    
+    # Loop on all actions
+    for (a in 1:length(decisions)) {
+      
+      # Calculate the transition state at the next step, given the current state i and the intervention, a
+      nextpop <- round(sim_int_choice(A_t = decisions[a], 
+                                      I_0 = states[i],
+                                      int_par = "V",
+                                      time = 365,
+                                      parameters = pars)[365+2], 2)
+      nextind <- pmatch(nextpop, states) #replace which[] with pmatch to ensure proper indexing
+      
+      #Since this model is deterministic, assign probability of 1 to value of I_t+1, everything else =0     
+      trans_mat[i, nextind, a] <- 1
+      
+      # Compute utility as exponentially increasing function of prevalence
+      # Implying higher prevalence values are increasingly worse
+      util_mat[i,a] <- -1*(pars["d"]*nextpop)^1.5
+      
+    } # end of action loop
+  } # end of state loop
+  
+  #Check that transition and utility matrices are valid
+  if(mdp_check(trans_mat, util_mat) != ""){
+    
+    stop("Transition or utility matrix error")
+    
+  } else {
+    #Get optimal intervention strategy using value iteration
+    opt_pols <- mdp_value_iteration(transition, utility, 
+                                    discount = pars["delta"], epsilon = 0.001)
+    
+    opt_pol <- opt_pols[["policy"]][round(eq[["I"]],2)*100]
+    
+  }
+  
+  return(c("R0" = r0, 
+           "I_eq" = eq[["I"]], 
+           "W_eq" = eq[["W"]], 
+           "A_t" = decisions[opt_pol]))
+}
+
+opt_pol_df <- as.data.frame(expand.grid("beta_e" = seq(mdp_pars["gamma"] * mdp_pars["rho"]+1e-6, 
+                                                       (mdp_pars["gamma"] * mdp_pars["rho"])*20,
+                                                       length.out = 10),
+                                        "script_P" = seq(0.01, 100, length.out = 10)))
+
+#test_opt <- opt_pol_fx(opt_pol_df$beta_e[10], opt_pol_df$script_P[10], mdp_pars, decisions, states)
+
+opt_pol_slns <- mapply(opt_pol_fx, opt_pol_df$beta_e, opt_pol_df$script_P, 
+                       MoreArgs = list(pars = mdp_pars,
+                                       decisions = decisions,
+                                       states = states))
+```
+
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
+    ## [1] "MDP Toolbox: iterations stopped, epsilon-optimal policy found"
