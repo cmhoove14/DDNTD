@@ -208,19 +208,20 @@ comb_gif
 ```
 
 ## Stochastic schisto model  
+### Annual MDA at 80% coverage
 ```{r stoch_schisto, cache = TRUE, warning=FALSE}
 set.seed(10)
 sim_schisto_stoch <- function(sim){
   sim_schisto_stoch_mod(nstart = round(base_eqbm),
-                                           params = as.list(base_pars_cvrg80),
-                                           tf = max(base_time),
-                                           events_df = mda.events) %>% 
-  mutate(W = Wt*base_pars_cvrg80["cvrg"] + Wu*(1-base_pars_cvrg80["cvrg"]),
-         kap = map_dbl(W, k_from_log_W),
-         Reff = pmap_dbl(list(parameters = list(base_pars_cvrg80),
-                              W = W,
-                              kap = kap), getReff),
-         sim = sim)
+                        params = base_pars_cvrg80,
+                        tf = max(base_time),
+                        events_df = mda.events) %>% 
+    mutate(W = Wt*base_pars_cvrg80["cvrg"] + Wu*(1-base_pars_cvrg80["cvrg"]),
+           kap = map_dbl(W, k_from_log_W),
+           Reff = pmap_dbl(list(parameters = list(base_pars_cvrg80),
+                                W = W,
+                                kap = kap), getReff),
+           sim = sim)
 }
 
 schisto_stoch_sims <- bind_rows(map_df(c(1:10), sim_schisto_stoch)) %>% 

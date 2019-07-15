@@ -126,31 +126,54 @@ sim_w_inputs <- function(R0, script_P, T_frame, freq, M, A, pars, mod){
   pars["mu"] <- pars["theta"]*script_P
 
   #Get reductions in prevalence based on capital and allocation
-  M_A_W <- M*(1-A)/pars["mu"]*0.01
-  M_A_I <- M*A/pars["theta"]*0.01
+  M_A_W <- 1 - M*(1-A)*pars["mu"]*0.01
+  M_A_I <- 1 - M*A*pars["theta"]*0.01
 
   #Create events dataframes based on capital allocation decisions
-  W_events <- data.frame(var=rep('W', times = round(T_frame/freq)),
-                         time = c(1:round(T_frame/freq))*freq,
-                         value = rep(M_A_W, times = round(T_frame/freq)),
-                         method = rep("mult", times = round(T_frame/freq)))
-
-  I_events <- data.frame(var=rep('I', times = round(T_frame/freq)),
-                         time = c(1:round(T_frame/freq))*freq,
-                         value = rep(M_A_I, times = round(T_frame/freq)),
-                         method = rep("mult", times = round(T_frame/freq)))
+  W_I_events <- data.frame(var = rep(c("W", "I"), times = round(T_frame/freq)),
+                           time = rep(c(1:round(T_frame/freq))*freq, each = 2),
+                           value = rep(c(M_A_W, M_A_I), time = round(T_frame/freq)),
+                           method = rep("mult", times = round(T_frame/freq)*2))
 
   eq_vals <- runsteady(y = c(I = 0.5, W = 20), func = mod,
                        parms = pars)[["y"]]
 
   sim <- as.data.frame(ode(eq_vals, c(1:T_frame), mod, pars,
-                           events = list(data = rbind(W_events, I_events) %>% arrange(time))))
+                           events = list(data = W_I_events)))
 
   U <- -sum((sim$I*100)^1.5)
 
-  return(U)
+  return(data.frame(R0 = R0,
+                    script_P = script_P,
+                    T_frame = T_frame,
+                    freq = freq,
+                    M_C = M,
+                    A = A,
+                    I_eq = eq_vals[["I"]],
+                    W_eq = eq_vals[["W"]],
+                    M_A_W = M_A_W,
+                    M_A_I = M_A_I,
+                    Utility = U))
 }
 
+
+#' Garchitorena discrete time simulator with density dependence
+#'
+#' Same model as in `garch_mod_dd`, but discrete time version for
+#' ease of implementation with stochastic dynamic programing framework
+#'
+#' @param I value of the state variable I at time t
+#' @param p parameter set
+#'
+#' @return value of I at t+1
+#' @export
+#'
+garch_discrete_mod_dd <- function(I, p){
+
+  I + ((p["beta_e"] * p["V"] * p["sigma"] * p["lambda"] * I * (4*I*(1-I))) /
+         p["rho"])*(1-I) - p["gamma"]*I
+
+}
 
 #' Garchitorena discrete time simulator
 #'
@@ -169,6 +192,7 @@ garch_discrete_mod <- function(I, p){
 
 }
 
+
 #' Garchitorena discrete time model simulation
 #'
 #' Simulates discrete time version of the garchitorena model
@@ -178,7 +202,7 @@ garch_discrete_mod <- function(I, p){
 #' @param time Total time (days) to simulate
 #' @param model Name of the discrete sim function to use, defaults to `garch_discrete_mod`
 #' @param parameters Named vector or list of parameter values
-#' @param events_df Data frame of events such as MDA with columns "var", "time", "value", and "method"
+#' @param events_df Data frame of events such as MDA with columns "var", "time", "value" where var is the variable (state variable or parameter) affected, time is the time to implement the event, and value is the value of the change in the value of the variable or parameter as a proportion (e.g. between 0 and 1)
 #'
 #' @return dataframe of state variable values at requested times
 #' @export
@@ -197,14 +221,18 @@ sim_discrete_mod <- function(I_0,
   if(class(events_df) == "data.frame"){
     for(t in 2:time){
       if(t %in% events_df$time){
-        fill[t] <- garch_discrete_mod(fill[t-1], parameters) - fill[t-1]*events_df$value[which(t == events_df$time)]
+        #Adjust any parameter affected
+        parameters[events_df$var[which(t == events_df$time)]] <-
+          parameters[events_df$var[which(t == events_df$time)]]
+
+        fill[t] <- model(fill[t-1], parameters) - fill[t-1]*events_df$value[which(t == events_df$time)]
       } else {
-        fill[t] <- garch_discrete_mod(fill[t-1], parameters)
+        fill[t] <- model(fill[t-1], parameters)
       }
     }
   } else {
     for(t in 2:time){
-        fill[t] <- garch_discrete_mod(fill[t-1], parameters)
+        fill[t] <- model(fill[t-1], parameters)
       }
   }
 

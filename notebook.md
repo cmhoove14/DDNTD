@@ -27,7 +27,14 @@ Worked on presentation for NIMBioS July 2019 talk. Realized that discrete time m
 # 7/9/2019  
 Ran simulations using differential equation model to identify optimal treatment allocations over values of $\mathcalP$, $R_0$, $T$, and $M$. Added function to simulate transmission through time with these inputs and return best treatment allocation $A_t$. Added density-dependent version of Garchitorena et al model with human to environment transmission a parabolic function of prevalence in the human population such that it decreases towards 0 at 0 prevalence and at 1 prevalence and peaks at 0.5 prevalence, simulating effects of both positive and negative density dependence
 
+# 7/14/2019  
+Finished running some simulations of $P(e)$ with the schisto model. Right now can only run the stochastic `adaptiveTau` model with permanent parameter reductions and single variable pulses like MDA. Need to spend some time making model more generalizable for easy implementation of different types/combinations of variables.  
+
+Similar story with Garchitorena et al model. Since parameter interventions are implemented as forcing functions, the function passed to ode and the function simulating intervention decisions are hard coded for a particular intervention variable. Need to find a way to pass these options as function options
+
 # To-dos  
+### Generilizable model structure for interventions in schisto stochastic model
+### Generilizable parameter intervention structure for Garchitorena et al model
 ### Derive $R_{eff}$ for age stratified model  
 ### Stochastic age stratified model  
 ### Fit base model and age-stratified models to data  

@@ -140,7 +140,7 @@ rbind(drug_env, drug_only) %>%
                           rep("Drug", length(run_time)))) %>% 
   ggplot(aes(x = time/365, y = I, lty = Intervention)) + 
     theme_bw() + theme(legend.position = c(0.5,0.85)) +
-    geom_line(size = 0.75) + xlab("time (years)") + ylab("Prevalence") + ylim(c(0,0.75))
+    geom_line(size = 0.75) + xlab("time (years)") + ylab("Prevalence")
 
 ```
 
@@ -168,12 +168,14 @@ let's check to make sure that the dynamics of the continuous time model hold in 
 ```{r discrete_time}
 discrete_sim <- sim_discrete_mod(I_0 = garch_eq["I"],
                                  time = max(run_time),
+                                 model = garch_discrete_mod,
                                  parameters = garch_pars,
                                  events_df = drugs) %>% 
   mutate(Intervention = "Drug")
 
 discrete_env_sim <- sim_discrete_mod(I_0 = garch_eq["I"],
                                      time = max(run_time),
+                                     model = garch_discrete_mod,
                                      parameters = pars_env,
                                      events_df = drugs) %>% 
   mutate(Intervention = "Drug + Env")

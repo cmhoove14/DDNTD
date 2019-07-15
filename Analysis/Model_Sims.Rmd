@@ -8,7 +8,7 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 
-devtools::install("../../DDNTD")
+devtools::load_all("../../DDNTD")
 
 require(deSolve)
 require(rootSolve)
@@ -20,6 +20,29 @@ require(DDNTD)
 # Background and questions  
 ## Worm aggregation and mating probability  
 ```{r mate_prob_across_W, fig.height=5, fig.width=7}
+test_ws <- seq(1e-2, sqrt(100), 
+               by = sqrt(100*2)/1000)^2
+
+phi_k0.1 <- sapply(test_ws, phi_Wk, k = 0.1)
+
+as.data.frame(cbind(test_ws,
+                    phi_k0.1)) %>% 
+  ggplot(aes(x = test_ws, y = phi_k0.1)) +
+    geom_line(size = 1.2) +
+    theme_classic() +
+    scale_x_continuous(trans = "log",
+                       breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100),
+                       labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(0.01, 200)) +
+    ylim(c(0,1)) +
+    labs(x = expression(Mean~Worm~Burden~(italic(W))),
+         y = expression(Mating~Probability~(italic(Phi(W)))),
+         title = "Mating probability across Mean Worm Burden") #+ theme(legend.position = "none")
+
+```
+
+
+```{r mate_prob_across_W_change_, fig.height=5, fig.width=7}
 test_ws <- seq(1e-2, sqrt(100), 
                by = sqrt(100*2)/1000)^2
 
@@ -222,9 +245,37 @@ k_from_W <- function(W){
 ```
 
 ## Generate $R_{eff}$ curve  
-```{r Reff_curves, fig.height=5, fig.width=7}
+```{r Reff_curve, fig.height=5, fig.width=7}
 #Get values of mean worm burden to plot R effective curve over
 Reffs <- data.frame(test_ws = test_ws) %>% 
+  mutate(k0.1 = 0.1,
+         Absent = pmap_dbl(list(parameters = list(base_pars),
+                                     W = test_ws,
+                                     kap = k0.1), getReff_noPDD),
+         Present = pmap_dbl(list(parameters = list(base_pars),
+                                   W = test_ws,
+                                   kap = k0.1), getReff))
+
+Reffs %>% 
+  gather("PDD", "Reff", Absent:Present) %>% 
+  ggplot(aes(x = test_ws, y = Reff, lty = PDD)) +
+  geom_line(size = 1.2) +
+  theme_classic() +
+  geom_hline(yintercept = max(Reffs$Absent), lty = 2, col = 2) +
+  scale_x_continuous(trans = "log",
+                     breaks = c(0.001, 0.01, 0.1, 1, 10, 100),
+                     labels = c("0.001", "0.01", "0.1", "1", "10", "100"),
+                     limits = c(0.001, 200)) +
+  scale_y_continuous(breaks = c(0:3),
+                     limits = c(0,3)) +
+  geom_hline(yintercept = 1, lty = 2) +
+  labs(x = expression(Mean~Worm~Burden~(italic(W))),
+       y = expression(italic(R[eff](W)))) #+ theme(legend.position = "none")
+```
+
+```{r Reff_curves_change_k, fig.height=5, fig.width=7}
+#Get values of mean worm burden to plot R effective curve over
+Reffs_dk <- data.frame(test_ws = test_ws) %>% 
   mutate(k0.1 = 0.1,
          k1 = 1,
          k10 = 10,
@@ -245,7 +296,7 @@ Reffs <- data.frame(test_ws = test_ws) %>%
                                        W = test_ws,
                                        kap = w_det_ks), getReff))
 
-Reffs %>% 
+Reffs_dk %>% 
   gather("Clumping_Function", "Reff", Reff_k0.1:Reff_k_from_W) %>% 
   ggplot(aes(x = test_ws, y = Reff, col = Clumping_Function)) +
   geom_line(size = 1.2) +
@@ -327,7 +378,10 @@ Clear that at 80% coverage and 93% efficacy, we never get close to the breakpoin
 ## Effects of different interventions on $R_{eff}$ curve  
 ```{r reff_intervetnions}
 Reffs_int <- data.frame(test_ws = test_ws) %>% 
-  mutate(w_det_ks = sapply(test_ws, k_from_log_W),
+  mutate(k0.1 = 0.1,
+         k1 = 1,
+         k10 = 10,
+         w_det_ks = sapply(test_ws, k_from_log_W),
          Reff_k0.1 = pmap_dbl(list(parameters = list(base_pars),
                                    W = test_ws,
                                    kap = k0.1), getReff),

@@ -112,22 +112,28 @@ rbind(drug_env, drug_only) %>%
 garch_eq_dd <- runsteady(y = c(I = 0.5, W = 20), func = DDNTD::garch_mod_dd,
                       parms = DDNTD::garch_pars)[["y"]]
 
-plot(seq(0,1,0.01), sapply(seq(0,1,0.01), function(I) garch_r0(garch_pars) * (4*I*(1-I))),
+#PLot Reff curve
+plot(seq(0,1,0.01), sapply(seq(0,1,0.01), 
+                           function(I) garch_r0(garch_pars) * (4*I*(1-I))),
      xlab = "Prevalence (I)", ylab = expression(R[eff]), type = "l")
+  lines(seq(0,1,0.01), sapply(seq(0,1,0.01), 
+                              function(I) garch_r0(pars_env) * (4*I*(1-I))),
+        col = 2)
+  abline(h = 1, lty = 2)
 
 ```
 
 ```{r example_dd}
 #Run model with annual drug administration intervention
-drug_only_dd <- sim_garch_mod(garch_eq, run_time, garch_mod_dd, garch_pars,
-                           events_df = drugs)
+drug_only_dd <- sim_garch_mod(garch_eq_dd, run_time, garch_mod_dd, garch_pars,
+                              events_df = drugs[1:3,])
 
 #Run model with annual drug administration and environmental intervention 
-drug_env_dd <- sim_garch_mod(garch_eq, run_time, garch_mod_dd, pars_env,
-                           events_df = drugs)
+drug_env_dd <- sim_garch_mod(garch_eq_dd, run_time, garch_mod_dd, pars_env,
+                             events_df = drugs[1:3,])
 
 #Plot results
-rbind(drug_env, drug_only) %>% 
+rbind(drug_env_dd, drug_only_dd) %>% 
   mutate(Intervention = c(rep("Drug + Env", length(run_time)),
                           rep("Drug", length(run_time)))) %>% 
   ggplot(aes(x = time/365, y = I, lty = Intervention)) + 
@@ -135,7 +141,7 @@ rbind(drug_env, drug_only) %>%
     geom_line(size = 0.75) + 
   labs(x = "time (years)", 
        y = "Prevalence",
-       title = "Model dynamics with annual MDA",
+       title = "Model dynamics with annual MDA and density dependence",
        subtitle = "with and without environmental intervention")
 
 ```
@@ -145,91 +151,327 @@ rbind(drug_env, drug_only) %>%
 ```{r opt_setup}
 #Intervention costs, available capital, and conversion parameters
 H <- 1000      # number of people
-M <- 1.5*H     # available capital, here modeled as $1.50 per person
-
-theta <- 1.8   #cost of 1% reduction in prevalence
-mu <- theta    #cost of 1% reduction in W*
-  
+M <- H     # available capital, here modeled as $1.00 per person
   
 #Parameters for the model and utility function: 
 mdp_pars <- c(garch_pars, 
               "d" = 100,      # Arbitrary cost of having prevalence of I_t
               "M" = M,        # Capital available to spend on MDA
-              "theta" = theta, # Scaling of capital spent on MDA to reduction in prevalence, 
-              "mu" = mu,    # Scaling of environmental intervention to cost (impact per cost)
+              "theta" = 0.8/M, # Scaling of capital spent on MDA to reduction in prevalence, 
+              "mu" = 0.1*(0.8/M),    # Scaling of environmental intervention to cost (impact per cost)
               "delta" = 0.95)  #Arbitrary discounting rate  
 
-test_grid <- expand.grid(R0 = c(1:10),
-                         script_P = exp(seq(log(0.01), log(100), length.out = 20)),
-                         T_frame = c(2, 10, 20)*365,
+test_grid <- expand.grid(R0 = seq(1.5, 10, 0.5),
+                         script_P = exp(seq(log(0.001), 
+                                            log(1), 
+                                            length.out = 10)),
+                         T_frame = c(5, 10, 20)*365,
                          freq = 365,
-                         M = c(500, 1000, 1500),
-                         A = seq(0,1,0.025))
+                         M = M,
+                         A = seq(0,1,0.05))
+
+```
+
+
+```{r opt_functions}
+make_force_fx <- function(t_max, burn_in, freq, par_set, par, par_effect){
+  force_fx <- approxfun(as.data.frame(list(
+    times = c(1:t_max),
+    par_val = c(rep(par_set[par], times = burn_in),
+                sapply(c(1:(t_max/freq - 1)),
+                       function(t) rep(par_set[par]*(par_effect^t), 
+                                       freq)))
+  )), rule = 2)
+  
+  return(force_fx)
+  
+}
+garch_mod_forceV = function(t, n, p){
+  beta_e <- p["beta_e"]
+  beta_d <- p["beta_d"]
+  gamma <- p["gamma"]
+  omega <- p["omega"]
+  V <- V_force_fx(t)
+  sigma <- p["sigma"]
+  lambda <- p["lambda"]
+  rho <- p["rho"]
+  
+    I = n[1]
+    W = n[2]
+
+    dIdt = (beta_e*W + beta_d*I)*(1-I) - gamma*I
+    dWdt = omega + V*sigma*lambda*I - rho*W
+
+    return(list(c(dIdt, dWdt)))
+}
+
+garch_mod_dd_forceV = function(t, n, p){
+  beta_e <- p["beta_e"]
+  beta_d <- p["beta_d"]
+  gamma <- p["gamma"]
+  omega <- p["omega"]
+  V <- V_force_fx(t)
+  sigma <- p["sigma"]
+  lambda <- p["lambda"]
+  rho <- p["rho"]
+  
+    I = n[1]
+    W = n[2]
+
+    dIdt = (beta_e*W + beta_d*I)*(1-I) - gamma*I
+    dWdt = omega + V*sigma*lambda*I*(4*I*(1-I)) - rho*W
+
+    return(list(c(dIdt, dWdt)))
+}
+
+sim_w_decision <- function(R0, script_P, 
+                           T_frame, freq, 
+                           M, A, 
+                           pars, par_target, 
+                           base_mod, int_mod){
+  
+  pars["beta_e"] <- (pars["gamma"] * pars["rho"]) * R0
+  pars["mu"] <- pars["theta"]*script_P
+
+  #Get reduction in prevalence based on capital and allocation towards MDA
+  M_A_I <- 1 - M*A*pars["theta"]      #Total percent reduction in I
+  M_A_par <- 1 - M*(1-A)*pars["mu"]       #per year reduction in target par
+
+  #Create events dataframes based on capital allocation decisions
+  I_events <- data.frame(var = rep("I", times = round(T_frame/freq)),
+                         time = c(1:round(T_frame/freq))*freq,
+                         value = rep(M_A_I, time = round(T_frame/freq)),
+                         method = rep("mult", times = round(T_frame/freq)))
+  
+  #generate forcing function for target parameter intervened on
+  V_force_fx <<- make_force_fx(t_max = T_frame,
+                              burn_in = freq,
+                              freq = freq,
+                              par_set = pars,
+                              par = par_target,
+                              par_effect = M_A_par)
+  
+  eq_vals <- runsteady(y = c(I = 0.5, W = 20), func = base_mod,
+                       parms = pars)[["y"]]
+
+  sim <- as.data.frame(ode(y = eq_vals, 
+                           times = c(1:T_frame), 
+                           func = int_mod, 
+                           parms = pars,
+                           events = list(data = I_events)))
+
+  return(sim)
+
+}
+
+sim_w_a_get_u <- function(R0, script_P, 
+                          T_frame, freq, 
+                          M, A, 
+                          pars, par_target, 
+                          base_mod, int_mod){
+  sim <- sim_w_decision(R0, script_P, 
+                        T_frame, freq, 
+                        M, A, 
+                        pars, par_target, 
+                        base_mod, int_mod)
+  U <- -sum((sim %>% 
+              filter(time > freq) %>% 
+              pull(I) *pars["d"])^1.5)
+  
+  return(Utility = U)
+}
+```
+
+```{r test_decision_dd}
+test_sim_no_dd <- sim_w_decision(R0 = 4, script_P = 0.1,
+                            T_frame = 3650,
+                            freq = 365,
+                            M = M,
+                            A = 1,
+                            pars = mdp_pars,
+                            par_target = "V",
+                            base_mod = garch_mod,
+                            int_mod = garch_mod_forceV) %>% 
+  mutate("Dens_Dep" = "No")
+
+test_sim_dd <- sim_w_decision(R0 = 4, script_P = 0.1,
+                               T_frame = 3650,
+                               freq = 365,
+                               M = M,
+                               A = 1,
+                               pars = mdp_pars,
+                               par_target = "V",
+                               base_mod = garch_mod_dd,
+                               int_mod = garch_mod_dd_forceV) %>% 
+  mutate("Dens_Dep" = "Yes")
+
+  rbind(test_sim_no_dd, test_sim_dd) %>% 
+    ggplot(aes(x = time, y = I, col = Dens_Dep)) +
+      geom_line(size = 1.2) +
+      theme_classic() +
+      scale_x_continuous(breaks = c(0:(3650/365))*365,
+                         labels = c(0:(3650/365))) +
+      theme(legend.position = c(0.8,0.8)) +
+      labs(x = "Time (years)",
+           y = "Prevalence (I)",
+           title = "Influence of PDD on effect of intervention",
+           col = "PDD")
+
+
+```
+
+```{r bleh, eval = FALSE, include = FALSE}
+sim_w_inputs_I_vec <- function(R0, script_P, T_frame, freq, M, A, pars, mod){
+  pars["beta_e"] <- (pars["gamma"] * pars["rho"]) * R0
+  pars["mu"] <- pars["theta"]/script_P
+
+  #Get reductions in prevalence based on capital and allocation
+  M_A_W <- 1 - M*(1-A)*pars["mu"]*0.01
+  M_A_I <- 1 - M*A*pars["theta"]*0.01
+
+  #Create events dataframes based on capital allocation decisions
+  W_I_events <- data.frame(var = rep(c("W", "I"), times = round(T_frame/freq)),
+                           time = rep(c(1:round(T_frame/freq))*freq, each = 2),
+                           value = rep(c(M_A_W, M_A_I), time = round(T_frame/freq)),
+                           method = rep("mult", times = round(T_frame/freq)*2))
+
+  eq_vals <- runsteady(y = c(I = 0.5, W = 20), func = mod,
+                       parms = pars)[["y"]]
+
+  sim <- as.data.frame(ode(eq_vals, c(1:T_frame), mod, pars,
+                           events = list(data = W_I_events)))
+
+  return(sim)
+}
+
+sim0 <- sim_w_inputs_I_vec(R0 = 8, 
+                           script_P = 2,
+                           T_frame = 3650, 
+                           freq = 365,
+                           M = 1000, 
+                           A = 0, 
+                           pars = mdp_pars, 
+                           mod = garch_mod) %>% 
+  mutate(A = 0)
+sim0.5 <- sim_w_inputs_I_vec(8, 2, 3650, 365, 1000, 0.5, mdp_pars, garch_mod) %>% 
+  mutate(A = 0.5)
+sim1.0 <- sim_w_inputs_I_vec(8, 2, 3650, 365, 1000, 1, mdp_pars, garch_mod) %>% 
+  mutate(A = 1)
+
+  rbind(sim0, sim0.5, sim1.0) %>% 
+    ggplot(aes(x = time, y = I, col = as.factor(A))) +
+      geom_line(size = 1.2) +
+      theme_classic() +
+      scale_x_continuous(breaks = c(0:(3650/365))*365,
+                         labels = c(0:(3650/365)))
 ```
 
 ## Identify optimal control strategy with no density dependence  
+
 ```{r opt_no_dd, cache = T}
 plan(multiprocess)
 #tic()
-test_Us <- future_pmap_dbl(as.list(test_grid), sim_w_inputs, pars = mdp_pars, mod = garch_mod)
+test_Us <- future_pmap_dbl(as.list(test_grid), sim_w_a_get_u, 
+                           pars = mdp_pars, par_target = "V",
+                           base_mod = garch_mod, int_mod = garch_mod_forceV)
 #toc()
-
-test_fin <- cbind(test_grid, test_Us)
-
-```
-
-```{r opt_no_dd_plot}
-test_fin %>% 
-  group_by(R0, script_P, T_frame, M) %>% 
-  summarise(U = max(test_Us),
-            A_opt = A[which(test_Us == U)]) %>% 
-  mutate(C_labs = paste0("C = ", M),
-         C_labs = factor(C_labs, levels = c("C = 500", "C = 1000", "C = 1500")),
-         T_labs = paste0("T = ", T_frame/365),
-         T_labs = factor(T_labs, levels = c("T = 2", "T = 10", "T = 20"))) %>% 
-  ggplot(aes(x = R0, y = script_P, z = A_opt)) +
-    facet_grid(C_labs ~ T_labs) +
-    geom_tile(aes(fill = A_opt)) +
-    theme_classic() +
-    scale_fill_viridis(option = "magma", direction = 1) +
-    scale_x_continuous(breaks = c(1, 5, 10)) +
-    scale_y_continuous(trans = "log",
-                       breaks = c(0.01,0.1,1,10,100),
-                       labels = c(0.01,0.1,1,10,100)) +
-    labs(x = expression(R[0]),
-         y = expression(italic(Rho)),
-         fill = expression(italic(A)))
 
 ```
 
 
 ## Identify optimal control strategy with density dependence  
+```{r opt_dd_example, eval=FALSE, include=FALSE}
+sim0_dd <- sim_w_inputs_I_vec(R0 = 8, 
+                              script_P = 2,
+                              T_frame = 3650, 
+                              freq = 365,
+                              M = 1000, 
+                              A = 0, 
+                              pars = mdp_pars, 
+                              mod = garch_mod_dd) %>% 
+  mutate(A = 0)
+sim0.5_dd <- sim_w_inputs_I_vec(R0 = 8, 
+                                script_P = 2,
+                                T_frame = 3650, 
+                                freq = 365,
+                                M = 1000, 
+                                A = 0, 
+                                pars = mdp_pars, 
+                                mod = garch_mod_dd) %>% 
+  mutate(A = 0.5)
+sim1.0_dd <- sim_w_inputs_I_vec(R0 = 8, 
+                                script_P = 2,
+                                T_frame = 3650, 
+                                freq = 365,
+                                M = 1000, 
+                                A = 0, 
+                                pars = mdp_pars, 
+                                mod = garch_mod_dd) %>% 
+  mutate(A = 1)
+
+rbind(sim0, sim0.5, sim1.0) %>% ggplot(aes(x = time, y = I, col = as.factor(A))) +
+      geom_line(size = 1.2) +
+      theme_classic() +
+      scale_x_continuous(breaks = c(0:(3650/365))*365,
+                         labels = c(0:(3650/365)))
+
+```
+
 
 ```{r opt_dd, cache = T}
 plan(multiprocess)
 #tic()
-test_Us_dd <- future_pmap_dbl(as.list(test_grid), sim_w_inputs, pars = mdp_pars, mod = garch_mod_dd)
+test_Us_dd <- future_pmap_dbl(as.list(test_grid), sim_w_a_get_u, 
+                              pars = mdp_pars, par_target = "V",
+                              base_mod = garch_mod_dd, int_mod = garch_mod_dd_forceV)
 #toc()
-
-test_fin_dd <- cbind(test_grid, test_Us_dd)
 ```
 
-```{r opt_dd_plot}
-test_fin_dd %>% 
+### Plot optimal choices across variables  
+
+```{r opt_no_dd_plot}
+cbind(test_grid, Utility = test_Us) %>% 
   group_by(R0, script_P, T_frame, M) %>% 
-  summarise(U = max(test_Us_dd),
-            A_opt = A[which(test_Us_dd == U)]) %>% 
+  summarise(max_u = max(Utility),
+            A_opt = A[which(Utility == max_u)]) %>% 
+  mutate(C_labs = paste0("C = ", M),
+         T_labs = paste0("T = ", T_frame/365),
+         T_labs = factor(T_labs, levels = c("T = 5", "T = 10", "T = 20"))) %>% 
   ggplot(aes(x = R0, y = script_P, z = A_opt)) +
-    facet_grid(M ~ T_frame) +
+    facet_grid(. ~ T_labs) +
     geom_tile(aes(fill = A_opt)) +
     theme_classic() +
     scale_fill_viridis(option = "magma", direction = 1) +
+    scale_x_continuous(breaks = c(1.5, 3, 6, 9)) +
     scale_y_continuous(trans = "log",
-                       breaks = c(0.01,0.1,1,10,100),
-                       labels = c(0.01,0.1,1,10,100)) +
-    labs(x = expression(R[0]),
-         y = expression(italic(Rho)),
-         fill = expression(italic(A)))
+                       breaks = c(0.001,0.01,0.1,1),
+                       labels = c(0.001,0.01,0.1,1)) +
+    labs(x = expression(Transmission~Intensity~(italic(R[0]))),
+         y = expression(Relative~Intervention~Cost~(italic(Rho))),
+         fill = expression(Intervention~Allocation~(italic(A))))
+
+```
+
+```{r opt_dd_plot}
+cbind(test_grid, Utility = test_Us_dd) %>% 
+  group_by(R0, script_P, T_frame, M) %>% 
+  summarise(max_u = max(Utility),
+            A_opt = A[which(Utility == max_u)]) %>% 
+  mutate(C_labs = paste0("C = ", M),
+         T_labs = paste0("T = ", T_frame/365),
+         T_labs = factor(T_labs, levels = c("T = 5", "T = 10", "T = 20"))) %>% 
+  ggplot(aes(x = R0, y = script_P, z = A_opt)) +
+    facet_grid(. ~ T_labs) +
+    geom_tile(aes(fill = A_opt)) +
+    theme_classic() +
+    scale_fill_viridis(option = "magma", direction = 1) +
+    scale_x_continuous(breaks = c(1.5, 3, 6, 9)) +
+    scale_y_continuous(trans = "log",
+                       breaks = c(0.001,0.01,0.1,1),
+                       labels = c(0.001,0.01,0.1,1)) +
+    labs(x = expression(Transmission~Intensity~(italic(R[0]))),
+         y = expression(Relative~Intervention~Cost~(italic(Rho))),
+         fill = expression(Intervention~Allocation~(italic(A))))
 
 ```
 

@@ -14,6 +14,29 @@ test_ws <- seq(1e-2, sqrt(100),
                by = sqrt(100*2)/1000)^2
 
 phi_k0.1 <- sapply(test_ws, phi_Wk, k = 0.1)
+
+as.data.frame(cbind(test_ws,
+                    phi_k0.1)) %>% 
+  ggplot(aes(x = test_ws, y = phi_k0.1)) +
+    geom_line(size = 1.2) +
+    theme_classic() +
+    scale_x_continuous(trans = "log",
+                       breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100),
+                       labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(0.01, 200)) +
+    ylim(c(0,1)) +
+    labs(x = expression(Mean~Worm~Burden~(italic(W))),
+         y = expression(Mating~Probability~(italic(Phi(W)))),
+         title = "Mating probability across Mean Worm Burden") #+ theme(legend.position = "none")
+```
+
+![](Model_Sims_files/figure-markdown_github/mate_prob_across_W-1.png)
+
+``` r
+test_ws <- seq(1e-2, sqrt(100), 
+               by = sqrt(100*2)/1000)^2
+
+phi_k0.1 <- sapply(test_ws, phi_Wk, k = 0.1)
 phi_k1 <- sapply(test_ws, phi_Wk, k = 1)
 phi_k10 <- sapply(test_ws, phi_Wk, k = 10)
 phi_dynak <- mapply(phi_Wk, test_ws, sapply(test_ws, k_from_log_W))
@@ -44,7 +67,7 @@ as.data.frame(cbind(test_ws,
          subtitle = "Influence of various formulations of clumping parameter") #+ theme(legend.position = "none")
 ```
 
-![](Model_Sims_files/figure-markdown_github/mate_prob_across_W-1.png)
+![](Model_Sims_files/figure-markdown_github/mate_prob_across_W_change_-1.png)
 
 Influence of the clumping parameter on the mating probability of adult female worms, the source of positive density dependence. When the clumping parameter is allowed to vary dynamically as a function of W, it can be seen that the mating probability remains higher into lower worm burdens, which will decrease the breakpoint population size and therefore make elimination with MDA more difficult
 
@@ -108,7 +131,7 @@ base_eqbm <- runsteady(y = base_start, func = DDNTD::schisto_base_mod,
 
 #simulate annual MDA 
 eff = 0.93 #93% efficacy
-base_pars["cvrg"] <- 0.8
+base_pars["cvrg"] <- 0.8 # 80 percent coverage
 
 mda.events = data.frame(var = rep('Wt', years/2),
                         time = c(1:(years/2))*365,
@@ -190,6 +213,36 @@ Generate *R*<sub>*e**f**f*</sub> curve
 #Get values of mean worm burden to plot R effective curve over
 Reffs <- data.frame(test_ws = test_ws) %>% 
   mutate(k0.1 = 0.1,
+         Absent = pmap_dbl(list(parameters = list(base_pars),
+                                     W = test_ws,
+                                     kap = k0.1), getReff_noPDD),
+         Present = pmap_dbl(list(parameters = list(base_pars),
+                                   W = test_ws,
+                                   kap = k0.1), getReff))
+
+Reffs %>% 
+  gather("PDD", "Reff", Absent:Present) %>% 
+  ggplot(aes(x = test_ws, y = Reff, lty = PDD)) +
+  geom_line(size = 1.2) +
+  theme_classic() +
+  geom_hline(yintercept = max(Reffs$Absent), lty = 2, col = 2) +
+  scale_x_continuous(trans = "log",
+                     breaks = c(0.001, 0.01, 0.1, 1, 10, 100),
+                     labels = c("0.001", "0.01", "0.1", "1", "10", "100"),
+                     limits = c(0.001, 200)) +
+  scale_y_continuous(breaks = c(0:3),
+                     limits = c(0,3)) +
+  geom_hline(yintercept = 1, lty = 2) +
+  labs(x = expression(Mean~Worm~Burden~(italic(W))),
+       y = expression(italic(R[eff](W)))) #+ theme(legend.position = "none")
+```
+
+![](Model_Sims_files/figure-markdown_github/Reff_curve-1.png)
+
+``` r
+#Get values of mean worm burden to plot R effective curve over
+Reffs_dk <- data.frame(test_ws = test_ws) %>% 
+  mutate(k0.1 = 0.1,
          k1 = 1,
          k10 = 10,
          w_det_ks = sapply(test_ws, k_from_log_W),
@@ -209,7 +262,7 @@ Reffs <- data.frame(test_ws = test_ws) %>%
                                        W = test_ws,
                                        kap = w_det_ks), getReff))
 
-Reffs %>% 
+Reffs_dk %>% 
   gather("Clumping_Function", "Reff", Reff_k0.1:Reff_k_from_W) %>% 
   ggplot(aes(x = test_ws, y = Reff, col = Clumping_Function)) +
   geom_line(size = 1.2) +
@@ -233,9 +286,36 @@ Reffs %>%
        color = "Clumping\nParameter") #+ theme(legend.position = "none")
 ```
 
-![](Model_Sims_files/figure-markdown_github/Reff_curves-1.png)
+![](Model_Sims_files/figure-markdown_github/Reff_curves_change_k-1.png)
 
 Influence of the clumping parameter on *R*<sub>*e**f**f*</sub> curves. The dynamic clumping parameter (green line) makes things much worse, causing both a lower (harder to reach) breakpoint and a higher (more infection) endemic equilibrium)
+
+See how *R*<sub>*e**f**f*</sub> changes over course of deterministic simulation
+-------------------------------------------------------------------------------
+
+``` r
+schisto_base_sim_reff <- schisto_base_sim %>% 
+  mutate(W = Wt*base_pars["cvrg"] + Wu*(1-base_pars["cvrg"]),
+         kap = map_dbl(W, k_from_log_W),
+         Reff = pmap_dbl(list(parameters = list(base_pars),
+                              W = W,
+                              kap = kap), getReff))
+
+schisto_base_sim_reff %>% 
+  ggplot(aes(x = time, y = Reff)) + 
+  annotate("rect", xmin = 365, xmax = max(mda.events$time), ymin = -Inf, ymax = Inf,
+           alpha = .2) +
+  geom_line() + 
+    theme_classic() +
+    labs(x = "time (years)",
+         y = expression(R[eff]),
+         title = expression(Effective~reproduction~number~(R[eff])~over~MDA~campaign), 
+         subtitle = paste0("Anual MDA for ", years/2, " years")) +
+    scale_x_continuous(breaks = c(0:years)*365,
+                       labels = c(-1:(years-1)))
+```
+
+![](Model_Sims_files/figure-markdown_github/base_reff_time-1.png)
 
 ### See how *R*<sub>*e**f**f*</sub> changes over course of stochastic simulation
 
@@ -264,5 +344,45 @@ schisto_stoch_sim_reff %>%
 
 Clear that at 80% coverage and 93% efficacy, we never get close to the breakpoint with 10 years of annual MDA. This indicated by the rise in *R*<sub>*e**f**f*</sub> with no subsequent decrease (implying traversing the curve down towards the breakpoint). However, this implies that the 20% of the untreated population contributes to transmission just like the 80% that's treated. In reality, MDA is often administered to school-aged children (SAC) while adults are untreated, but SAC also contribute much more to transmission. To exlpore the influence of this, we'll next move to the age-distributed model.
 
+Effects of different interventions on *R*<sub>*e**f**f*</sub> curve
+-------------------------------------------------------------------
+
+``` r
+Reffs_int <- data.frame(test_ws = test_ws) %>% 
+  mutate(k0.1 = 0.1,
+         k1 = 1,
+         k10 = 10,
+         w_det_ks = sapply(test_ws, k_from_log_W),
+         Reff_k0.1 = pmap_dbl(list(parameters = list(base_pars),
+                                   W = test_ws,
+                                   kap = k0.1), getReff),
+         Reff_k1 = pmap_dbl(list(parameters = list(base_pars),
+                                   W = test_ws,
+                                   kap = k1), getReff),
+         Reff_k10 = pmap_dbl(list(parameters = list(base_pars),
+                                   W = test_ws,
+                                   kap = k10), getReff),
+         Reff_no_pdd = pmap_dbl(list(parameters = list(base_pars),
+                                     W = test_ws,
+                                     kap = w_det_ks), getReff_noPDD),
+         Reff_k_from_W = pmap_dbl(list(parameters = list(base_pars),
+                                       W = test_ws,
+                                       kap = w_det_ks), getReff))
+```
+
 Age structured model
 ====================
+
+``` r
+age_start <- c(S=5000, E=0, I=0, Wt_SAC=10, Wu_SAC=10, Wt_adult=10, Wu_adult=10)
+
+#Run to equibrium with base parameter set
+age_eqbm <- runsteady(y = age_start, func = DDNTD::schisto_age_strat_mod,
+                      parms = DDNTD::age_strat_pars)[["y"]]
+
+schisto_age_sim <- sim_schisto_mod(nstart = age_eqbm, 
+                                   time = base_time, 
+                                   model = schisto_age_strat_mod,
+                                   parameters = age_strat_pars,
+                                   events_df = NA)
+```

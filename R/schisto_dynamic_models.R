@@ -272,18 +272,18 @@ schisto_stoch_mod <- function(x, p, t){
   phi_Wt = ifelse(Wt == 0, 0, phi_Wk(W = Wt, k = k_from_log_W(Wt)))
   phi_Wu = ifelse(Wu == 0, 0, phi_Wk(W = Wu, k = k_from_log_W(Wu)))
 
-  return(c(p$f_N * (1-N/p$C) * (S + E),   #Snail birth
-           p$mu_N * S,        #Susceptible snail death
-           ((0.5 * Wt * p$H * p$cvrg * phi_Wt * f_Wgk(Wt, p$gam, k_from_log_W(Wt))) +
-             (0.5 * Wu * p$H * (1-p$cvrg) * phi_Wu * f_Wgk(Wu, p$gam, k_from_log_W(Wu)))) *
-              S * p$beta,  #Snail exposure
-           p$mu_N * E,       #Exposed snail dies
-           p$sigma * E,      #Exposed snail becomes infected
-           (p$mu_N + p$mu_I) * I,   #Infected snail dies
-           p$lambda * I * R_Wv(Wt, p$xi), #infected snail produces adult worm in treated population
-           p$lambda * I * R_Wv(Wu, p$xi), #infected snail produces adult worm in untreated population
-           (p$mu_W + p$mu_H) * Wt,    #Adult worm in treated population dies
-           (p$mu_W + p$mu_H) * Wu))    #Adult worm in untreated population dies
+  return(c(p["f_N"] * (1-N/p["C"]) * (S + E),   #Snail birth
+           p["mu_N"] * S,        #Susceptible snail death
+           ((0.5 * Wt * p["H"] * p["cvrg"] * phi_Wt * f_Wgk(Wt, p["gamma"], k_from_log_W(Wt))) +
+             (0.5 * Wu * p["H"] * (1-p["cvrg"]) * phi_Wu * f_Wgk(Wu, p["gamma"], k_from_log_W(Wu)))) *
+              S * p["beta"],  #Snail exposure
+           p["mu_N"] * E,       #Exposed snail dies
+           p["sigma"] * E,      #Exposed snail becomes infected
+           (p["mu_N"] + p["mu_I"]) * I,   #Infected snail dies
+           p["lambda"] * I * R_Wv(Wt, p["xi"]), #infected snail produces adult worm in treated population
+           p["lambda"] * I * R_Wv(Wu, p["xi"]), #infected snail produces adult worm in untreated population
+           (p["mu_W"] + p["mu_H"]) * Wt,    #Adult worm in treated population dies
+           (p["mu_W"] + p["mu_H"]) * Wu))    #Adult worm in untreated population dies
 
 }
 
@@ -316,9 +316,7 @@ sim_schisto_stoch_mod <- function(nstart,
                                   params,
                                   tf,
                                   events_df = NA){
-  if(is.na(events_df)){
-    return(as.data.frame(adaptivetau::ssa.adaptivetau(nstart, transitions, sfx, params, tf)))
-  } else {
+  if(class(events_df) == "data.frame"){
     n_parts <- nrow(events_df) + 2
 
     stoch_sim <- list()
@@ -359,6 +357,9 @@ sim_schisto_stoch_mod <- function(nstart,
     stoch_sim[[n_parts]][,"time"] = stoch_sim[[n_parts]][,"time"] + max(events_df[["time"]]) + 365
 
     return(as.data.frame(do.call(rbind, stoch_sim)))
+
+  } else {
+    return(as.data.frame(adaptivetau::ssa.adaptivetau(nstart, transitions, sfx, params, tf)))
   }
 
 }
