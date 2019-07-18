@@ -287,6 +287,48 @@ schisto_stoch_mod <- function(x, p, t){
 
 }
 
+#' Stochastic version of the age stratified schistosomiasis model
+#'
+#' A stochastic schistosomiasis model with same structure as the age stratified schisto model
+#' but implemented with the adaptivetau package which uses tau leaping
+#' to simulate stochastic transmission. Note this is a function that is wrapped into
+#' sim_schisto_stoch_mod which should be used to simulate the model,
+#' this function is fed into the tau leaping algorithm from adaptivetau
+#'
+#' @param x vector of state variables
+#' @param p named vector of parameters
+#' @param t numeric indicating length of simulation
+#'
+#' @return vector of transition probabilities
+#' @export
+#'
+schisto_stoch_mod <- function(x, p, t){
+  S = x['S']
+  E = x['E']
+  I = x['I']
+  N = S + I + E
+  Wt = x['Wt']
+  Wu = x['Wu']
+
+  phi_Wt = ifelse(Wt == 0, 0, phi_Wk(W = Wt, k = k_from_log_W(Wt)))
+  phi_Wu = ifelse(Wu == 0, 0, phi_Wk(W = Wu, k = k_from_log_W(Wu)))
+
+  return(c(p["f_N"] * (1-N/p["C"]) * (S + E),   #Snail birth
+           p["mu_N"] * S,        #Susceptible snail death
+           ((0.5 * Wt * p["H"] * p["cvrg"] * phi_Wt * f_Wgk(Wt, p["gamma"], k_from_log_W(Wt))) +
+             (0.5 * Wu * p["H"] * (1-p["cvrg"]) * phi_Wu * f_Wgk(Wu, p["gamma"], k_from_log_W(Wu)))) *
+              S * p["beta"],  #Snail exposure
+           p["mu_N"] * E,       #Exposed snail dies
+           p["sigma"] * E,      #Exposed snail becomes infected
+           (p["mu_N"] + p["mu_I"]) * I,   #Infected snail dies
+           p["lambda"] * I * R_Wv(Wt, p["xi"]), #infected snail produces adult worm in treated population
+           p["lambda"] * I * R_Wv(Wu, p["xi"]), #infected snail produces adult worm in untreated population
+           (p["mu_W"] + p["mu_H"]) * Wt,    #Adult worm in treated population dies
+           (p["mu_W"] + p["mu_H"]) * Wu))    #Adult worm in untreated population dies
+
+}
+
+
 #' Simulate the stochastic schistosomiasis model
 #'
 #' Uses the `schisto_stoch_mod` function to simulate the stochastic model through time

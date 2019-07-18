@@ -19,17 +19,6 @@ library(rootSolve)
 library(MDPtoolbox)
 
 devtools::load_all("../../DDNTD")
-
-# https://github.com/STAT545-UBC/Discussion/issues/102
-latexImg = function(latex){
-
-    link = paste0('http://latex.codecogs.com/gif.latex?',
-           gsub('\\=','%3D',URLencode(latex)))
-
-    link = gsub("(%..)","\\U\\1",link,perl=TRUE)
-    return(paste0('![](',link,')'))
-}
-
 ```
 
 # Base case: Garchitorena et al simple model  

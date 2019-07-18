@@ -49,7 +49,7 @@ age_strat_pars <- c(
 
   #Transmission parameters
     lambda=1.2e-4, # snail-to-man transmission
-    beta=1.6e-6  # man-to-snail transmission
+    beta=1.6e-4  # man-to-snail transmission
 )
 
 usethis::use_data(age_strat_pars, overwrite = TRUE)

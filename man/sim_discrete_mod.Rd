@@ -16,7 +16,7 @@ sim_discrete_mod(I_0, time, model = garch_discrete_mod, parameters,
 
 \item{parameters}{Named vector or list of parameter values}
 
-\item{events_df}{Data frame of events such as MDA with columns "var", "time", "value", and "method"}
+\item{events_df}{Data frame of events such as MDA with columns "var", "time", "value" where var is the variable (state variable or parameter) affected, time is the time to implement the event, and value is the value of the change in the value of the variable or parameter as a proportion (e.g. between 0 and 1)}
 }
 \value{
 dataframe of state variable values at requested times

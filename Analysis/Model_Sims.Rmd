@@ -399,20 +399,3 @@ Reffs_int <- data.frame(test_ws = test_ws) %>%
                                        kap = w_det_ks), getReff))
 
 ```
-
-
-# Age structured model  
-```{r sim_age_structure}
-age_start <- c(S=5000, E=0, I=0, Wt_SAC=10, Wu_SAC=10, Wt_adult=10, Wu_adult=10)
-
-#Run to equibrium with base parameter set
-age_eqbm <- runsteady(y = age_start, func = DDNTD::schisto_age_strat_mod,
-                      parms = DDNTD::age_strat_pars)[["y"]]
-
-schisto_age_sim <- sim_schisto_mod(nstart = age_eqbm, 
-                                   time = base_time, 
-                                   model = schisto_age_strat_mod,
-                                   parameters = age_strat_pars,
-                                   events_df = NA)
-```
-

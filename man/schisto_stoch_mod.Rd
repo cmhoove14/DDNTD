@@ -5,8 +5,16 @@
 \title{Stochastic version of the base schistosomiasis model}
 \usage{
 schisto_stoch_mod(x, p, t)
+
+schisto_stoch_mod(x, p, t)
 }
 \arguments{
+\item{x}{vector of state variables}
+
+\item{p}{named vector of parameters}
+
+\item{t}{numeric indicating length of simulation}
+
 \item{x}{vector of state variables}
 
 \item{p}{named vector of parameters}
@@ -15,9 +23,17 @@ schisto_stoch_mod(x, p, t)
 }
 \value{
 vector of transition probabilities
+
+vector of transition probabilities
 }
 \description{
 A stochastic schistosomiasis model with same structure as the deterministic model
+but implemented with the adaptivetau package which uses tau leaping
+to simulate stochastic transmission. Note this is a function that is wrapped into
+sim_schisto_stoch_mod which should be used to simulate the model,
+this function is fed into the tau leaping algorithm from adaptivetau
+
+A stochastic schistosomiasis model with same structure as the age stratified schisto model
 but implemented with the adaptivetau package which uses tau leaping
 to simulate stochastic transmission. Note this is a function that is wrapped into
 sim_schisto_stoch_mod which should be used to simulate the model,
