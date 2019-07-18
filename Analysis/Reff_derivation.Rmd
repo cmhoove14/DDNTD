@@ -1,0 +1,214 @@
+---
+title: "$R_{eff}$ Derivation"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+devtools::load_all()
+```
+
+## Basic Schistosomiasis Model  
+
+Beginning with a basic schistosomiasis model with $S-E-I$ infection dynamics and logistic population growth among the intermediate host snail population and human infection modeled via the state variable $W$ representing the mean worm burden across the human population, assumed to be negative binomially distributed with clumping parameter $\kappa$. We have four ODEs:
+
+`r latexImg("\\frac{dS}{dt}=f_N\\big(1-\\frac{N}{K}\\big)\\big(S+E\\big)-\\mu_N S-\\beta M(W)S")`
+
+`r latexImg("\\frac{dE}{dt}=\\beta M(W)S-(\\mu_N+\\sigma)E")`
+
+`r latexImg("\\frac{dI}{dt}=\\sigma E - \\mu_I I")`
+
+`r latexImg("\\frac{dW}{dt}=\\lambda\\rho(W, \\kappa, \\xi) I-(\\mu_W+\\mu_H)W")`
+
+Where $N=S+E+I$, $\rho(W,\kappa,\xi)$ is an estimate of the density dependent probability of establishment of adult worms due to acquired immunity, and $M(W)$ is an estimate of miracidia released into the population and is estimated as:
+
+`r latexImg("M(W)=0.5W\\phi(W, \\kappa)\\gamma(W, \\kappa, \\alpha)H")`
+
+with $\phi(W, \kappa)$ an estimate of the mating probability and $\gamma(W, \kappa, \alpha)$ an estimate of density dependent fecundity of adult worms.
+
+Parameter symbology, values and definitions are shown in table 1.
+
+```{r echo=FALSE}
+tab1 <- data.frame(val = as.character(c(10,
+                                        50,
+                                        60,
+                                        40,
+                                        10,
+                                        3.3,
+                                        1.5,
+                                        60,
+                                        4820,
+                                        6.25e5,
+                                        5e-3,
+                                        1.8e-3)), 
+                   units = c("$Sd^{-1}$",
+                             "$Nm^{-2}$",
+                             "$Nd^{-1}$",
+                             "$Ed^{-1}$",
+                             "$Id^{-1}$",
+                             "$Wy^{-1}$",
+                             "$Hm^{-2}$",
+                             "$Hy^{-1}$",
+                             "$WI^{-1}d^{-1}$",
+                             "$ES^{-1}d^{-1}$",
+                             "unitless",
+                             "unitless"),
+                   des = c("Snail fecundity rate",
+                           "Snail environmental carrying capacity",
+                           "Snail mortality rate",
+                           "Pre-patent period",
+                           "Excess mortality of infected snails",
+                           "Adult parasite mortality rate",
+                           "Human host population",
+                           "Human host mortality rate",
+                           "Man-to-snail transmission parameter",
+                           "Snail-to-man transmission parameter",
+                           "Adult parasite density dependent fecundity parameter",
+                           "Density dependent parasite establishment acquired immunity parameter"))
+
+rownames(tab1) <- c("$f_N$",
+                    "$K$",
+                    "$\\mu_N$",
+                    "$\\sigma$",
+                    "$\\mu_I$",
+                    "$\\mu_W$",
+                    "$H$",
+                    "$\\mu_H$",
+                    "$\\lambda$",
+                    "$\\beta$",
+                    "$\\alpha$",
+                    "$\\xi$")
+
+knitr::kable(tab1, row.names = TRUE, 
+             col.names = c("Value", "Units", "Description"), 
+             format = "markdown", escape = FALSE, 
+             caption = "Parameter values and descriptions used in the model")
+
+```
+
+## $R_{eff}$ Derivation  
+### Dimensionality reduction: fast snail infection dynamics  
+We begin with the assumption that the rate of change of the intermediate host infection dynamics is fast compared to the adult parasites and therefore reaches an equilibirum, i.e. $\frac{dS}{dt}=\frac{dE}{dt}=\frac{dI}{dt}=0$. We then solve for the equilibirum infected snail population, $I^*$:
+
+#### Solve for $I^*$  
+`r latexImg("\\sigma E^* - \\mu_I I^*=0")`
+
+`r latexImg("I^*=\\frac{\\sigma E^*}{\\mu_I}")`
+
+#### Solve for $E^*$  
+`r latexImg("\\beta M(W)S^*-(\\mu_N+\\sigma)E^*=0")`
+
+`r latexImg("E^*=\\frac{\\beta M(W)S^*}{\\mu_N+\\sigma}")`
+
+#### Solve for $S^*$  
+First, we write the equilibrium total snail population, $N^*$, in terms of $S^*$ by substituting for $E^*$ and $I^*$ from $N^*=S^*+E^*+I^*$:
+`r latexImg("N^*=S^*+\\frac{\\beta M(W)S^*}{\\mu_N+\\sigma}+\\frac{\\sigma E^*}{\\mu_I}")`
+
+`r latexImg("N^*=S^*+\\frac{\\beta M(W)S^*}{\\mu_N+\\sigma}+\\frac{\\sigma\\beta M(W)S^*}{\\mu_I(\\mu_N+\\sigma)}")`
+
+`r latexImg("N^*=S^*\\Big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}+\\frac{\\sigma\\beta M(W)}{\\mu_I(\\mu_N+\\sigma)}\\Big)")`
+
+Then, with 
+`r latexImg("0=f_N\\big(1-\\frac{N^*}{K}\\big)\\big(S^*+E^*\\big)-\\mu_N S^*-\\beta M(W)S^*")`
+
+we substitute for $E^*$ and $N^*$ and divide by $S^*$ to arrive at:
+
+`r latexImg("f_N\\Bigg(1-\\frac{S^*\\big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}+\\frac{\\sigma\\beta M(W)}{\\mu_I(\\mu_N+\\sigma)}\\big)}{K}\\Bigg)\\Bigg(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}\\Bigg)-\\mu_N-\\beta M(W)=0")`
+
+Solving for $S^*$:
+
+`r latexImg("1-\\frac{S^*\\big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}+\\frac{\\sigma\\beta M(W)}{\\mu_I(\\mu_N+\\sigma)}\\big)}{K}=\\frac{\\mu_N+\\beta M(W)}{f_N\\Big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}\\Big)}")`
+
+`r latexImg("\\frac{S^*\\Big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}+\\frac{\\sigma\\beta M(W)}{\\mu_I(\\mu_N+\\sigma)}\\Big)}{K}=1-\\frac{\\mu_N+\\beta M(W)}{f_N\\Big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}\\Big)}")`
+
+`r latexImg("S^*=\\Bigg(1-\\frac{\\mu_N+\\beta M(W)}{f_N\\Big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}\\Big)}\\Bigg)\\Bigg(\\frac{K}{\\Big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}+\\frac{\\sigma\\beta M(W)}{\\mu_I(\\mu_N+\\sigma)}\\Big)}\\Bigg)")`
+
+Now want to try and simplify this. To start, we'll assign 
+`r latexImg("C_1=\\frac{\\beta M(W)}{\\mu_N+\\sigma}")` to give:
+
+`r latexImg("S^*=\\Bigg(1-\\frac{\\mu_N+\\beta M(W)}{f_N\\big(1+C_1\\big)}\\Bigg)\\Bigg(\\frac{K}{\\big(1+C_1+\\frac{\\sigma C_1}{\\mu_I}\\big)}\\Bigg)")`
+
+Then distribute:
+
+`r latexImg("S^*=\\frac{K}{\\big(1+C_1+\\frac{\\sigma C_1}{\\mu_I}\\big)}-\\frac{K\\big(\\mu_N+\\beta M(W)\\big)}{f_N\\big(1+C_1\\big)\\big(1+C_1+\\frac{\\sigma C_1}{\\mu_I}\\big)}")`
+
+Then multiply the LHS by `r latexImg("\\frac{f_N\\big(1+C_1\\big)}{f_N\\big(1+C_1\\big)}")`
+
+`r latexImg("S^*=\\frac{K\\big(f_N\\big(1+C_1\\big)\\big)-K\\big(\\mu_N+\\beta M(W)\\big)}{f_N\\big(1+C_1\\big)\\big(1+C_1+\\frac{\\sigma C_1}{\\mu_I}\\big)}")`
+
+`r latexImg("S^*=\\frac{K\\big(f_N+f_N C_1-\\mu_N-\\beta M(W)\\big)}{f_N\\big(1+C_1\\big)\\big(1+C_1+\\frac{\\sigma C_1}{\\mu_I}\\big)}")`
+
+This is basically where we left it in the [Elimination Feasibility paper](https://doi.org/10.1371/journal.pntd.0006794), but I think it might be possible to simplify a bit more by first factoring out $f_N$ from the numerator and then canceling:
+
+`r latexImg("S^*=\\frac{K\\cancel{f_N}\\big(1+C_1-\\frac{\\mu_N}{f_N}-\\frac{\\beta M(W)}{f_N}\\big)}{\\cancel{f_N}\\big(1+C_1\\big)\\big(1+C_1+\\frac{\\sigma C_1}{\\mu_I}\\big)}")`
+
+`r latexImg("S^*=\\frac{K\\big(1+C_1-\\frac{\\mu_N}{f_N}-\\frac{\\beta M(W)}{f_N}\\big)}{\\big(1+C_1\\big)\\big(1+C_1+\\frac{\\sigma C_1}{\\mu_I}\\big)}")`
+
+Then distribute in the denominator:
+
+`r latexImg("S^*=\\frac{K\\big(1+C_1-\\frac{\\mu_N}{f_N}-\\frac{\\beta M(W)}{f_N}\\big)}{\\frac{2\\sigma C_1^2}{\\mu_I}+\\frac{3\\sigma C_1}{\\mu_I}+1}")`
+
+And then factor out `r latexImg("\\frac{\\sigma C_1}{\\mu_I}")` from the denominator:
+
+`r latexImg("S^*=\\frac{K\\big(1+C_1-\\frac{\\mu_N}{f_N}-\\frac{\\beta M(W)}{f_N}\\big)}{\\frac{\\sigma C_1}{\\mu_I}\\big(2C_1+3+\\frac{\\mu_I}{\\sigma C_1}\\big)}")`
+
+Now with the rate of change of the mean worm burden:
+
+`r latexImg("\\frac{dW}{dt}=\\lambda\\rho(W, \\kappa, \\xi) I^*-(\\mu_W+\\mu_H)W")`
+
+And:
+`r latexImg("I^*=\\Big(\\frac{\\sigma}{\\mu_I}\\Big)\\Big(\\frac{\\beta M(W)}{\\mu_N+\\sigma}\\Big)S^*")` and `r latexImg("C_1=\\frac{\\beta M(W)}{\\mu_N+\\sigma}")`
+
+We get:
+
+`r latexImg("\\frac{dW}{dt}=\\lambda\\rho(W, \\kappa, \\xi) \\Big(\\frac{\\sigma C_1}{\\mu_I}\\Big)S^*-(\\mu_W+\\mu_H)W")`
+
+`r latexImg("\\frac{dW}{dt}=\\lambda\\rho(W, \\kappa, \\xi) \\Big(\\cancel{\\frac{\\sigma C_1}{\\mu_I}}\\Big)\\Big(\\frac{K\\big(1+C_1-\\frac{\\mu_N}{f_N}-\\frac{\\beta M(W)}{f_N}\\big)}{\\cancel{\\frac{\\sigma C_1}{\\mu_I}}\\big(2C_1+3+\\frac{\\mu_I}{\\sigma C_1}\\big)}\\Big)-(\\mu_W+\\mu_H)W")`
+
+`r latexImg("\\frac{dW}{dt}=\\Big(\\frac{K\\lambda\\rho\\big(W, \\kappa, \\xi\\big)\\big(1+C_1-\\frac{\\mu_N}{f_N}-\\frac{\\beta M(W)}{f_N}\\big)}{\\big(2C_1+3+\\frac{\\mu_I}{\\sigma C_1}\\big)}\\Big)-(\\mu_W+\\mu_H)W")`
+
+Now factor out $(\mu_W+\mu_H)W$ to get:
+
+`r latexImg("\\frac{dW}{dt}=\\Big((\\mu_W+\\mu_H)W\\Big)\\Big(\\frac{K\\lambda\\rho\\big(W, \\kappa, \\xi\\big)\\big(1+C_1-\\frac{\\mu_N}{f_N}-\\frac{\\beta M(W)}{f_N}\\big)}{\\big(2C_1+3+\\frac{\\mu_I}{\\sigma C_1}\\big)\\big((\\mu_W+\\mu_H)W\\big)}-1\\Big)")`
+
+Given the definition of $R_{eff}$ as the number of adult worms produced by a single adult worm over its lifespan, we interpret $(\mu_W+\mu_H)$ as the mean lifespan and therefore have:
+
+`r latexImg("\\frac{dW}{dt}=(\\mu_W+\\mu_H)W(R_{eff}-1)")` and therefore:
+
+`r latexImg("R_{eff}=\\frac{K\\lambda\\rho\\big(W, \\kappa, \\xi\\big)\\big(1+C_1-\\frac{\\mu_N}{f_N}-\\frac{\\beta M(W)}{f_N}\\big)}{\\big(2C_1+3+\\frac{\\mu_I}{\\sigma C_1}\\big)\\big((\\mu_W+\\mu_H)W\\big)}")`
+
+and plugging back in for $C_1$:
+
+`r latexImg("R_{eff}=\\frac{K\\lambda\\rho\\big(W, \\kappa, \\xi\\big)\\big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}-\\frac{\\mu_N}{f_N}-\\frac{\\beta M(W)}{f_N}\\big)}{\\big(\\frac{2\\beta M(W)}{\\mu_N+\\sigma}+3+\\frac{\\mu_I(\\mu_N+\\sigma)}{\\sigma(\\beta M(W))}\\big)\\big((\\mu_W+\\mu_H)W\\big)}")`
+
+`r latexImg("R_{eff}=\\frac{K\\lambda\\rho\\big(W, \\kappa, \\xi\\big)\\big(f_N(\\mu_N+\\sigma)+f_N\\beta M(W)-\\mu_N(\\mu_N+\\sigma)-\\beta M(W)(\\mu_N+\\sigma)\\big)}{\\big(f_N(\\mu_N+\\sigma)\\big)\\big(\\frac{2\\beta M(W)}{\\mu_N+\\sigma}+3+\\frac{\\mu_I(\\mu_N+\\sigma)}{\\sigma(\\beta M(W))}\\big)\\big((\\mu_W+\\mu_H)W\\big)}")`
+
+Then distribute the denominator and factor out `r latexImg("\\frac{f_N}{\\sigma\\beta M(W)}")`
+
+`r latexImg("R_{eff}=\\frac{K\\lambda\\rho\\big(W, \\kappa, \\xi\\big)\\big(\\sigma\\beta M(W)\\big)\\big(f_N(\\mu_N+\\sigma)+f_N\\beta M(W)-\\mu_N(\\mu_N+\\sigma)-\\beta M(W)(\\mu_N+\\sigma)\\big)}{f_N\\Big(2\\sigma\\big(\\beta M(W)\\big)^2+3\\sigma\\big(\\mu_N+\\sigma\\big)\\big(\\beta M(W)\\big)+\\mu_I\\big(\\mu_N+\\sigma\\big)^2\\Big)\\Big((\\mu_W+\\mu_H)W\\Big)}")`
+
+## A separate attempt at simplifying $S^*$ further that don't end up anywhere
+
+### Attempt 2    
+after plugging `r latexImg("\\frac{\\beta M(W)}{\\mu_N+\\sigma}")` back in for $C_1$:
+
+`r latexImg("S^*=\\frac{K\\big(f_N+\\frac{f_N\\beta M(W)}{\\mu_N+\\sigma}-\\mu_N-\\beta M(W)\\big)}{f_N\\big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}\\big)\\big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}+\\frac{\\sigma \\beta M(W)}{\\mu_I(\\mu_N+\\sigma)}\\big)}")`
+
+Multiply the three terms in the numerator by `r latexImg("\\frac{\\mu_N+\\sigma}{\\mu_N+\\sigma}")` to factor out a $\mu_N+\sigma$
+
+`r latexImg("S^*=\\frac{K\\big(\\frac{f_N(\\mu_N+\\sigma)+f_N\\beta M(W)-\\mu_N(\\mu_N+\\sigma)-\\beta M(W)(\\mu_N+\\sigma)}{\\mu_N+\\sigma}\\big)}{f_N\\big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}\\big)\\big(1+\\frac{\\beta M(W)}{\\mu_N+\\sigma}+\\frac{\\sigma \\beta M(W)}{\\mu_I(\\mu_N+\\sigma)}\\big)}")`
+
+Now factor out some `r latexImg("\\frac{\\beta M(W)}{\\mu_N+\\sigma}")` from the denominator.
+
+`r latexImg("S^*=\\frac{K\\big(\\frac{f_N(\\mu_N+\\sigma)+f_N\\beta M(W)-\\mu_N(\\mu_N+\\sigma)-\\beta M(W)(\\mu_N+\\sigma)}{\\mu_N+\\sigma}\\big)}{f_N\\Big(\\frac{\\beta M(W)}{\\mu_N+\\sigma}\\Big)^2\\Big(\\frac{\\mu_N+\\sigma}{\\beta M(W)}+1\\Big)\\Big(\\frac{\\mu_N+\\sigma}{\\beta M(W)}+1+\\frac{\\sigma}{\\mu_I}\\Big)}")`
+
+Then get rid of a $\mu_N+\sigma$ in both the numerator and denominator  
+
+`r latexImg("S^*=\\frac{K\\big(f_N(\\mu_N+\\sigma)+f_N\\beta M(W)-\\mu_N(\\mu_N+\\sigma)-\\beta M(W)(\\mu_N+\\sigma)\\big)}{f_N\\Big(\\frac{\\big(\\beta M(W)\\big)^2}{\\mu_N+\\sigma}\\Big)\\Big(\\frac{\\mu_N+\\sigma}{\\beta M(W)}+1\\Big)\\Big(\\frac{\\mu_N+\\sigma}{\\beta M(W)}+1+\\frac{\\sigma}{\\mu_I}\\Big)}")`
+
+`r latexImg("S^*=\\frac{K\\big(\\mu_N+\\sigma\\big)\\big(f_N+\\frac{f_N\\beta M(W)}{\\mu_N+\\sigma}-\\mu_N-\\beta M(W)\\big)}{f_N\\Big(\\frac{\\big(\\beta M(W)\\big)^2}{\\mu_N+\\sigma}\\Big)\\Big(\\frac{\\mu_N+\\sigma}{\\beta M(W)}+1\\Big)\\Big(\\frac{\\mu_N+\\sigma}{\\beta M(W)}+1+\\frac{\\sigma}{\\mu_I}\\Big)}")`
+
+Then redistribute the `r latexImg("\\frac{\\big(\\beta M(W)\\big)^2}{\\mu_N+\\sigma}")` in the denominator
+
+`r latexImg("S^*=\\frac{K\\big(\\mu_N+\\sigma\\big)\\big(f_N+\\frac{f_N\\beta M(W)}{\\mu_N+\\sigma}-\\mu_N-\\beta M(W)\\big)}{f_N\\Big(\\frac{\\big(\\beta M(W)\\big)^2}{\\mu_N+\\sigma}\\Big)\\Big(\\frac{\\mu_N+\\sigma}{\\beta M(W)}+1\\Big)\\Big(\\frac{\\mu_N+\\sigma}{\\beta M(W)}+1+\\frac{\\sigma}{\\mu_I}\\Big)}")`
