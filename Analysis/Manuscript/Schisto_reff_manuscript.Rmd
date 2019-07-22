@@ -1,0 +1,135 @@
+---
+title: "Why does schistosomiasis rebound? Sources of resilience to mass drug administration and implications for control strategies"
+author: "Chris Hoover, etc."
+date: "July 19, 2019"
+bibliography: "references.bib"
+csl: "plos.csl"
+output: 
+  word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+require(tidyverse)
+require(knitcitations)
+  cleanbib()
+  #options("citation_format" = "pandoc")
+devtools::load_all()
+```
+
+# Introduction  
+### Global burden and current control/elimination strategies/progress   
+* Global burden  
+* Guidelines rely on MDA  
+* MDA successful in many areas (examples)  
+* but not so much in other areas ...  
+
+### "Persistent hotspots", rapid rebound, and resilience to control/elimination  
+* Logistical challenges coordinating drug donation and administration in areas where it's most needed  
+* MDA alone successful in many places, while others rapidly return to pre-MDA infection levels even before the next round of MDA  
+* Persistent hotspots in SCORE trials, finescale variation in "responder" vs. "hotspot" communities  
+
+Anderson and May text pg 482: "Macdonald seized on the existence of a possible breakpoint for schistosome infections, emphasizing that permanent eradication could in principle be achieved if average worm burdens could once be pushed below the breakpoint level. As Macdonald emphasized, in the absence of a breakpoint, eradication of a parasite requires some kind of intervention that permanently alters $R_0$ to hold it below threshold." **Yet today we tend to focus on MDA interventions which do nothing to permanently alter $R_0$. Mismatch between theoretical underpinnings of elimination and practice. GOAL OF THIS PAPER IS TO OUTLINE WHICH INTERVENTIONS BETTER ALIGN UNDERLYING THEORY OF ELIMINATION WITH PRACTICE**
+
+### "Environmental" control: history, recent evidence, explanations  
+* Summary of current (WHO, other agencies?) guidelines/strategies for control options other than MDA  
+* Sanna's paper on history of schisto elimination  
+* Contradiction(s) between current guidelines and evidence base? What can models tell us?...
+
+### Modeling schistosomiasis control: density dependence, breakpoints, non-linearities  
+* History of modeling schistosomiasis dynamics in the context of control  
+* Density dependence and presence of a transmission breakpoint  
+* Importance and implications of the breakpoint  
+* Sources of resilience and brief explanations:  
+  * Non-linear man-to-snail transmission dynamics  
+  * Density-dependent fecundity  
+  * Acquired immunity  
+  * Changes in worm burden distribution among infected individuals  
+
+### Framing of the problem
+* Systematic investigation of sources of resilience and their implications for control  
+* Quantifying the influence of sources of resilience  
+* Identifying (optimal?) control strategies when accounting for sources of resilience  
+
+# Methods  
+We expand on classic "MacDonald-type" models and our more recently published models incorporating logistic snail population growth to explore the role of X, Y, and Z on schistosomiasis transmission dynamics as the parasite population is affected by routine MDA. 
+
+### Infection dynamics in intermediate host snails  
+Schistosome infection among intermediate host snails follows a susceptible-exposed-infected (S-E-I) framework in order to account for the delay (pre-patent period) between infection and active shedding of cercariae (patency).  Logistic population growth  
+
+$\frac{dS}{dt}=f_N\big(1-\frac{N}{K}\big)\big(S+E\big)-\mu_N S-\Lambda S$
+
+$\frac{dE}{dt}=\Lambda S-(\mu_N+\sigma)E$
+
+$\frac{dI}{dt}=\sigma E - \mu_I I$
+
+### Infection dynamics in human hosts  
+$\frac{dW}{dt}=\lambda I-(\mu_W+\mu_H)W$
+
+
+### Sources of resilience and their representation in the model  
+
+#### Non linear snail FOI  
+$\Lambda=\Lambda_0(1-e^{\frac{\beta M}{N}})$
+
+Man-to-snail transmission is a saturating function of miracidial density, $M$, as in `r citet("10.1371/journal.pntd.0006514")`
+
+#### Reservoirs of infection  
+Miracidial input estimated as the sum of infectious input across all definitive human host populations:
+$$M=\sum_i\sum_jW_{ij}H_{ij}\Phi(W_{ij})\alpha_{ij}$$
+where mean worm burden, $W$, is modeled separately for different age groups, $i$, and treatment groups, $j$; $H_{ij}$ is the number of individuals in the group; $\Phi(W_{ij})$ is the mating probability of adult worms in each population with the dispersion parameter of the negative binomially distributed worm population, $\kappa_{ij}$, estimated as a function of the mean worm burden, $W_{ij}$ (see below); and $\alpha_{ij}$ is an estimate of the amount of infectious material from each group that reaches the intermediate host snail population.
+
+MDA in the affected population is modeled as a reduction in the mean worm burden by $\epsilon$, the efficacy of the drug intervention, in the following timestep of the model: $W_{ijt}=\epsilon W_{ijt-1}$. Mean worm burden in the other populations remain unaffected except via reductions in the man-to-snail FOI as a result of treating the affected population.
+
+#### Dispersion parameter responsive to worm burden in each population  
+$\kappa_{ij}$~$W_{ij}$
+
+#### Density dependent fecundity  
+$\gamma=\bigg(1+\frac{(1-e^{-\omega})W}{\kappa}\bigg)^{-(\kappa+1)}$
+
+#### Acquired immunity  
+$\rho=e^{(1-vW-e^{-vW})}$
+
+## $R_{eff}$ and $W_{bp}$: derivation, estimation, and response to different control strategies  
+
+## Stochastic model simulating control strategies and probability of elimination as a metric of potential success   
+* No intervention (baseline)  
+* School-based MDA (coverage informed by estimates from Senegal? Score?)  
+* Community-wide MDA (coverage informed by estimates from Senegal? Score?)  
+* Each MDA strategy with snail control  
+* Initial `_`% reduction in snail habitat followed by `___` MDA strategy  
+* Gradual `_`% reduction in snail habitat in conjunction with `___` MDA strategy  
+* Gradual improvements in sanitation and hygiene in conjunction with MDA  
+
+# Results  
+### Potential Figures (in no particular order)  
+#### - $R_{eff}$ curve pointing out $W_{bp}$, 
+#### - $R_{eff}$ time series  
+Shows that MDA except at extremely high levels of coverage increases transmission (as measured by $R_{eff}$) by reducing influence of negative density dependence, leads to return towards pre-intervention levels of infection
+
+#### - $W_{bp}$ comparisons between models to show influence of sources of resilience on the breakpoint population size. e.g. what is breakpoint with no PDD, with PDD, with PDD+non-linear huma-snail FOI, etc...    
+
+#### - $W_{bp}$ across values of parameters that can be changed via control measures  
+
+#### - Example stochastic time series from different control strategies, delineate chains that successfully control/eliminate (based on WHO definition) from those that rebound with different colors  
+
+### Table (further divided by intervention strategy):  
+```{r echo = FALSE}
+data.frame(row.names = c("High prevalence setting", 
+                         "Medium prevalence setting",
+                         "Low prevalence setting"),
+           "Probability of transmission control" = c(NA,NA,NA),
+           "Probability of elimination as a public health problem" = c(NA,NA,NA),
+           "Probability of outright elimination" = c(NA,NA,NA)) %>% 
+  knitr::kable(format = "markdown",
+               row.names = TRUE,
+               caption = "Results of stochastic simulations indicating the probability of meeting different WHO criteria for progress towards schistosomiasis control and elimination in different transmission settings and with different control strategies")
+```
+
+# Discussion  
+
+```{r echo = FALSE, message = FALSE}
+write.bibtex(file = "references.bib")
+```
+

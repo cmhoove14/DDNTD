@@ -33,7 +33,13 @@ Finished running some simulations of $P(e)$ with the schisto model. Right now ca
 Similar story with Garchitorena et al model. Since parameter interventions are implemented as forcing functions, the function passed to ode and the function simulating intervention decisions are hard coded for a particular intervention variable. Need to find a way to pass these options as function options
 
 # 7/17-18/19  
-Worked on deriving $R_{eff}$ from the basic schistosomiasis model, documented in the `Reff_derivation.Rmd` document. Spent lots of time just trying to simplify the expression down into something more analytically tractable and interpretable, but that's starting to feel like a bit of a losing battle.
+Worked on deriving $R_{eff}$ from the basic schistosomiasis model, documented in the `Reff_derivation.Rmd` document. Spent lots of time just trying to simplify the expression down into something more analytically tractable and interpretable, but that's starting to feel like a bit of a losing battle.  
+
+# 7/19/19  
+Created outline for schisto $R_{eff}$ paper, did a little bit of coding for the age-stratified model  
+
+# 7/22/19  
+Did more work on the analystic expression of $R_{eff}$ and on the manuscript outline  
 
 # To-dos  
 ### Generilizable model structure for interventions in schisto stochastic model
