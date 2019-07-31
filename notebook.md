@@ -41,9 +41,18 @@ Created outline for schisto $R_{eff}$ paper, did a little bit of coding for the 
 # 7/22/19  
 Did more work on the analystic expression of $R_{eff}$ and on the manuscript outline  
 
+# 7/29/19  
+Started writing the introduction and methods for the manuscript. Did some more scribbling to figure out different ways of expressing $R_{eff}$
+
+# 7/30/19  
+Worked on paper introduction and additional structure more. Finally settled on a final version of the model and corresponding $R_{eff}$ and $W_{bp}$ expressions, started working on coding these up.
+
+# 7/31/19  
+Worked on ESA presentation corresponding to this work  
+
 # To-dos  
-### Generilizable model structure for interventions in schisto stochastic model
-### Generilizable parameter intervention structure for Garchitorena et al model
+### Generalizable model structure for interventions in schisto stochastic model
+### Generiaizable parameter intervention structure for Garchitorena et al model
 ### Derive $R_{eff}$ for age stratified model  
   This should be fairly straightforward since the force of infection in the snail population is a function of the total infectious input from the human population, so rather than the $M(W)$ term we would get the sum of infectious input over all populations considered
   
