@@ -15,7 +15,6 @@ require(rootSolve)
 require(adaptivetau)
 require(ggplot2)
 require(tidyverse)
-require(DDNTD)
 ```
 # Background and questions  
 ## Worm aggregation and mating probability  
@@ -30,17 +29,66 @@ as.data.frame(cbind(test_ws,
   ggplot(aes(x = test_ws, y = phi_k0.1)) +
     geom_line(size = 1.2) +
     theme_classic() +
+    theme(title = element_text(size = 18),
+          axis.title = element_text(size = 15),
+          axis.text = element_text(size = 12)) +
     scale_x_continuous(trans = "log",
                        breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100),
                        labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
                        limits = c(0.01, 200)) +
     ylim(c(0,1)) +
     labs(x = expression(Mean~Worm~Burden~(italic(W))),
-         y = expression(Mating~Probability~(italic(Phi(W)))),
+         y = expression(paste("Mating Probability, ", italic(Phi(W)))),
          title = "Mating probability across Mean Worm Burden") #+ theme(legend.position = "none")
 
 ```
 
+## Worm aggregation and fecundity  
+```{r fecun_red_across_W, fig.height=5, fig.width=7}
+rho_k0.1 <- sapply(test_ws, rho_Wk, zeta = 5e-3, k = 0.1)
+
+as.data.frame(cbind(test_ws,
+                    rho_k0.1)) %>% 
+  ggplot(aes(x = test_ws, y = rho_k0.1)) +
+    geom_line(size = 1.2) +
+    theme_classic() +
+    theme(title = element_text(size = 18),
+          axis.title = element_text(size = 15),
+          axis.text = element_text(size = 12)) +
+    scale_x_continuous(trans = "log",
+                       breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100),
+                       labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(0.01, 200)) +
+    ylim(c(0,1)) +
+    labs(x = expression(Mean~Worm~Burden~(italic(W))),
+         y = expression(paste("Relative Fecundity, ", italic(rho(W)))),
+         title = "Relative fecundity across Mean Worm Burden") #+ theme(legend.position = "none")
+
+```
+
+
+## Worm aggregation and acquired immunity    
+```{r acuired_immun_across_W, fig.height=5, fig.width=7}
+gamma_k0.1 <- sapply(test_ws, gam_Wv, xi = 2.8e-2)
+
+as.data.frame(cbind(test_ws,
+                    gamma_k0.1)) %>% 
+  ggplot(aes(x = test_ws, y = gamma_k0.1)) +
+    geom_line(size = 1.2) +
+    theme_classic() +
+    theme(title = element_text(size = 15),
+          axis.title = element_text(size = 15),
+          axis.text = element_text(size = 12)) +
+    scale_x_continuous(trans = "log",
+                       breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100),
+                       labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(0.01, 200)) +
+    ylim(c(0,1)) +
+    labs(x = expression(Mean~Worm~Burden~(italic(W))),
+         y = expression(paste("Relative infection probability, ", italic(gamma(W)))),
+         title = "Relative infection probability across Mean Worm Burden") #+ theme(legend.position = "none")
+
+```
 
 ```{r mate_prob_across_W_change_, fig.height=5, fig.width=7}
 test_ws <- seq(1e-2, sqrt(100), 
@@ -245,23 +293,28 @@ k_from_W <- function(W){
 ```
 
 ## Generate $R_{eff}$ curve  
-```{r Reff_curve, fig.height=5, fig.width=7}
+```{r Reff_curve, fig.height=5, fig.width=10}
 #Get values of mean worm burden to plot R effective curve over
 Reffs <- data.frame(test_ws = test_ws) %>% 
-  mutate(k0.1 = 0.1,
+  mutate(kap = sapply(test_ws, k_from_log_W),
          Absent = pmap_dbl(list(parameters = list(base_pars),
                                      W = test_ws,
-                                     kap = k0.1), getReff_noPDD),
+                                     kap = kap), getReff_noPDD),
          Present = pmap_dbl(list(parameters = list(base_pars),
                                    W = test_ws,
-                                   kap = k0.1), getReff))
+                                   kap = kap), getReff))
 
 Reffs %>% 
   gather("PDD", "Reff", Absent:Present) %>% 
   ggplot(aes(x = test_ws, y = Reff, lty = PDD)) +
   geom_line(size = 1.2) +
   theme_classic() +
+  theme(title = element_text(size = 18),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        legend.position = c(0.2,0.6)) +
   geom_hline(yintercept = max(Reffs$Absent), lty = 2, col = 2) +
+  scale_linetype_manual(values = c("dashed", "solid")) +
   scale_x_continuous(trans = "log",
                      breaks = c(0.001, 0.01, 0.1, 1, 10, 100),
                      labels = c("0.001", "0.01", "0.1", "1", "10", "100"),
@@ -270,8 +323,32 @@ Reffs %>%
                      limits = c(0,3)) +
   geom_hline(yintercept = 1, lty = 2) +
   labs(x = expression(Mean~Worm~Burden~(italic(W))),
-       y = expression(italic(R[eff](W)))) #+ theme(legend.position = "none")
+       y = expression(italic(R[eff](W))),
+       title = expression(italic(R[eff](W))~Curve)) 
 ```
+
+```{r Reff_curve_Pdd_only, fig.height=5, fig.width=10}
+Reffs %>% 
+  ggplot(aes(x = test_ws, y = Present)) +
+  geom_line(size = 1.2) +
+  theme_classic() +
+  theme(title = element_text(size = 18),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        legend.position = c(0.2,0.6)) +
+  scale_x_continuous(trans = "log",
+                     breaks = c(0.001, 0.01, 0.1, 1, 10, 100),
+                     labels = c("0.001", "0.01", "0.1", "1", "10", "100"),
+                     limits = c(0.001, 200)) +
+  scale_y_continuous(breaks = c(0:2),
+                     limits = c(0,2)) +
+  geom_hline(yintercept = 1, lty = 2) +
+  labs(x = expression(Mean~Worm~Burden~(italic(W))),
+       y = expression(italic(R[eff](W))),
+       title = expression(italic(R[eff](W))~Curve)) 
+
+```
+
 
 ```{r Reff_curves_change_k, fig.height=5, fig.width=7}
 #Get values of mean worm burden to plot R effective curve over

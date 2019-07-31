@@ -175,7 +175,9 @@ and therefore:
 
 `r latexImg("R_{eff}=\\frac{K\\lambda\\big(1+C_1-\\frac{\\mu_N}{f_N}-\\frac{\\Lambda }{f_N}\\big)}{\\big(2C_1+3+\\frac{\\mu_I}{\\sigma C_1}\\big)\\big((\\mu_W+\\mu_H)W\\big)}")`
 
-and plugging back in for $C_1$:
+This gives us our first key analytic finding, the identification of the breakpoint. If $R_{eff}<1$, `r latexImg("\\frac{dW}{dt}<0")` which implies that an $R_{eff}<1$ causes a worm population on the way to extinction (e.g. below the breakpoint)
+
+Now plugging back in for $C_1$:
 
 `r latexImg("R_{eff}=\\frac{K\\lambda\\big(1+\\frac{\\Lambda }{\\mu_N+\\sigma}-\\frac{\\mu_N}{f_N}-\\frac{\\Lambda }{f_N}\\big)}{\\big(\\frac{2\\Lambda }{\\mu_N+\\sigma}+3+\\frac{\\mu_I(\\mu_N+\\sigma)}{\\sigma\\Lambda }\\big)\\big((\\mu_W+\\mu_H)W\\big)}")`
 
@@ -187,7 +189,7 @@ The `r latexImg("\\frac{1}{\\mu_N+\\sigma}")` in both the numerator and denomina
 
 `r latexImg("R_{eff}=\\frac{K\\lambda\\big(f_N(\\mu_N+\\sigma)+f_N\\Lambda -\\mu_N(\\mu_N+\\sigma)-\\Lambda (\\mu_N+\\sigma)\\big)}{f_N\\big(2\\Lambda+3(\\mu_N+\\sigma)+\\frac{\\mu_I(\\mu_N+\\sigma)^2}{\\sigma\\Lambda}\\big)}\\times\\frac{1}{\\Big((\\mu_W+\\mu_H)W\\Big)}")`
 
-Some more fenagling of the numerator gives:
+Some more fenagling of the numerator (distribute and then factor out $(\mu_N+\sigma+\Lambda)$) gives:
 
 `r latexImg("R_{eff}=\\frac{K\\lambda\\Big(\\mu_N+\\sigma+\\Lambda\\Big)\\Big(f_N-\\mu_N-\\frac{\\Lambda\\sigma}{(\\mu_N+\\sigma+\\Lambda)}\\Big)}{f_N\\big(2\\Lambda+3(\\mu_N+\\sigma)+\\frac{\\mu_I(\\mu_N+\\sigma)^2}{\\sigma\\Lambda}\\big)}\\times\\frac{1}{\\Big((\\mu_W+\\mu_H)W\\Big)}")`
 
