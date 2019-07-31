@@ -24,24 +24,19 @@ phi_Wk <- function(W, k) {
   }
 }
 
-#' Schistosomiasis fecundity reduction due to crowding at high densities
+#' Schistosomiasis density dependent fecundity
 #'
 #' Reductions in egg output due to crowding of adult female worms at high worm burdens
 #'
 #' @param W Mean worm burden in human population
-#' @param gamma shape parameter regulating response of egg ouptut to worm burden
+#' @param zeta shape parameter regulating response of egg ouptut to worm burden
 #' @param k clumping parameter of the negative binomial distribution
 #'
 #' @return Proportional reduction in female worm egg output due to crowding
 #' @export
 
-  f_Wgk <- function(W, gamma, k) {
-    if(k <= 0){
-      return(1)
-    } else {
-      return((1 + ((W*(1-(exp(-gamma))))/k))^(-k-1))
-    }
-
+  rho_Wk <- function(W, zeta, k) {
+    (1 + ((W*(1-(exp(-zeta))))/k))^(-k-1)
   }
 
 
@@ -50,12 +45,12 @@ phi_Wk <- function(W, k) {
 #' Reductions in transmission at high worm burdens due to acquired immunity in human population
 #'
 #' @param W mean worm burden in human population
-#' @param v density dependence shape parameter regulating response of immunity effect to mean worm burden
+#' @param xi density dependence shape parameter regulating response of immunity effect to mean worm burden
 #'
 #' @return reduction in snail-to-man infection as a result of acquired immunity in human population
 #' @export
 
-  R_Wv <- function(W,xi){
+gam_Wxi <- function(W,xi){
     exp(1-xi*W-exp(-xi*W))
   }
 

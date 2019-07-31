@@ -13,11 +13,11 @@
 getReff<-function(parameters, W, kap){
   with(as.list(parameters),{
 
-  Num_1<-lambda*R_Wv(W, xi)*(sigma/(mu_N+mu_I))*(beta*0.5*W*H*phi_Wk(W,kap)*f_Wgk(W, gamma, kap)/(mu_N+sigma))*C
+  Num_1<-lambda*gam_Wxi(W, xi)*(sigma/(mu_N+mu_I))*(beta*0.5*W*H*phi_Wk(W,kap)*rho_Wk(W, zeta, kap)/(mu_N+sigma))*C
 
-  Num_2<- ( (1+(beta*0.5*W*H*phi_Wk(W,kap)*f_Wgk(W, gamma, kap)/(mu_N+sigma)))*f_N ) - ( mu_N + (beta*0.5*H*W*phi_Wk(W,kap)*f_Wgk(W, gamma, kap) ) )
+  Num_2<- ( (1+(beta*0.5*W*H*phi_Wk(W,kap)*rho_Wk(W, zeta, kap)/(mu_N+sigma)))*f_N ) - ( mu_N + (beta*0.5*H*W*phi_Wk(W,kap)*rho_Wk(W, zeta, kap) ) )
 
-  Den<-( 1+(beta*0.5*W*H*phi_Wk(W,kap)*f_Wgk(W, gamma, kap)/(mu_N+sigma))+((sigma/(mu_N+mu_I))*(beta*0.5*W*H*phi_Wk(W,kap)*f_Wgk(W, gamma, kap)/(mu_N+sigma))) ) * ( 1+(beta*0.5*W*H*phi_Wk(W,kap)*f_Wgk(W, gamma, kap)/(mu_N+sigma)) ) * ( mu_W+mu_H )* W* f_N
+  Den<-( 1+(beta*0.5*W*H*phi_Wk(W,kap)*rho_Wk(W, zeta, kap)/(mu_N+sigma))+((sigma/(mu_N+mu_I))*(beta*0.5*W*H*phi_Wk(W,kap)*rho_Wk(W, zeta, kap)/(mu_N+sigma))) ) * ( 1+(beta*0.5*W*H*phi_Wk(W,kap)*rho_Wk(W, zeta, kap)/(mu_N+sigma)) ) * ( mu_W+mu_H )* W* f_N
 
   Reff<-as.numeric(Num_1*Num_2/Den)
 
@@ -41,11 +41,11 @@ getReff<-function(parameters, W, kap){
 getReff_noPDD<-function(parameters, W, kap){
   with(as.list(parameters),{
 
-  Num_1<-lambda*R_Wv(W, xi)*(sigma/(mu_N+mu_I))*(beta*0.5*W*H*f_Wgk(W, gamma, kap)/(mu_N+sigma))*C
+  Num_1<-lambda*gam_Wxi(W, xi)*(sigma/(mu_N+mu_I))*(beta*0.5*W*H*rho_Wk(W, zeta, kap)/(mu_N+sigma))*C
 
-  Num_2<- ( (1+(beta*0.5*W*H*f_Wgk(W, gamma, kap)/(mu_N+sigma)))*f_N ) - ( mu_N + (beta*0.5*H*W*f_Wgk(W, gamma, kap) ) )
+  Num_2<- ( (1+(beta*0.5*W*H*rho_Wk(W, zeta, kap)/(mu_N+sigma)))*f_N ) - ( mu_N + (beta*0.5*H*W*rho_Wk(W, zeta, kap) ) )
 
-  Den<-( 1+(beta*0.5*W*H*f_Wgk(W, gamma, kap)/(mu_N+sigma))+((sigma/(mu_N+mu_I))*(beta*0.5*W*H*f_Wgk(W, gamma, kap)/(mu_N+sigma))) ) * ( 1+(beta*0.5*W*H*f_Wgk(W, gamma, kap)/(mu_N+sigma)) ) * ( mu_W+mu_H )* W* f_N
+  Den<-( 1+(beta*0.5*W*H*rho_Wk(W, zeta, kap)/(mu_N+sigma))+((sigma/(mu_N+mu_I))*(beta*0.5*W*H*rho_Wk(W, zeta, kap)/(mu_N+sigma))) ) * ( 1+(beta*0.5*W*H*rho_Wk(W, zeta, kap)/(mu_N+sigma)) ) * ( mu_W+mu_H )* W* f_N
 
   Reff<-as.numeric(Num_1*Num_2/Den)
 
