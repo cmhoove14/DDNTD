@@ -13,14 +13,14 @@ phi_Wk <- function(W, k) {
   if(W == 0){
     return(0)
   } else {
-  val = integrate(function(x, W, k){
-    a <- ( W / (W + k) )
-    b <- ((1-a)^(1+k))/(2*pi)
-    return(( b*( 1-cos(x) ) / (( 1 + a*cos(x) )^(1+k)) ))
-  },
-  0, 2*pi, W = W, k = k)$value
+    b <- ((1-(W/(W + k)))^(1+k))/(2*pi)
+    i = integrate(f = function(x, W, k){(1-cos(x))/((1 + (W/(W + k))*cos(x))^(1+k))},
+    lower = 0,
+    upper = 2*pi,
+    stop.on.error = FALSE,
+    W = W, k = k)$value
 
-    return(1-val)
+    return(1-b*i)
   }
 }
 
@@ -68,6 +68,22 @@ gam_Wxi <- function(W,xi){
   est_prev_W_k <- function(W, k){
     1-(1+W/k)^-k
   }
+
+#' Estimate clumping parameter, kappa, as function of mean infection intensity and prevalence using uniroot
+#'
+#' Prevalence, mean intensity and the clumping parameter are all related,
+#' therefore estimation of 1 can be achieved if the other two are known
+#'
+#' @param W Mean worm burden or infection intensity
+#' @param prev prevalence of infection
+#'
+#' @return Estimate of the clumping parameter
+#' @export
+
+prev_W_get_k <- function(W, prev){
+  uniroot(function(k){ 1-(1+W/k)^-k-prev},
+          interval = c(0,10))$root
+}
 
 
 #' Estimate clumping parameter as function of prevalence and intensity

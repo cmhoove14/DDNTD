@@ -50,6 +50,12 @@ Worked on paper introduction and additional structure more. Finally settled on a
 # 7/31/19  
 Worked on ESA presentation corresponding to this work  
 
+# 8/1/19  
+Did some more writing and coded up function to estimate transmission parameters as a function of input snail prevalence, worm burden and prevalence in the human and child populations. Did some test model fits with data from [Gurarie et al](https://doi.org/10.1186/s13071-016-1681-4)  
+
+# 8/2/19  
+Formalized fitting functions and other helper functions in the R package (added documentation, function descriptions, etc.). Ransome test simulations and worked on coding a stochastic version of the model.
+
 # To-dos  
 ### Generalizable model structure for interventions in schisto stochastic model
 ### Generiaizable parameter intervention structure for Garchitorena et al model
