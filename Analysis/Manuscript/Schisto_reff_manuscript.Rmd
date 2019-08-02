@@ -34,7 +34,7 @@ Mothers with small children may be a particularly relevant class that is both vu
 
 Metrics of success that incorporate environmental surveillance of intermediate host snails as well as detection of free-swimming miracidia and cercariae using eDNA techniques have been suggested `r citet("10.1186/s40249-016-0215-9")`.
 
-Integrated strategies targeting the intermediate host snail population through both mollusciciding and habitat reduction, zoonotic reservoirs, improved sanitation and water access (e.g. WASH interventions), and education on exposure and transmission prevention have been extremely successful in reducing transmission in Chengdu Province, China `r citet("10.1186/s40249-017-0290-6")`
+Integrated strategies targeting the intermediate host snail population through both mollusciciding and habitat reduction, zoonotic reservoirs, improved sanitation and water access (e.g. WASH interventions), and education on exposure and transmission prevention have been  extremely successful in reducing transmission in Chengdu Province, China. `r citet("10.1186/s40249-017-0290-6")` Fuerthermore, recent analyses have shown that adding routine mollusciciding to MDA efforts is highly cost-effective in terms of DALYs-averted per dollar invested. `r citet("10.1073/pnas.1708729114")`
 
 ## Sources of resilience     
 * History of modeling schistosomiasis dynamics in the context of control  
@@ -49,7 +49,7 @@ Integrated strategies targeting the intermediate host snail population through b
 ### Density-dependencies  
 
 #### Dispersion parameter responsive to worm burden in each population  
-We model the dispersion parameter, $\kappa$, of the negative binomially distributed mean worm burden in separate age, $i\in\{pre-SAC, SAC, Adult\}$, and treatment, $j \in \{treated, untreated\}$, groups from the mean worm burden itself:
+We model the dispersion parameter, $\kappa$, of the negative binomially distributed mean worm burden in separate age, $i\in(\underline{\textbf{C}}hildren,\underline{\textbf{A}}dult)$, and treatment groups, $j\in(\underline{\textbf{T}}reated,\underline{\textbf{U}}ntreated)$, as a function of the mean worm burden in each group:
 
 $\kappa_{ij}=e^{\big(a-b\log(W_{ij})\big)}$ 
 
@@ -61,8 +61,6 @@ $\rho(W, \zeta,\kappa)=\bigg(1+\frac{(1-e^{-\zeta})W}{\kappa}\bigg)^{-(\kappa+1)
 #### Acquired immunity  
 $\gamma(W, \xi)=e^{(1-\xi W-e^{-\xi W})}$
 
-### [Other name for non density-dependent sources of resilience]  
-
 #### Snail logistic population growth  
 Snail reproduction is modeled assuming logistic population growth such that the fecundity rate, $f_N$, is a function of the intrinsic reproduction rate, $r$, the environmental carrying capacity, $K$, and the total snail population, $N$:
 
@@ -72,13 +70,15 @@ As $N\rightarrow 0$, $f_N\rightarrow r$. This implies resilience to intervention
 
 And also "Civitello effect"?  
 
-#### Non linear snail FOI  
+#### Non linear snail FOI (can be framed as a density dependence?)  
 Compared to a linear snail FOI of the form $\Lambda=\beta M$, this formulation leads to higher FOIs at lower values of $M$, implying that less infectious material from the human population is required to reach higher rates of infection in the intermediate host snail population. A small number of infected individuals could therefore be sufficient to maintain man-to-snail transmission, even as the majority of a community is treated via MDA.
 
-#### Reservoirs of infection  
-Miracidial density, $M$, is estimated as the sum of infectious input across all definitive human host populations:
-$$M=\sum_i\sum_jW_{ij}H_{ij}\Phi(W_{ij})\rho(W_{ij})\omega_{ij}$$
-with mean worm burden, $W_{ij}$, modeled separately for each age and treatment group; $H_{ij}$ is the number of individuals in the group; $\Phi(W_{ij})$ is the mating probability of adult worms in each population with the dispersion parameter of the negative binomially distributed worm population, $\kappa_{ij}$, estimated as a function of the mean worm burden, $W_{ij}$ (see below); $\rho(W_{ij})$ is the density-dependent fecundity ; and $\omega_{ij}$ is an estimate of the contamination rate of each group.
+### Reservoirs of infection  
+Miracidial density, $M$, is estimated as the sum of infectious input across all definitive human host populations:  
+
+$$M=\sum_i\sum_j W_{ij}H_{ij}\Phi(W_{ij})\rho(W_{ij})\omega$$
+
+with mean worm burden, $W_{ij}$, modeled separately for each age and treatment group; $H_{ij}$ is the number of individuals in the group; $\Phi(W_{ij})$ is the mating probability of adult worms in each population with the dispersion parameter of the negative binomially distributed worm population, $\kappa_{ij}$, estimated as a function of the mean worm burden, $W_{ij}$ (see below); $\rho(W_{ij})$ is the density-dependent fecundity ; and $\omega=\omega_C/\omega_A$ is a contamination coefficient related to the relative difference in sanitation and other behaviors between SAC and adults.
 
 MDA in the affected population is modeled as a reduction in the mean worm burden by $\epsilon$, the efficacy of the drug intervention, in the following timestep of the model: $W_{ijt}=\epsilon W_{ijt-1}$. Mean worm burden in the other populations remain unaffected except via reductions in the man-to-snail FOI as a result of treating the affected population.
 
@@ -89,23 +89,34 @@ MDA in the affected population is modeled as a reduction in the mean worm burden
 
 # Methods  
 ## Basic schistosomiasis model  
-We expand on classic "MacDonald-type" models [CITE] and our more recently published models [CITE] to explore the role of X, Y, and Z on `____`. The basic schistosomiasis model represents susceptible-exposed-infected (state variables $S$, $E$, and $I$ respectively) infection dynamics among intermediate host snails in order to account for the delay (pre-patent period) between infection ($S \rightarrow E$) and active shedding of cercariae (patency, ($E \rightarrow I$)):
+We expand on classic "MacDonald-type" models [CITE] and our more recently published models [CITE] to explore the role of X, Y, and Z on `____`. The basic schistosomiasis model represents susceptible-exposed-infected (state variables $S$, $E$, and $I$ respectively) infection dynamics among the intermediate host snail population, $N$, in order to account for the delay (pre-patent period) between infection ($S \rightarrow E$) and active shedding of cercariae (patency, ($E \rightarrow I$)). Human infection across age groups, $i\in(\underline{\textbf{C}}hildren,\underline{\textbf{A}}dult)$, and treatment groups, $j\in(\underline{\textbf{T}}reated,\underline{\textbf{U}}ntreated)$ is modeled via state variables $W_{ij}$ representing the mean worm burden in each segment of the human population, assumed to be negative binomially distributed with independent clumping parameters $\kappa_{ij}$:
 
-$\frac{dS}{dt}=f_N(S+E)-(\mu_N+\Lambda) S$
+$$\frac{dS}{dt}=f_N(S+E)-\mu_N S-\Lambda S$$
 
-$\frac{dE}{dt}=\Lambda S-(\mu_N+\sigma)E$
+$$\frac{dE}{dt}=\Lambda S-(\mu_N+\sigma)E$$
 
-$\frac{dI}{dt}=\sigma E - \mu_I I$
+$$\frac{dI}{dt}=\sigma E - \mu_I I$$
 
-Human infection is modeled via the state variable, $W$, representing the negatice binomially distributed mean worm burden among the human population: 
+$$\frac{dW_{ij}}{dt}=\lambda_{ij}-(\mu_W+\mu_H_{ij})W_{ij}$$
 
-$\frac{dW}{dt}=\lambda-(\mu_W+\mu_H)W$
+We assume infected snails, $I$, do not reproduce and the snail population growth rate, $f_N$, is logistic with max reproduction rate, $r$, and carrying capacity, $K$, giving $f_N=r(1-N/K)(S+E)$. The snail and mean worm burden compartments of the model are linked by snail-to-man force of infection (FOI), $\lambda$, and man-to-snail FOI, $\Lambda$, each of which is described further below. 
 
-The snail and mean worm burden components of the model interact via the "man-to-snail" force of infection (FOI), $\Lambda$, and the "snail-to-man" FOI, $\lambda$. While simple models of this form have been used to investigate schistosomiasis transmission dynamics and control, a number of non-linearities introduce additional complexity that is important to incorporate
+#### Man-to-snail FOI, $\Lambda$"  
+As in `r citet("10.1371/journal.pntd.0006514")`, $\Lambda$ is estimated as a non-linear function of miracidial density, $M$, :
 
-Infection dynamics among the intermediate host snail population are driven by the snail force of infection (FOI), $\Lambda$, which is largely determined by the . Though most models have assumed a linear snail FOI, we adopt a saturating function that has been shown to more accurately reproduce infection dynamics in human hosts previously `r citet("10.1371/journal.pntd.0006514")`. This non-linear FOI is a function of the maximal miracidial invasion rate, $\Lambda_0$, miracidial density, $M$, and transmission coefficient, $\beta$: 
+$$\Lambda=\Lambda_0\big(1-e^{-\beta M/N}\big)$$
 
-$$\Lambda=\Lambda_0(1-e^{-\beta M/N})$$
+where $\Lambda_0$ approximately represents the maximum infection rate among susceptible snails and $\beta$ corresponds to the probability of infection given miracidial to snail host density. Miracidial density is estimated as the product of mean egg output in each worm burden group, $\mathcal{E}_{ij}$; a contamination coefficient related to the relative difference in sanitation and other behaviors between SAC and adults, $\omega=\omega_C/\omega_A$; schistosome egg viability, $v$, and the number of people in each group, $H_{ij}$. 
+
+Mean egg output is estimated assuming a sex ratio of 1 and a single negative binomial distribution describing the distribution of adult worms amongst the human population. This leads to an estimate of the mean number of mated adult female worms per host, $W_{f,ij}=0.5W_{ij}\Phi(W_{ij})$, with mating probability, $\Phi(W_{ij})$ estimated as in `r citet("10.1016/0025-5564(77)90030-X")`. Mated female worms lay viable eggs at rate $m$, measured in eggs per 10mL urine, which combined with density dependent fecundity, $\rho(W_{ij})$, and the mean volume of urine per individual, $U_{ij}$, gives the product $W_{ij}\Phi(W_{ij})m\rho(W_{ij})U_{ij}$ as an estimate of the mean miracidia produced per person in each age and treatment group. Summing across all groups gives an estimate of total miracidial density:
+
+$$M=\sum_i\sum_j 0.5W_{ij}H_{ij}\Phi(W_{ij})m\rho(W_{ij})U_{ij}\omega$$
+
+#### Snail-to-man FOI, $\lambda$  
+
+## Model fit  
+In previous modeling efforts we have fit mean worm burden outputs from the model to longitudinal reinfection data measured via parasitological surveys of SAC over the course of a multi-year MDA campaign `r citet(c("10.1038/s41467-018-03189-w", "10.1371/journal.pntd.0006794", "10.1038/s41893-019-0301-7"))`. Because estimates of the contribution to transmission of the adult population are key in the analyses presented here, we instead rely on the data sources and approximate methods presented in `r citet(c("10.1073/pnas.1708729114", "10.1371/journal.pntd.0006514"))` to estimate the parameters $\alpha$, $\beta$, and $\omega$.  
+
 ## $R_{eff}(W)$ and $W_{bp}$    
 
 From this model, we derive an analytic expression of two key quantities: the breakpoint worm burden, $W_{bp}$, and the effective reproduction number, $R_{eff}(W)$. We next describe different sources of resilience to control and elimination by MDA and the quantitative representation of each in the model. Each source of resilience is incorporated individually into expressions of $W_{bp}$ and $R_{eff}(W)$ to estimate their effect on these key metrics.
@@ -113,6 +124,9 @@ From this model, we derive an analytic expression of two key quantities: the bre
 ## Sources of resilience and their representation in the model  
 
 ## Stochastic model simulating control strategies and probability of elimination as a metric of potential success   
+
+### Transmission scenarios
+
 ### Control strategies  
 * No intervention (baseline)  
 * School-based MDA (coverage informed by estimates from Senegal? Score?)  
