@@ -4,7 +4,7 @@
 \alias{sim_schisto_mod}
 \title{Simulate a schistosomiasis model}
 \usage{
-sim_schisto_mod(nstart, time, model = schisto_base_mod, parameters,
+sim_schisto_mod(nstart, time, model = schisto_base_mod, pars,
   events_df = NA)
 }
 \arguments{
@@ -14,7 +14,7 @@ sim_schisto_mod(nstart, time, model = schisto_base_mod, parameters,
 
 \item{model}{Name of the ode function to use, defaults to `schisto_base_mod`}
 
-\item{parameters}{Named vector or list of parameter values}
+\item{pars}{Named vector or list of parameter values}
 
 \item{events_df}{Data frame of events such as MDA with columns "var", "time", "value", and "method"}
 }

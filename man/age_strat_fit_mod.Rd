@@ -4,7 +4,7 @@
 \alias{age_strat_fit_mod}
 \title{Model to feed to `rootSolve::multiroot()` to estimate key parameters of the age stratified model based on observed inputs}
 \usage{
-age_strat_fit_mod(x, I, W_A, prev_A, H_A, W_C, prev_C, H_C, parameters)
+age_strat_fit_mod(x, I, W_A, prev_A, H_A, W_C, prev_C, H_C, pars)
 }
 \arguments{
 \item{x}{input estimates of parameters beta, N_eq, alpha, and omega (IN THAT ORDER)}

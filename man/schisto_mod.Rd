@@ -4,14 +4,14 @@
 \alias{schisto_mod}
 \title{Barebones schistosomiasis model}
 \usage{
-schisto_mod(t, n, parameters)
+schisto_mod(t, n, pars)
 }
 \arguments{
 \item{t}{Vector of timepoints to return state variable estiamtes}
 
 \item{n}{Vector of state variable initial conditions}
 
-\item{parameters}{Named vector of model parameters}
+\item{pars}{Named vector of model parameters}
 }
 \value{
 A matrix of the state variables at all requested time points

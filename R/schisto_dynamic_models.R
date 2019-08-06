@@ -10,13 +10,13 @@
 #'
 #' @param t Vector of timepoints to return state variable estiamtes
 #' @param n Vector of state variable initial conditions
-#' @param parameters Named vector of model parameters
+#' @param pars Named vector of model parameters
 #'
 #' @return A matrix of the state variables at all requested time points
 #' @export
 
-schisto_mod <- function(t, n, parameters) {
-  with(as.list(parameters),{
+schisto_mod <- function(t, n, pars) {
+  with(as.list(pars),{
 
     S=n[1]
     E=n[2]
@@ -60,26 +60,26 @@ schisto_mod <- function(t, n, parameters) {
 #'
 #' @param t Vector of timepoints to return state variable estiamtes
 #' @param n Vector of state variable initial conditions
-#' @param parameters Named vector of model parameters
+#' @param pars Named vector of model parameters
 #'
 #' @return A matrix of the state variables at all requested time points
 #' @export
 
-schisto_base_mod <- function(t, n, parameters) {
+schisto_base_mod <- function(t, n, pars) {
 
-  f_N <- parameters["f_N"]
-  K <- parameters["K"]
-  mu_N <- parameters["mu_N"]
-  sigma <- parameters["sigma"]
-  mu_I <- parameters["mu_I"]
-  mu_W <- parameters["mu_W"]
-  H <- parameters["H"]
-  mu_H <- parameters["mu_H"]
-  lambda <- parameters["lambda"]
-  beta <- parameters["beta"]
-  cvrg <- parameters["cvrg"]
-  zeta <- parameters["zeta"]
-  xi <- parameters["xi"]
+  f_N <- pars["f_N"]
+  K <- pars["K"]
+  mu_N <- pars["mu_N"]
+  sigma <- pars["sigma"]
+  mu_I <- pars["mu_I"]
+  mu_W <- pars["mu_W"]
+  H <- pars["H"]
+  mu_H <- pars["mu_H"]
+  lambda <- pars["lambda"]
+  beta <- pars["beta"]
+  cvrg <- pars["cvrg"]
+  zeta <- pars["zeta"]
+  xi <- pars["xi"]
 
     S=n[1]
     E=n[2]
@@ -123,7 +123,7 @@ schisto_base_mod <- function(t, n, parameters) {
 #' @param nstart Named vector of starting values for state variables
 #' @param time Numeric vector of times at which state variables should be estimated
 #' @param model Name of the ode function to use, defaults to `schisto_base_mod`
-#' @param parameters Named vector or list of parameter values
+#' @param pars Named vector or list of parameter values
 #' @param events_df Data frame of events such as MDA with columns "var", "time", "value", and "method"
 #'
 #' @return dataframe of state variable values at requested times
@@ -132,12 +132,12 @@ schisto_base_mod <- function(t, n, parameters) {
 sim_schisto_mod <- function(nstart,
                             time,
                             model = schisto_base_mod,
-                            parameters,
+                            pars,
                             events_df = NA){
   if(is.na(events_df)){
-    as.data.frame(ode(nstart, time, model, parameters))
+    as.data.frame(ode(nstart, time, model, pars))
   } else {
-    as.data.frame(ode(nstart, time, model, parameters,
+    as.data.frame(ode(nstart, time, model, pars,
                       events = list(data = events_df)))
   }
 }

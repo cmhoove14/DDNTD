@@ -1,0 +1,69 @@
+---
+title: "Fitting procedure"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+devtools::load_all()
+```
+
+## Man-to-snail FOI, $\Lambda$, from equilibrium solutions to snail infection dynamics and input infected snail prevalence  
+Beginning with a basic schistosomiasis model with $S-E-I$ infection dynamics and logistic population growth among the intermediate host snail population we have three ODEs and one simple relation between each infection class and the total snail population, N:
+
+`r latexImg("\\frac{dS}{dt}=r\\Big(1-\\frac{N}{K}\\Big)\\Big(S+E\\Big)-(\\mu_N+\\Lambda) S")`
+
+`r latexImg("\\frac{dE}{dt}=\\Lambda S-(\\mu_N+\\sigma)E")`
+
+`r latexImg("\\frac{dI}{dt}=\\sigma E - \\mu_I I")`
+
+`r latexImg("N=S+E+I")`
+
+Where $\Lambda$ is the man-to-snail force of infection (FOI). At equilibrium, `r latexImg("\\frac{dS}{dt}=\\frac{dE}{dt}=\\frac{dI}{dt}=0")` we have: 
+
+`r latexImg("E^*=\\frac{\\Lambda S^*}{\\mu_N+\\sigma}")`
+
+`r latexImg("I^*=\\frac{\\sigma E^*}{\\mu_I}=\\frac{\\sigma\\Lambda S^*}{\\mu_I(\\mu_N+\\sigma)}")`
+
+and therefore:
+
+`r latexImg("N^*=S^*\\Big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}+\\frac{\\sigma\\Lambda}{\\mu_I(\\mu_N+\\sigma)}\\Big)")`
+
+In addition, we can solve equation 1 representing susceptible snail dynamics for $N^*$ in terms of $\Lambda$ as:
+
+`r latexImg("N^*(\\Lambda)=K\\Big(1-\\frac{\\mu_N+\\Lambda}{r\\big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}\\big)}\\Big)")`
+
+Which gives:
+
+`r latexImg("S^*=\\frac{K\\Big(1-\\frac{\\mu_N+\\Lambda}{r\\big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}\\big)}\\Big)}{\\Big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}+\\frac{\\sigma\\Lambda}{\\mu_I(\\mu_N+\\sigma)}\\Big)}")`
+
+and 
+
+`r latexImg("I^*=\\frac{K\\sigma\\Lambda\\Big(1-\\frac{\\mu_N+\\Lambda}{r\\big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}\\big)}\\Big)}{\\Big(\\mu_I(\\mu_N+\\sigma)\\Big)\\Big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}+\\frac{\\sigma\\Lambda}{\\mu_I(\\mu_N+\\sigma)}\\Big)}")`
+
+Which simplifies to:
+
+`r latexImg("I^*=\\frac{K\\sigma\\Big(1-\\frac{\\mu_N+\\Lambda}{r\\big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}\\big)}\\Big)}{\\Big(\\frac{\\mu_I(\\mu_N+\\sigma)}{\\Lambda}+\\mu_I+\\sigma\\Big)}")`
+
+Therefore with infected snail prevalence, $I_P=I^*/N^*$, and other snail population and infection parameters as inputs, we can estimate $\Lambda$ as:
+
+`r latexImg("\\Lambda=\\frac{\\mu_I(\\mu_N+\\sigma)}{\\frac{\\sigma}{I_P}-\\mu_I-\\sigma}")`
+
+## Contamination fraction, $\Omega$, and miracidia invasion rate, $\Lambda_0$, as function of equilibrium worm burden in children and adults  
+We first assume that differences in child and adult infection rates arise predominately from variation in behavior that affects both exposure and contribution to infection in the same manner. Parameter $\Omega$ therefore represents the relative exposure/contamination of children to adults, $\Omega=\omega_C/\omega_A$, which can be estimated from the equilibrium infection ratio $\Omega=W^*_C/W^*_A$.
+
+With this parameter, we can estimate the equilibirum miracidial density $M$ as:
+
+`r latexImg("M=0.5\\mathbf{H}m\\omega_A(W_C^* h_C\\Phi(W_C^*)\\rho(W_C^*)U_C\\Omega+W_A^* h_A\\Phi(W_A^*)\\rho(W_A^*)U_A)")`
+
+Now, since $\Lambda$ has been estimated above, $N^*$ can be estimated as a function of $\Lambda$, and we have an equilibrium estimate of miracidial density, $M$, we can estimate the baseline miracidial invasion rate, $\Lambda_0$:
+
+`r latexImg("\\Lambda_0=\\frac{\\Lambda}{(1-e^{-M/N^*(\\Lambda)})}")`
+
+Except in rare circumstances, $\Lambda\approx\Lambda_0$ because of the high $M/N$ ratio in transmission settings that have not been intervened upon (i.e. equilibrium settings)
+
+## Worm establishment rate, $\alpha$, as function of equilibrium worm burden    
+Assuming the observed mean worm burden in each population fraction prior to intervention is approximately at equilibrium, the worm acquisition rate, $\lambda_ij$, for each group can be estimated as a function of the exposure fractions, $\omega_a$ and $\omega_c$, the infected snail density, $I^*=I_PN^*$, the snail cercarial shedding rate, $\theta$, and the probability of cercarial establishment per exposure, $\alpha$, with $\alpha$ being the only unkown and estimated as:
+
+`r latexImg("\\alpha=\\frac{W_i^*(\\mu_W+\\mu_H_i)}{\\omega_i I^*\\theta}")`

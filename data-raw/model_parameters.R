@@ -29,15 +29,16 @@ age_strat_pars <- c(
     mu_W = 1/(4*365),   # death rate of adult worms
     mu_H_A = 1/(50*365),# death rate of adult humans
     mu_H_C = 1/(70*365),# death rate of children
-    m = 10,             # mean eggs shed per female worm per 10mL urine (truscott et al)
+    m = 5.2,             # mean eggs shed per female worm per 10mL urine (truscott et al)
     v = 0.08,           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = 5e-3,        # parameter of fecundity reduction function
+    zeta = 5e-4,        # parameter of fecundity reduction function
     xi = 2.8e-3,        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
     U_C = 110,          # mL urine produced per child per day /10mL https://doi.org/10.1186/s13071-016-1681-4
+    omega_c = 0.3,       # amount of infectious material that reaches snail environment
     U_A = 130           # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
 )
 

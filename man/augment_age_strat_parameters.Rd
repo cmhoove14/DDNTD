@@ -5,7 +5,7 @@
 \title{Augment parameter set for age stratified schisto model with fit transmission and observed demographic/infection parameters}
 \usage{
 augment_age_strat_parameters(I, W_A, prev_A, H_A, cvrg_A, W_C, prev_C, H_C,
-  cvrg_C, parameters)
+  cvrg_C, pars)
 }
 \arguments{
 \item{I}{infected snail prevalence}
@@ -26,10 +26,10 @@ augment_age_strat_parameters(I, W_A, prev_A, H_A, cvrg_A, W_C, prev_C, H_C,
 
 \item{cvrg_C}{MDA coverage (proportion) among the child population}
 
-\item{parameters}{parameter set of other key parameters}
+\item{pars}{parameter set of other key parameters}
 }
 \value{
-parameter sit with all parameters needed to run the age stratified model
+parameter set with all parameters needed to run the age stratified model
 }
 \description{
 Takes as input a few observed variables, uses `age_strat_get_pars` to estimate transmission parameters, adds them to the

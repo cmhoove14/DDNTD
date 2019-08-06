@@ -4,7 +4,7 @@
 \alias{schisto_age_strat_mod}
 \title{Age-stratified schistosomiasis model}
 \usage{
-schisto_age_strat_mod(t, n, parameters)
+schisto_age_strat_mod(t, n, pars)
 }
 \arguments{
 \item{t}{Vector of timepoints to return state variable estiamtes}

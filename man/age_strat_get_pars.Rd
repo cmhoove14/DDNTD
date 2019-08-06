@@ -6,8 +6,7 @@
 to return estimates of key parameters of the age stratified model based on observed inputs}
 \usage{
 age_strat_get_pars(f = age_strat_fit_mod, start = c(0.01, 1000, 1e-06,
-  4), I, W_A, prev_A, H_A, W_C, prev_C, H_C, parameters,
-  tolerance = 1e-06)
+  4), I, W_A, prev_A, H_A, W_C, prev_C, H_C, pars, tolerance = 1e-06)
 }
 \arguments{
 \item{f}{function with equations to feed to `multiroot` function. Defaults to `age_strat_fit_mod`}
@@ -28,7 +27,7 @@ age_strat_get_pars(f = age_strat_fit_mod, start = c(0.01, 1000, 1e-06,
 
 \item{H_C}{child population size}
 
-\item{parameters}{parameter set of other key parameters}
+\item{pars}{parameter set of other key parameters}
 
 \item{tolerance}{minimum error to tolerate, else return error}
 }

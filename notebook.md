@@ -56,6 +56,12 @@ Did some more writing and coded up function to estimate transmission parameters 
 # 8/2/19  
 Formalized fitting functions and other helper functions in the R package (added documentation, function descriptions, etc.). Ransome test simulations and worked on coding a stochastic version of the model.
 
+# 8/4/19  
+Worked on coding Reff estimation for age stratified model. Worked on figuring out model parametrs as functions of equilibrium state variable values
+
+# 8/5/2019  
+Finished figuring out estimation of model parameters from equilibirum state variable values, documented in `Parameters_from_eq_states.Rmd`. Coded and documented all resulting functions in `schisto_age_structured_models.R`. Next need to finish updating stochastic model, update the $R_{eff}$ expression, fit the model based on some equilibrium data, and run simulations.
+
 # To-dos  
 ### Generalizable model structure for interventions in schisto stochastic model
 ### Generiaizable parameter intervention structure for Garchitorena et al model

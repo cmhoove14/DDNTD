@@ -17,3 +17,20 @@ latexImg = function(latex){
     link = gsub("(%..)","\\U\\1",link,perl=TRUE)
     return(paste0('![](',link,')'))
 }
+
+#' Function to generate log transformed sequence evenly distributed across broad orders of magnitude
+#'
+#' Functions just like `seq` but evenly distributes values across the full range
+#' rather than for instance `seq(0.000001, 10000, length.out = 100)` returning values that are all >100
+#'
+#' @param min minimum value in the sequence
+#' @param max maximum value in the sequence
+#' @param seq.length length of the sequence
+#'
+#' @return numeric vector spanning min and max with n = seq.length entries
+#' @export
+#'
+#'
+exp_seq <- function(min, max, seq.length){
+  exp(seq(log(min), log(max), length.out = seq.length))
+}

@@ -85,7 +85,6 @@ prev_W_get_k <- function(W, prev){
           interval = c(0,10))$root
 }
 
-
 #' Estimate clumping parameter as function of prevalence and intensity
 #'
 #' Prevalence, mean intensity and the clumping parameter are all related,
@@ -113,7 +112,24 @@ prev_W_get_k <- function(W, prev){
 #' @export
 
   k_from_log_W <- function(W){
-    exp(-2.59748 + 0.41378*log(W))
+    exp(-2.5 + 0.3*log(W))
+  }
+
+
+#' Estimate mean worm burden and clumping parameter as function of prevalence
+#'
+#' This is based on the assumption that the clumping parameter is determined by mean worm burden
+#' which reduces the number of unkowns to 2 therefore if prevalence is known, mean worm burden
+#' and kappa as determined by the mean worm burden are known
+#'
+#' @param Prev Prevalence in th epopulation
+#'
+#' @return Estimate of the mean worm burden
+#' @export
+
+  prev_get_W <- function(Prev){
+    rootSolve::uniroot.all(function(x) 1-Prev-(1+x/(exp(-2.59748 + 0.41378*log(x))))^-(exp(-2.59748 + 0.41378*log(x))),
+                           interval = c(0,1000))
   }
 
 
