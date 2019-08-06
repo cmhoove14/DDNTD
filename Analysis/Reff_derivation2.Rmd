@@ -13,13 +13,13 @@ devtools::load_all()
 
 Beginning with a basic schistosomiasis model with $S-E-I$ infection dynamics and logistic population growth among the intermediate host snail population and human infection modeled via the state variable $W$ representing the mean worm burden across the human population, assumed to be negative binomially distributed with clumping parameter $\kappa$. We have four ODEs:
 
-`r latexImg("\\frac{dS}{dt}=f_N\\big(1-\\frac{N}{K}\\big)\\big(S+E\\big)-\\mu_N S-\\Lambda S")`
+`r latexImg("\\frac{dS}{dt}=f_N(S+E)-\\mu_N S-\\Lambda S")`
 
 `r latexImg("\\frac{dE}{dt}=\\Lambda S-(\\mu_N+\\sigma)E")`
 
 `r latexImg("\\frac{dI}{dt}=\\sigma E - \\mu_I I")`
 
-`r latexImg("\\frac{dW}{dt}=\\lambda I-(\\mu_W+\\mu_H)W")`
+`r latexImg("\\frac{dW}{dt}=\\lambda-(\\mu_W+\\mu_H)W")`
 
 Where $N=S+E+I$, $\Lambda$ is the man-to-snail force of infection (FOI), and $\lambda$ is the snail-to-man FOI, more details on these below. 
 

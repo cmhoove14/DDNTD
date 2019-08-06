@@ -6,13 +6,13 @@ Basic Schistosomiasis Model
 
 Beginning with a basic schistosomiasis model with *S* − *E* − *I* infection dynamics and logistic population growth among the intermediate host snail population and human infection modeled via the state variable *W* representing the mean worm burden across the human population, assumed to be negative binomially distributed with clumping parameter *κ*. We have four ODEs:
 
-![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdS%7D%7Bdt%7D%3Df_N%5Cbig(1-%5Cfrac%7BN%7D%7BK%7D%5Cbig)%5Cbig(S+E%5Cbig)-%5Cmu_N%20S-%5CLambda%20S)
+![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdS%7D%7Bdt%7D%3Df_N(S+E)-%5Cmu_N%20S-%5CLambda%20S)
 
 ![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdE%7D%7Bdt%7D%3D%5CLambda%20S-(%5Cmu_N+%5Csigma)E)
 
 ![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdI%7D%7Bdt%7D%3D%5Csigma%20E%20-%20%5Cmu_I%20I)
 
-![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdW%7D%7Bdt%7D%3D%5Clambda%20I-(%5Cmu_W+%5Cmu_H)W)
+![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdW%7D%7Bdt%7D%3D%5Clambda-(%5Cmu_W+%5Cmu_H)W)
 
 Where *N* = *S* + *E* + *I*, *Λ* is the man-to-snail force of infection (FOI), and *λ* is the snail-to-man FOI, more details on these below.
 
@@ -204,7 +204,9 @@ and therefore:
 
 ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D%3D%5Cfrac%7BK%5Clambda%5Cbig(1+C_1-%5Cfrac%7B%5Cmu_N%7D%7Bf_N%7D-%5Cfrac%7B%5CLambda%20%7D%7Bf_N%7D%5Cbig)%7D%7B%5Cbig(2C_1+3+%5Cfrac%7B%5Cmu_I%7D%7B%5Csigma%20C_1%7D%5Cbig)%5Cbig((%5Cmu_W+%5Cmu_H)W%5Cbig)%7D)
 
-and plugging back in for *C*<sub>1</sub>:
+This gives us our first key analytic finding, the identification of the breakpoint. If *R*<sub>*e**f**f*</sub> &lt; 1, ![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdW%7D%7Bdt%7D%3C0) which implies that an *R*<sub>*e**f**f*</sub> &lt; 1 causes a worm population on the way to extinction (e.g. below the breakpoint)
+
+Now plugging back in for *C*<sub>1</sub>:
 
 ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D%3D%5Cfrac%7BK%5Clambda%5Cbig(1+%5Cfrac%7B%5CLambda%20%7D%7B%5Cmu_N+%5Csigma%7D-%5Cfrac%7B%5Cmu_N%7D%7Bf_N%7D-%5Cfrac%7B%5CLambda%20%7D%7Bf_N%7D%5Cbig)%7D%7B%5Cbig(%5Cfrac%7B2%5CLambda%20%7D%7B%5Cmu_N+%5Csigma%7D+3+%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5Csigma%5CLambda%20%7D%5Cbig)%5Cbig((%5Cmu_W+%5Cmu_H)W%5Cbig)%7D)
 
@@ -216,7 +218,7 @@ The ![](http://latex.codecogs.com/gif.latex?%5Cfrac%7B1%7D%7B%5Cmu_N+%5Csigma%7D
 
 ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D%3D%5Cfrac%7BK%5Clambda%5Cbig(f_N(%5Cmu_N+%5Csigma)+f_N%5CLambda%20-%5Cmu_N(%5Cmu_N+%5Csigma)-%5CLambda%20(%5Cmu_N+%5Csigma)%5Cbig)%7D%7Bf_N%5Cbig(2%5CLambda+3(%5Cmu_N+%5Csigma)+%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%5E2%7D%7B%5Csigma%5CLambda%7D%5Cbig)%7D%5Ctimes%5Cfrac%7B1%7D%7B%5CBig((%5Cmu_W+%5Cmu_H)W%5CBig)%7D)
 
-Some more fenagling of the numerator gives:
+Some more fenagling of the numerator (distribute and then factor out (*μ*<sub>*N*</sub> + *σ* + *Λ*)) gives:
 
 ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D%3D%5Cfrac%7BK%5Clambda%5CBig(%5Cmu_N+%5Csigma+%5CLambda%5CBig)%5CBig(f_N-%5Cmu_N-%5Cfrac%7B%5CLambda%5Csigma%7D%7B(%5Cmu_N+%5Csigma+%5CLambda)%7D%5CBig)%7D%7Bf_N%5Cbig(2%5CLambda+3(%5Cmu_N+%5Csigma)+%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%5E2%7D%7B%5Csigma%5CLambda%7D%5Cbig)%7D%5Ctimes%5Cfrac%7B1%7D%7B%5CBig((%5Cmu_W+%5Cmu_H)W%5CBig)%7D)
 
