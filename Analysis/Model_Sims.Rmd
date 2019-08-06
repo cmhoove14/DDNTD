@@ -17,6 +17,17 @@ require(ggplot2)
 require(tidyverse)
 ```
 # Background and questions  
+## Relationship between prevalence and clumping parameter, $\kappa$  
+```{r kap_prev, fig.height=5, fig.width=7}
+plot(mapply(est_prev_W_k, 
+            (exp_seq(0.00001,1000, 200)), 
+            sapply(exp_seq(0.00001,1000, 200), 
+                   k_from_log_W)), 
+     sapply(exp_seq(0.00001,1000, 200), 
+            k_from_log_W), 
+     type = "l", lwd = 2, xlab = "Prevalence", ylab = expression(kappa))
+```
+
 ## Worm aggregation and mating probability  
 ```{r mate_prob_across_W, fig.height=5, fig.width=7}
 test_ws <- seq(1e-2, sqrt(100), 
@@ -45,11 +56,18 @@ as.data.frame(cbind(test_ws,
 
 ## Worm aggregation and fecundity  
 ```{r fecun_red_across_W, fig.height=5, fig.width=7}
-rho_k0.1 <- sapply(test_ws, rho_Wk, zeta = 5e-3, k = 0.1)
+rho_zeta1 <- sapply(test_ws, rho_Wk, zeta = 5e-3, k = 0.05)
+rho_zeta1_k2 <- sapply(test_ws, rho_Wk, zeta = 5e-3, k = 0.2)
+rho_zeta2 <- sapply(test_ws, rho_Wk, zeta = 5e-4, k = 0.05)
+rho_zeta2_k2 <- sapply(test_ws, rho_Wk, zeta = 5e-4, k = 0.2)
 
 as.data.frame(cbind(test_ws,
-                    rho_k0.1)) %>% 
-  ggplot(aes(x = test_ws, y = rho_k0.1)) +
+                    rho_zeta1,
+                    rho_zeta1_k2,
+                    rho_zeta2,
+                    rho_zeta2_k2)) %>% 
+  gather("zeta_kap", "rho", rho_zeta1:rho_zeta2_k2) %>% 
+  ggplot(aes(x = test_ws, y = rho, col = zeta_kap)) +
     geom_line(size = 1.2) +
     theme_classic() +
     theme(title = element_text(size = 18),
@@ -63,30 +81,6 @@ as.data.frame(cbind(test_ws,
     labs(x = expression(Mean~Worm~Burden~(italic(W))),
          y = expression(paste("Relative Fecundity, ", italic(rho(W)))),
          title = "Relative fecundity across Mean Worm Burden") #+ theme(legend.position = "none")
-
-```
-
-
-## Worm aggregation and acquired immunity    
-```{r acuired_immun_across_W, fig.height=5, fig.width=7}
-gamma_k0.1 <- sapply(test_ws, gam_Wv, xi = 2.8e-2)
-
-as.data.frame(cbind(test_ws,
-                    gamma_k0.1)) %>% 
-  ggplot(aes(x = test_ws, y = gamma_k0.1)) +
-    geom_line(size = 1.2) +
-    theme_classic() +
-    theme(title = element_text(size = 15),
-          axis.title = element_text(size = 15),
-          axis.text = element_text(size = 12)) +
-    scale_x_continuous(trans = "log",
-                       breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100),
-                       labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
-                       limits = c(0.01, 200)) +
-    ylim(c(0,1)) +
-    labs(x = expression(Mean~Worm~Burden~(italic(W))),
-         y = expression(paste("Relative infection probability, ", italic(gamma(W)))),
-         title = "Relative infection probability across Mean Worm Burden") #+ theme(legend.position = "none")
 
 ```
 
@@ -168,6 +162,40 @@ w_k_dist %>% ggplot(aes(x = w)) +
 ```
 
 Influence of the clumping parameter on the distribution of individual worm burdens across different values of the mean worm burden. At low mean worm burdens (e.g. W=1, left panel), lower values of kappa implying more dispersed individual worm burdens are favorable for transmission as more individuals are likely to have >= 2 adult worms
+
+## Worm aggregation and acquired immunity    
+```{r acuired_immun_across_W, fig.height=5, fig.width=7}
+gamma_k0.1 <- sapply(test_ws, gam_Wxi, xi = 2.8e-2)
+
+as.data.frame(cbind(test_ws,
+                    gamma_k0.1)) %>% 
+  ggplot(aes(x = test_ws, y = gamma_k0.1)) +
+    geom_line(size = 1.2) +
+    theme_classic() +
+    theme(title = element_text(size = 15),
+          axis.title = element_text(size = 15),
+          axis.text = element_text(size = 12)) +
+    scale_x_continuous(trans = "log",
+                       breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100),
+                       labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(0.01, 200)) +
+    ylim(c(0,1)) +
+    labs(x = expression(Mean~Worm~Burden~(italic(W))),
+         y = expression(paste("Relative infection probability, ", italic(gamma(W)))),
+         title = "Relative infection probability across Mean Worm Burden") #+ theme(legend.position = "none")
+
+```
+
+## Snail FOI as function of miracidia to snail pop density (M/N)  
+```{r snail_FOI, fig.height=5, fig.width=7}
+M_seq <- exp_seq(1e-4, 100, 300)
+
+plot(M_seq, sapply(M_seq, function(x){1e-4*x}), type = "l", #ylim = c(0,1),
+     lwd = 2, xlab = "Miracidia per snail (M/N)", ylab = "Snail FOI")
+  lines(M_seq, sapply(M_seq, function(x){1e-2*(1-exp(-x))}), lwd = 2, col = 2)
+  legend("bottomright", bty = "n", lwd = 2, col = c(1,2),
+         legend = c("Linear", "Saturating"), title = expression(Snail~FOI~(Lambda)))
+```
 
 # Initial Simulations and Checks  
 
