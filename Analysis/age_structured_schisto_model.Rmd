@@ -6,204 +6,205 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-devtools::load_all("../../DDNTD")
+#devtools::load_all("../../DDNTD")
 
 require(tidyverse)
 ```
 
 # Age structured model  
+## Fitting procedure  
+```{r test_funs}
+C_est <- convert_burden_egg_to_worm(60, 0.1, 126,0.71, age_strat_pars["m"], age_strat_pars["zeta"])
+A_est <- convert_burden_egg_to_worm(10, 0.1, 19,0.33, age_strat_pars["m"], age_strat_pars["zeta"])
 
-```{r}
-H = 300
-area = 200
+eq_Ws_get_Omega_Lambda0(W_A = A_est[1],
+                        kap_A = A_est[2],
+                        H_A = 508,
+                        W_C = C_est[1],
+                        kap_C = C_est[2],
+                        H_C = 602,
+                        I_P = 0.1,
+                        age_strat_pars)
 
-age_strat_pars <- c(
-  ##standard snail parameters
-    r=0.10,             # recruitment rate (from sokolow et al)
-    K=50*area,          # carrying capacity corresponding to 50 snails per square meter
-    mu_N=1/60,          # Mean mortality rate of snails (assuming lifespan of 60days)
-    sigma=1/40,         # Transition rate from exposed to infected (assuming pre-patency period of 40 days)
-    mu_I=1/10,          # Increased mortality rate of infected snails
-
-  #Adult Worm, Miracidia and Cercariae Parameters
-    mu_W = 1/(4*365), # death rate of adult worms
-    m = 5.2,            # mean eggs shed per female worm per 10mL urine (truscott et al)
-
-  #Density dependence parameters
-    zeta = 5e-3,       # parameter of fecundity reduction function
-    xi = 2.8e-3,        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
-
-  #Human parameters
-    H_TC = 120,         # Total number of treated children
-    H_UC = 30,          # Total number of untreated children
-    H_TA = 0,           # Total number of treated adults
-    H_UA = 150,         # Total number of untreated adults
-    U_C = 110,          # mL urine produced per child per day /10mL https://doi.org/10.1186/s13071-016-1681-4
-    U_A = 130,          # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
-    v = 0.08,           # mean egg viability (miracidia per egg)
-    omega = 1.5,        # relative infection risk/contamination of SAC vs adults (related to sanitation/education/water contact)
-
-  #Transmission parameters
-    alpha=1.2e-4,       # Cercarial infection probability
-    Lambda_0=1,         # first parameter of non-linear man-to-snail FOI
-    beta=1.6e-4         # second parameter of non-linear man-to-snail FOI
-)
-
-
-schisto_age_strat_mod <- function(t, n, parameters) {
-  #Parameter values
-    r=parameters["r"]          # recruitment rate (from sokolow et al)
-    K=parameters["K"]          # carrying capacity corresponding to 50 snails per square meter
-    mu_N=parameters["mu_N"]       # Mean mortality rate of snails (assuming lifespan of 60days)
-    sigma=parameters["sigma"]      # Transition rate from exposed to infected (assuming pre-patency period of 40 days)
-    mu_I=parameters["mu_I"]       # Increased mortality rate of infected snails
-
-  #Adult Worm, Miracidia and Cercariae Parameters
-    mu_W = parameters["mu_W"]     # death rate of adult worms
-    m = parameters["m"]              # mean eggs shed per female worm per 10mL urine (truscott et al)
-    v = parameters["v"]             # mean egg viability of eggs shed into environment
-
-  #Density dependence parameters
-    zeta = parameters["gamma"]       # parameter of fecundity reduction function
-    xi = parameters["xi"]        # parameter for acquired immunity funtion
-
-  #Human parameters
-    H = parameters["H"]              # Total number of people
-    prop_SAC = parameters[""]     # Percent of people that are school age children (SAC)
-    prop_adult = parameters   # percent of people that are not school age children (assumed here to be adults)
-    cvrg_SAC = parameters     # MDA coverage in SAC population
-    cvrg_adult = parameters     # MDA coverage in adult population
-    u_SAC = parameters         # mL urine per SAC/day/10mL assumed to be half of adult (approximate, ranges from 20 - 100)
-    u_adult = parameters      # mL urine per adult/day/10mL (approximate, ranges from 80 - 200)
-    rho_SAC = parameters      # relative number of eggs shed by SAC that make it to snail habitat (~sanitation)
-    rho_adult = parameters  # relative number of eggs shed by adults that make it to snail habitat (~sanitation); 5% of SAC (truscott et al)
-    omega_SAC = parameters      # relative infection risk of SAC (related to clean water access/education/water contact)
-    omega_adult = parameters  # relative infection risk of adults (related to clean water access/education/water contact)
-
-  #Transmission parameters
-    lambda=parameters      # snail-to-man transmission
-    Lambda_0=parameters         # first parameter of non-linear man-to-snail FOI
-    beta=parameters        # second parameter of non-linear man-to-snail FOI
-
-  
-  #State variables
-    S=n[1]
-    E=n[2]
-    I=n[3]
-    W_TC=n[4]
-    W_UC=n[5]
-    W_TA=n[6]
-    W_UA=n[7]
-
-    #Total snail population
-      N=S+E+I
-
-    #Update clumping parameter, k from estimate of worm burden in each population
-      k_TC = k_from_log_W(W_TC)
-      k_UC = k_from_log_W(W_UC)
-      k_TA = k_from_log_W(W_TA)
-      k_UA = k_from_log_W(W_UA)
-
-    #Estimate mating probability within each strata
-      phi_W_TC = phi_Wk(W = W_TC, k = k_TC)  #Mating probability in treated SAC population
-      phi_W_UC = phi_Wk(W = W_UC, k = k_UC)  #Mating probability in untreated SAC population
-      phi_W_TA = phi_Wk(W = W_TA, k = k_TA)  #Mating probability in treated adult population
-      phi_W_UA = phi_Wk(W = W_UA, k = k_UA)  #Mating probability in untreated adult population
-
-
-    #Estimate mean eggs produced per person in each strata as product of
-      # mated female worms (0.5*worm burden*mating probability),
-      # eggs produced per female worm per 10mL urine,
-      # urine produced per day /10mL
-      # and reduction in fecundity due to crowding
-        eggs_W_TC = 0.5*(W_TC*phi_W_TC) * m * U_C * rho_Wk(W_TC, zeta, k_TC)
-  
-        eggs_W_UC = 0.5*(W_UC*phi_W_UC) * m * U_C * rho_Wk(W_UC, zeta, k_UC)
-  
-        eggs_W_TA = 0.5*(W_TA*phi_W_TA) * m * U_A * rho_Wk(W_TA, zeta, k_TA)
-  
-        eggs_W_UA = 0.5*(W_UA*phi_W_UA) * m * U_A * rho_Wk(W_UA, zeta, k_UA)
-
-    #Estimate miracidia produced by each strata as product of
-      # mean eggs per 10 mL urine for individuals in each strata,
-      # number of people in each strata,
-      # egg viability  
-      # contamination coefficient for SAC/adults,
-
-      M_W_TC = eggs_W_TC * v * H_TC * omega
-
-      M_W_UC = eggs_W_UC * v * H_UC * omega
-
-      M_W_TA = eggs_W_TA * v * H_TA 
-
-      M_W_UA = eggs_W_UA * v * H_UA 
-
-    # Estimate total miracidia entering snail habitat
-      M_tot = M_W_TC + M_W_UC + M_W_TA + M_W_UA
-
-    # Snail infection dynamics
-      dSdt= r*(1-(N/K))*(S+E) - mu_N*S - Lambda_0*(1-exp(-beta*M_tot/N))*S #Susceptible snails
-
-      dEdt= Lambda_0*(1-exp(-beta*M_tot/N))*S - (mu_N+sigma)*E #Exposed snails
-
-      dIdt= sigma*E - mu_I*I #Infected snails
-
-    # Estimate cercarial output from infected snail population
-      C = theta*I
-      
-    #worm burden in human populations
-      dW_TCdt= omega*alpha*C*gam_Wv(W_TC, xi) - (mu_W*W_TC)
-      dW_UCdt= omega*alpha*C*gam_Wv(W_UC, xi) - (mu_W*W_UC)
-      dW_TAdt= alpha*C*gam_Wv(W_TA, xi) - (mu_W*W_TA)
-      dW_UAdt= alpha*C*gam_Wv(W_UA, xi) - (mu_W*W_UA)
-
-    return(list(c(dSdt,dEdt,dIdt,
-                  dW_TCdt,dW_UCdt,
-                  dW_TAdt, dW_UAdt)))
-}
+infection_inputs_get_pars(W_A = A_est[1],
+                          kap_A = A_est[2],
+                          H_A = 508,
+                          W_C = C_est[1],
+                          kap_C = C_est[2],
+                          H_C = 602,
+                          I_P = 0.1,
+                          age_strat_pars)
 ```
 
-```{r sim_age_structure}
-years <- 20
-age_time <- c(1:(365*years))
+```{r mod_setup}
+#add transmission and other parameters to parameter set
+age_strat_use_pars <- infection_inputs_get_pars(W_A = A_est[1],
+                                                kap_A = A_est[2],
+                                                H_A = 508,
+                                                W_C = C_est[1],
+                                                kap_C = C_est[2],
+                                                H_C = 602,
+                                                I_P = 0.1,
+                                                age_strat_pars)
 
-age_start <- c(S=5000, E=0, I=0, W_TC=10, W_UC=10, W_TA=10, W_UA=10)
 
-#Run to equibrium with base parameter set
-age_eqbm <- runsteady(y = age_start, func = schisto_age_strat_mod,
-                      parms = age_strat_pars)[["y"]]
+# UPDATE BELOW
 
-schisto_age_sim <- sim_schisto_mod(nstart = age_eqbm, 
-                                   time = age_time, 
-                                   model = schisto_age_strat_mod,
-                                   parameters = age_strat_pars,
-                                   events_df = NA)
+
+
+
+
+
+
+
+H_tot <- sum(c(age_strat_use_pars["H_TC"], 
+               age_strat_use_pars["H_UC"],
+               age_strat_use_pars["H_TA"],
+               age_strat_use_pars["H_UA"]))
+#Get euilibrium values of state variables
+  eq_vals <- runsteady(y = c(S=age_strat_use_pars["K"], E=0, I=0, W_TC=10, W_UC=10, W_TA=10, W_UA=10),
+                       func = schisto_age_strat_mod,
+                       parms = age_strat_use_pars,
+                       stol = 1e-4)$y #lower tolerance to define equilibirum to speed up computation
+    names(eq_vals)[1] <- "S"
+  
+#time frame of simulation  
+  years <- 20
+  age_time <- c(1:(365*years))
+
+#create MDA events data frame  
+  eff <- 0.93
+  sac_mda <- data.frame(var = rep('W_TC', years/2),
+                        time = c(1:(years/2))*365,
+                        value = rep((1 - eff), years/2),
+                        method = rep('mult', years/2))
 ```
 
 ## Simulate 10 years of annual MDA in 75% of SAC populaition  
 ```{r sim_mda_sac}
-eff <- 0.93
-age_strat_pars["cvrg_SAC"] <- 0.75
-
-sac_mda <- data.frame(var = rep('W_TC', years/2),
-                      time = c(1:(years/2))*365,
-                      value = rep((1 - eff), years/2),
-                      method = rep('mult', years/2))
-
-schisto_mda_sim <- sim_schisto_mod(nstart = age_eqbm, 
+schisto_mda_sim <- sim_schisto_mod(nstart = eq_vals, 
                                    time = age_time, 
                                    model = schisto_age_strat_mod,
-                                   parameters = age_strat_pars,
-                                   events_df = sac_mda)
+                                   pars = age_strat_use_pars,
+                                   events_df = sac_mda) %>% 
+  mutate(mean_W = (W_TC*age_strat_use_pars["H_TC"]/H_tot +
+                        W_UC*age_strat_use_pars["H_UC"]/H_tot +
+                        W_TA*age_strat_use_pars["H_TA"]/H_tot + 
+                        W_UA*age_strat_use_pars["H_UA"]/H_tot),
+         I_prev = I/(S+E+I),
+         Reff = mapply(Reff_Wij, W_TC, W_UC, W_TA, W_UA, MoreArgs = list(pars = age_strat_use_pars))[2,])
 
 schisto_mda_sim %>% 
-  gather("Treatment", "Worm Burden",  W_TC:W_UA) %>% 
+  gather("Treatment", "Worm Burden",  W_TC:mean_W) %>% 
   ggplot(aes(x = time, y = `Worm Burden`, lty = Treatment)) +
     geom_line() +
     theme_classic() +
-    theme(legend.position = c(0.6,0.8)) +
-    ylim(c(0,100)) +
+    theme(legend.position = c(0.9,0.5)) +
+    #ylim(c(0,100)) +
     scale_x_continuous(breaks = c(0:years)*365,
                        labels = c(-1:(years-1)))
 ```
+
+```{r Reff_plot}
+schisto_mda_sim %>% 
+  ggplot(aes(x = mean_W, y = Reff)) +
+    geom_line() +
+    theme_classic()
+```
+
+So that makes it look like we're not even close to reaching the breakpoint and maybe haven't even reached $R_{peak}$. Let's increase coverage in SAC and add MDA in adult population and see what plot lokos like
+
+```{r}
+#SAME SETUP ROUTINE 
+#add transmission and other parameters to parameter set
+age_strat_use_pars2 <- augment_age_strat_parameters(I = 0.1, 
+                                                   W_A = 19, 
+                                                   prev_A = 0.33, 
+                                                   H_A = 508, 
+                                                   cvrg_A = 0.8,
+                                                   W_C = 126, 
+                                                   prev_C = 0.71, 
+                                                   H_C = 602,
+                                                   cvrg_C = 1,
+                                                   pars = age_strat_pars)
+
+H_tot2 <- sum(c(age_strat_use_pars2["H_TC"], 
+               age_strat_use_pars2["H_UC"],
+               age_strat_use_pars2["H_TA"],
+               age_strat_use_pars2["H_UA"]))
+
+#Get equilibrium values of state variables
+  eq_vals2 <- runsteady(y = c(S=age_strat_use_pars2["K"], E=0, I=0, W_TC=10, W_UC=10, W_TA=10, W_UA=10),
+                       func = schisto_age_strat_mod,
+                       parms = age_strat_use_pars2,
+                       stol = 1e-4)$y #lower tolerance to define equilibirum to speed up computation
+    names(eq_vals2)[1] <- "S"
+  
+#time frame of simulation  
+  years <- 40
+  age_time <- c(1:(365*years))
+    
+    
+#create MDA events data frame  
+  eff <- 0.93
+  com_mda <- data.frame(var = rep(c('W_TC', "W_TA"), years/2),
+                        time = rep(c(1:(years/2))*365, each = 2),
+                        value = rep((1 - eff), years),
+                        method = rep('mult', years))
+
+#MODEL RUN  
+schisto_mda_sim2 <- sim_schisto_mod(nstart = eq_vals2, 
+                                   time = age_time, 
+                                   model = schisto_age_strat_mod,
+                                   pars = age_strat_use_pars2,
+                                   events_df = com_mda) %>% 
+  mutate(mean_W = (W_TC*age_strat_use_pars2["H_TC"]/H_tot2 +
+                        W_UC*age_strat_use_pars2["H_UC"]/H_tot2 +
+                        W_TA*age_strat_use_pars2["H_TA"]/H_tot2 + 
+                        W_UA*age_strat_use_pars2["H_UA"]/H_tot2),
+         I_prev = I/(S+E+I),
+         Reff = mapply(Reff_Wij, W_TC, W_UC, W_TA, W_UA, MoreArgs = list(pars = age_strat_use_pars2))[2,])
+  
+schisto_mda_sim2 %>% 
+  ggplot(aes(x = mean_W, y = Reff)) +
+    geom_line() +
+    theme_classic()
+
+```
+
+```{r narrow_par_ranges}
+age_strat_eqbm <- function(alpha, Lambda_0, beta){
+  
+  age_strat_pars["alpha"] <- alpha
+  age_strat_pars["Lambda_0"] <- Lambda_0
+  age_strat_pars["beta"] <- beta
+  
+  eq_vals <- runsteady(y = age_start,
+                       func = schisto_age_strat_mod,
+                       parms = age_strat_pars,
+                       stol = 1e-4) #lower tolerance to define equilibirum to speed up computation
+  
+  #print(c(alpha, Lambda_0, beta, eq_vals[["y"]]))
+  
+  return(as.data.frame(t(eq_vals$y)))
+}
+
+test_trans_pars <- expand.grid(alpha = exp(seq(log(1e-8), log(1e-2), length.out = 10)),
+                               Lambda_0 = exp(seq(log(1e-8), log(1e-2), length.out = 10)),
+                               beta = exp(seq(log(1e-8), log(1e-2), length.out = 10)))
+
+age_start <- c(S=5000, E=0, I=0, W_TC=10, W_UC=10, W_TA=10, W_UA=10)
+
+eq_vals_trans_pars <- pmap_df(test_trans_pars, age_strat_eqbm)
+
+trans_pars_eqs <- cbind(test_trans_pars, eq_vals_trans_pars)
+
+trans_pars_eqs %>% 
+  filter(W_TC < 200 & W_TC >2) %>% 
+  filter(I > 10 & I < 3000) %>% 
+  View()
+```
+
+
+
 
