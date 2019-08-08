@@ -38,7 +38,7 @@ age_strat_pars <- c(
 
   #Human parameters
     U_C = 110,          # mL urine produced per child per day /10mL https://doi.org/10.1186/s13071-016-1681-4
-    omega_c = 0.3,       # amount of infectious material that reaches snail environment
+    omega_c = 0.01,       # amount of infectious material that reaches snail environment
     U_A = 130           # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
 )
 

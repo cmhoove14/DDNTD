@@ -4,7 +4,8 @@
 \alias{eq_Ws_get_Omega_Lambda0}
 \title{Function to estimate miracidial invasion rate and relative contamination coefficient from equilibirum egg burden and prevalence inputs}
 \usage{
-eq_Ws_get_Omega_Lambda0(W_A, kap_A, H_A, W_C, kap_C, H_C, I_P, pars)
+eq_Ws_get_Omega_Lambda0(W_A, kap_A, H_A, W_C, kap_C, H_C, K_ratio = 1,
+  I_P, pars)
 }
 \arguments{
 \item{W_A}{equilibrium mean worm burden in adult population, can be estimated from egg burden and prevalence using `convert_burden_egg_to_worm`}
@@ -18,6 +19,8 @@ eq_Ws_get_Omega_Lambda0(W_A, kap_A, H_A, W_C, kap_C, H_C, I_P, pars)
 \item{kap_C}{equilibrium clumping parameter in child population, can be estimated from egg burden and prevalence using `convert_burden_egg_to_worm`}
 
 \item{H_C}{child human population size}
+
+\item{K_ratio}{ratio of snail carrying capacity to human population size. defaults to 1, but should be increased for environments/communities that have particularly intense snail habitat or tranmission}
 
 \item{I_P}{infected snail prevalence, observed or input}
 

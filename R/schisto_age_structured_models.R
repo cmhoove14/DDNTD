@@ -38,18 +38,20 @@ schisto_age_strat_mod <- function(t, n, pars) {
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
-    H_TC = pars["H_TC"]         # Total number of treated children
-    H_UC = pars["H_UC"]          # Total number of untreated children
-    H_TA = pars["H_TA"]           # Total number of treated adults
-    H_UA = pars["H_UA"]         # Total number of untreated adults
+    H = pars["H"]
+    h_tc = pars["h_tc"]         # Total number of treated children
+    h_uc = pars["h_uc"]          # Total number of untreated children
+    h_ta = pars["h_ta"]           # Total number of treated adults
+    h_ua = pars["h_ua"]         # Total number of untreated adults
     U_C = pars["U_C"]          # mL urine produced per child per day /10mL https://doi.org/10.1186/s13071-016-1681-4
     U_A = pars["U_A"]          # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
-    omega = pars["omega"]          # relative infection risk/contamination of SAC vs adults (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    omega_c = pars["omega_c"]          #  infection risk/contamination of SAC  (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    omega_a = pars["omega_a"]          #  infection risk/contamination of adults (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    Omega = pars["Omega"]          # relative infection risk/contamination of SAC vs adults
 
   #Transmission parameters
     alpha=pars["alpha"]       # Cercarial infection probability
     Lambda_0=pars["Lambda_0"]         # first parameter of non-linear man-to-snail FOI
-    beta=pars["beta"]         # second parameter of non-linear man-to-snail FOI
 
   #State variables #######
     S=n[1]
@@ -75,7 +77,6 @@ schisto_age_strat_mod <- function(t, n, pars) {
       phi_W_TA = phi_Wk(W = W_TA, k = k_TA)  #Mating probability in treated adult population
       phi_W_UA = phi_Wk(W = W_UA, k = k_UA)  #Mating probability in untreated adult population
 
-
     #Estimate mean eggs produced per person in each strata as product of
       # mated female worms (0.5*worm burden*mating probability),
       # eggs produced per female worm per 10mL urine,
@@ -89,27 +90,19 @@ schisto_age_strat_mod <- function(t, n, pars) {
 
         eggs_W_UA = 0.5*(W_UA*phi_W_UA) * m * rho_Wk(W_UA, zeta, k_UA) * U_A
 
-    #Estimate miracidia produced by each strata as product of
+    #Estimate total miracidia produced by each strata as product of
       # mean eggs produced by individuals in each strata,
       # number of people in each strata,
       # egg viability
       # contamination coefficient for SAC/adults,
 
-      M_W_TC = eggs_W_TC * v * H_TC
-
-      M_W_UC = eggs_W_UC * v * H_UC
-
-      M_W_TA = eggs_W_TA * v * H_TA / omega
-
-      M_W_UA = eggs_W_UA * v * H_UA / omega
-
     # Estimate total miracidia entering snail habitat
-      M_tot = M_W_TC + M_W_UC + M_W_TA + M_W_UA
+      M_tot = H*omega_a*v*(eggs_W_TC*h_tc*Omega + eggs_W_UC*h_uc*Omega + eggs_W_TA*h_ta + eggs_W_UA*h_ua)
 
     # Snail infection dynamics
-      dSdt= r*(1-(N/K))*(S+E) - mu_N*S - Lambda_0*(1-exp(-beta*M_tot/N))*S #Susceptible snails
+      dSdt= r*(1-(N/K))*(S+E) - mu_N*S - Lambda_0*(1-exp(-M_tot/N))*S #Susceptible snails
 
-      dEdt= Lambda_0*(1-exp(-beta*M_tot/N))*S - (mu_N+sigma)*E #Exposed snails
+      dEdt= Lambda_0*(1-exp(-M_tot/N))*S - (mu_N+sigma)*E #Exposed snails
 
       dIdt= sigma*E - mu_I*I #Infected snails
 
@@ -122,10 +115,10 @@ schisto_age_strat_mod <- function(t, n, pars) {
       # cercarial density/exposure
       # density dependent probability of establishment
 
-      dW_TCdt= omega*alpha*C*gam_Wxi(W_TC, xi) - (mu_W+mu_H_C)*W_TC
-      dW_UCdt= omega*alpha*C*gam_Wxi(W_UC, xi) - (mu_W+mu_H_C)*W_UC
-      dW_TAdt= alpha*C*gam_Wxi(W_TA, xi) - (mu_W+mu_H_A)*W_TA
-      dW_UAdt= alpha*C*gam_Wxi(W_UA, xi) - (mu_W+mu_H_A)*W_UA
+      dW_TCdt= omega_c*alpha*C - (mu_W+mu_H_C)*W_TC
+      dW_UCdt= omega_c*alpha*C - (mu_W+mu_H_C)*W_UC
+      dW_TAdt= omega_a*alpha*C - (mu_W+mu_H_A)*W_TA
+      dW_UAdt= omega_a*alpha*C - (mu_W+mu_H_A)*W_UA
 
     return(list(c(dSdt,dEdt,dIdt,
                   dW_TCdt,dW_UCdt,
@@ -260,6 +253,7 @@ convert_burden_egg_to_worm <- function(W_guess, kap_guess, egg_burden, prevalenc
 #' @param W_C equilibrium mean worm burden in child population, can be estimated from egg burden and prevalence using `convert_burden_egg_to_worm`
 #' @param kap_C equilibrium clumping parameter in child population, can be estimated from egg burden and prevalence using `convert_burden_egg_to_worm`
 #' @param H_C child human population size
+#' @param K_ratio ratio of snail carrying capacity to human population size. defaults to 1, but should be increased for environments/communities that have particularly intense snail habitat or tranmission
 #' @param I_P infected snail prevalence, observed or input
 #' @param pars additional model parameters
 #'
@@ -273,6 +267,7 @@ eq_Ws_get_Omega_Lambda0 <- function(W_A,
                                     W_C,
                                     kap_C,
                                     H_C,
+                                    K_ratio = 1,
                                     I_P,
                                     pars){
   #parameters as functions of inputs
@@ -282,7 +277,7 @@ eq_Ws_get_Omega_Lambda0 <- function(W_A,
 
   # Snail parameters
     r=pars["r"]           # recruitment rate (from sokolow et al)
-    K=H * 0.8             # carrying capacity as a function of human population size (assumption that snail area is proportional to community size)
+    K=H * K_ratio         # carrying capacity as a function of human population size (assumption that snail area is proportional to community size)
     mu_N=pars["mu_N"]     # Mean mortality rate of snails (assuming lifespan of 60days)
     sigma=pars["sigma"]   # Transition rate from exposed to infected (assuming pre-patency period of ~4 weeks) doi:10.4269/ajtmh.16-0614
     mu_I=pars["mu_I"]     # Increased mortality rate of infected snails
@@ -310,12 +305,16 @@ eq_Ws_get_Omega_Lambda0 <- function(W_A,
     Omega = W_C/W_A
     omega_a = omega_c/Omega
 
-  #Miraricidal concentration from inputs
+  #Miracidal concentration from inputs
     M = 0.5*H*omega_a*m*v*(W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,zeta,kap_C)*U_C*h_c*Omega + W_A*phi_Wk(W_A, kap_A)*rho_Wk(W_A,zeta,kap_A)*U_A*h_a)
 
+  #Lambda_0 estimate for non-linear snail FOI
     Lambda_0 <- Lambda/(1-exp(-M/N_eq))
 
-    return(c(as.numeric(Omega), as.numeric(Lambda_0)))
+  # Beta estimate for linear snail FOI
+    beta <- Lambda*N_eq/M
+
+    return(c(as.numeric(Omega), as.numeric(Lambda_0), as.numeric(beta)))
 
 }
 
@@ -346,16 +345,19 @@ eq_W_get_alpha <- function(W_C, omega_c, mu_W, mu_H_C, theta, I_P, N_eq){
 #' @param W_A equilibrium mean worm burden in adult population, can be estimated from egg burden and prevalence using `convert_burden_egg_to_worm`
 #' @param kap_A equilibrium clumping parameter in adult population, can be estimated from egg burden and prevalence using `convert_burden_egg_to_worm`
 #' @param H_A adult human population size
+#' @param cvrg_A MDA coverage of the adult population
 #' @param W_C equilibrium mean worm burden in child population, can be estimated from egg burden and prevalence using `convert_burden_egg_to_worm`
 #' @param kap_C equilibrium clumping parameter in child population, can be estimated from egg burden and prevalence using `convert_burden_egg_to_worm`
 #' @param H_C child human population size
+#' @param cvrg_C MDA coverage of the child population
+#' @param K_ratio ratio of snail carrying capacity to human population size. defaults to 1, but should be increased for environments/communities that have particularly intense snail habitat or tranmission
 #' @param I_P infected snail prevalence, observed or input
 #' @param pars additional model parameters
 #'
 #' @return parameter set with fit parameters based on equilibirum values
 #' @export
 
-infection_inputs_get_pars <- function(W_A, kap_A, H_A, W_C, kap_C, H_C, I_P, pars){
+infection_inputs_get_pars <- function(W_A, kap_A, H_A, cvrg_A, W_C, kap_C, H_C, cvrg_C, K_ratio = 1, I_P, pars){
   # Snail parameters
     r=pars["r"]           # recruitment rate (from sokolow et al)
     mu_N=pars["mu_N"]     # Mean mortality rate of snails (assuming lifespan of 60days)
@@ -383,18 +385,42 @@ infection_inputs_get_pars <- function(W_A, kap_A, H_A, W_C, kap_C, H_C, I_P, par
   new_pars <- pars
 
   #parameters as functions of inputs
+    H = H_A+H_C
+    h_a = H_A/H
+    h_c = H_C/H
+    h_ta = round(H_A*cvrg_A) / H
+    h_ua = h_a - h_ta
+    h_tc = round(H_C*cvrg_C) / H
+    h_uc = h_c - h_tc
+
+    K = H * K_ratio
+
     new_pars["H"] = H_A + H_C
-    new_pars["h_a"] = H_A/H
-    new_pars["h_c"] = H_C/H
-    new_pars["K"] = H * 0.8             # carrying capacity as a function of human population size (assumption that snail area is proportional to community size)
+    new_pars["h_a"] = h_a
+    new_pars["h_c"] = h_c
+    new_pars["h_t"] = (cvrg_C*H_C + cvrg_A*H_A)/H
+    new_pars["h_u"] = ((1-cvrg_C)*H_C + (1-cvrg_A)*H_A)/H
+    new_pars["h_tc"] = h_tc
+    new_pars["h_uc"] = h_uc
+    new_pars["h_ta"] = h_ta
+    new_pars["h_ua"] = h_ua
+    new_pars["cvrg_C"] = cvrg_C
+    new_pars["cvrg_A"] = cvrg_A
+
+    new_pars["K"] = K
 
   # Parameters determined from inputs
-    new_pars["Lambda"] <- I_get_Lambda(I_P, mu_N, mu_I, sigma)
-    new_pars["N_eq"] <- Lambda_get_N_eq(Lambda, K, mu_N,r, sigma)
+    Lambda = I_get_Lambda(I_P, mu_N, mu_I, sigma)
+    N_eq = Lambda_get_N_eq(Lambda, K, mu_N, r, sigma)
+    Omega = W_C/W_A
+    omega_a = omega_c/Omega
+
+    new_pars["Lambda"] <- Lambda
+    new_pars["N_eq"] <- N_eq
     new_pars["I_eq"] <- new_pars["N_eq"]*I_P
     new_pars["E_eq"] <- new_pars["I_eq"]*mu_I/sigma
-    new_pars["S_eq"] <- (new_pars["I_eq"]*mu_I*(mu_N+sigma))/(sigma*new_pars["Lambda"])
-    new_pars["Omega"] = W_C/W_A
+    new_pars["S_eq"] <- (new_pars["I_eq"]*mu_I*(mu_N+sigma))/(sigma*Lambda)
+    new_pars["Omega"] = Omega
     new_pars["omega_a"] = omega_c/Omega
     new_pars["alpha"] = eq_W_get_alpha(W_C = W_C,
                                        omega_c = new_pars["omega_c"],
@@ -405,19 +431,21 @@ infection_inputs_get_pars <- function(W_A, kap_A, H_A, W_C, kap_C, H_C, I_P, par
                                        N_eq = new_pars["N_eq"])
 
   #Miricidia concentration from inputs
-    with(as.list(new_pars),{
-      M = 0.5*H*omega_a*m*v*(W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,zeta,kap_C)*U_C*h_c*Omega + W_A*phi_Wk(W_A, kap_A)*rho_Wk(W_A,zeta,kap_A)*U_A*h_a)
+      M = 0.5*H*omega_a*m*v*
+          (W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,zeta,kap_C)*U_C*h_c*Omega +
+           W_A*phi_Wk(W_A, kap_A)*rho_Wk(W_A,zeta,kap_A)*U_A*h_a)
+
       new_pars["Lambda_0"] <- Lambda/(1-exp(-M/N_eq))
-    })
+      new_pars["beta"] <- Lambda*N_eq/M
 
     return(new_pars)
 
 }
 
-# FUNCTIONS WHICH NEED UPDATING ##########
-#' Estimate effective reproduction number
+
+#' Estimate saturating form of man-to-snail FOI
 #'
-#' Estimates the effective reproduction number, $R_eff$ as a function of
+#' Estimates the man-to-snail FOI as function of
 #' model parameters and mean worm burden in each age and treatment population
 #'
 #' @param pars parameter set
@@ -425,19 +453,14 @@ infection_inputs_get_pars <- function(W_A, kap_A, H_A, W_C, kap_C, H_C, I_P, par
 #' @param W_UC mean worm burden in untreated SAC group
 #' @param W_TA mean worm burden in treated adult group
 #' @param W_UA mean worm burden in untreated adult group
+#'
+#' @return Estimate of the man-to-snail FOI from the saturating function
+#' @export
 
-Reff_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA){
-  # Get total human population size
-  H_tot <- pars["H_TC"]+pars["H_UC"]+pars["H_TA"]+pars["H_UA"]
-
-  # Get mean worm burden of total population as weighted sum of worm burden in each age/treatment group
-  W_bar <- W_TC*pars["H_TC"]/H_tot+
-           W_UC*pars["H_UC"]/H_tot+
-           W_TA*pars["H_TA"]/H_tot+
-           W_UA*pars["H_UA"]/H_tot
-
-  # Get other parameters
+Lambda_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA){
+  ##standard snail parameters
     r=pars["r"]             # recruitment rate (from sokolow et al)
+    K=pars["K"]          # carrying capacity corresponding to 50 snails per square meter
     mu_N=pars["mu_N"]          # Mean mortality rate of snails (assuming lifespan of 60days)
     sigma=pars["sigma"]         # Transition rate from exposed to infected (assuming pre-patency period of ~4 weeks) doi:10.4269/ajtmh.16-0614
     mu_I=pars["mu_I"]          # Increased mortality rate of infected snails
@@ -455,20 +478,20 @@ Reff_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA){
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
+    H = pars["H"]
+    h_tc = pars["h_tc"]         # Proportion of treated children
+    h_uc = pars["h_uc"]          # Proportion of untreated children
+    h_ta = pars["h_ta"]           # Proportion of treated adults
+    h_ua = pars["h_ua"]         # Proportion of untreated adults
     U_C = pars["U_C"]          # mL urine produced per child per day /10mL https://doi.org/10.1186/s13071-016-1681-4
     U_A = pars["U_A"]          # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
-    H_TC = pars["H_TC"]
-    H_UC = pars["H_UC"]
-    H_TA = pars["H_TA"]
-    H_UA = pars["H_UA"]
+    omega_c = pars["omega_c"]          #  infection risk/contamination of SAC  (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    omega_a = pars["omega_a"]          #  infection risk/contamination of adults (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    Omega = pars["Omega"]          # relative infection risk/contamination of SAC vs adults
 
-  #Fit parameters
-    Lambda_0 <- pars["Lambda_0"]
-    alpha <- pars["alpha"]
-    beta <- pars["beta"]
-    omega <- pars["omega"]
-    N_eq <- pars["N_eq"]
-    K <- pars["K"]
+  #Transmission parameters
+    alpha=pars["alpha"]       # Cercarial infection probability
+    Lambda_0=pars["Lambda_0"]         # first parameter of non-linear man-to-snail FOI
 
   # Get miracidial density as function of worm burdens
     #Update clumping parameter, k from estimate of worm burden in each population
@@ -483,41 +506,251 @@ Reff_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA){
       phi_W_TA = phi_Wk(W = W_TA, k = k_TA)  #Mating probability in treated adult population
       phi_W_UA = phi_Wk(W = W_UA, k = k_UA)  #Mating probability in untreated adult population
 
-     #Miracidial contribution of each group to estimate M
-        M_W_TC = 0.5*(W_TC*phi_W_TC) * m * rho_Wk(W_TC, zeta, k_TC) * U_C * v * H_TC
+    # Estimate total miracidia entering snail habitat
+      M_tot = 0.5*H*omega_a*v*m*((W_TC*phi_W_TC) * rho_Wk(W_TC, zeta, k_TC) * U_C*h_tc*Omega +
+                                   (W_UC*phi_W_UC) * rho_Wk(W_UC, zeta, k_UC) * U_C*h_uc*Omega +
+                                   (W_TA*phi_W_TA) * rho_Wk(W_TA, zeta, k_TA) * U_A*h_ta +
+                                   (W_UA*phi_W_UA) * rho_Wk(W_UA, zeta, k_UA) * U_A*h_ua)
 
-        M_W_UC = 0.5*(W_UC*phi_W_UC) * m * rho_Wk(W_UC, zeta, k_UC) * U_C * v * H_UC
+  # Get man-to-snail FOI as solution given M_tot and other parameters
+    Lambda <- uniroot(function(L) Lambda_0*(1-exp(-M_tot/(K*(1-(mu_N+L)/(r*(1+L/(mu_N+sigma)))))))-L,
+                      interval = c(1e-8,10))$root
 
-        M_W_TA = 0.5*(W_TA*phi_W_TA) * m * rho_Wk(W_TA, zeta, k_TA) * U_A * v * H_TA / omega
+  return(Lambda)
+}
 
-        M_W_UA = 0.5*(W_UA*phi_W_UA) * m * rho_Wk(W_UA, zeta, k_UA) * U_A * v * H_UA / omega
+#' Estimate linear form of man-to-snail FOI
+#'
+#' Estimates the linear version of man-to-snail FOI as function of
+#' model parameters and mean worm burden in each age and treatment population
+#'
+#' @param pars parameter set
+#' @param W_TC mean worm burden in treated SAC group
+#' @param W_UC mean worm burden in untreated SAC group
+#' @param W_TA mean worm burden in treated adult group
+#' @param W_UA mean worm burden in untreated adult group
+#'
+#' @return Estimate of the man-to-snail FOI from the linear function
+#' @export
 
-        M_tot = M_W_TC + M_W_UC + M_W_TA + M_W_UA
+Lambda_Wij_linear <- function(pars, W_TC, W_UC, W_TA, W_UA){
+  ##standard snail parameters
+    r=pars["r"]             # recruitment rate (from sokolow et al)
+    K=pars["K"]          # carrying capacity corresponding to 50 snails per square meter
+    mu_N=pars["mu_N"]          # Mean mortality rate of snails (assuming lifespan of 60days)
+    sigma=pars["sigma"]         # Transition rate from exposed to infected (assuming pre-patency period of ~4 weeks) doi:10.4269/ajtmh.16-0614
+    mu_I=pars["mu_I"]          # Increased mortality rate of infected snails
+    theta=pars["theta"]          # mean cercarial shedding rate per adult snail doi:10.4269/ajtmh.16-0614
 
-  # Get man-to-snail FOI as function of miracidial density, Lambda_0 and beta
-    Lambda <- Lambda_0*(1-exp(-beta*M_tot/N_eq))
+  #Adult Worm, Miracidia and Cercariae Parameters
+    mu_W = pars["mu_W"]   # death rate of adult worms
+    mu_H_A = pars["mu_H_A"] # death rate of adult humans
+    mu_H_C = pars["mu_H_C"] # death rate of children
+    m = pars["m"]             # mean eggs shed per female worm per 10mL urine (truscott et al)
+    v = pars["v"]           # mean egg viability (miracidia per egg)
 
-  #get Reff in each group
-    Reff_W_TC <- as.numeric((alpha*theta*sigma*N_eq*gam_Wxi(W_TC, xi)*omega*Lambda)/((mu_I*(mu_N+sigma)+Lambda*mu_I+sigma*Lambda)*(mu_H_C+mu_W)*W_TC))
-    Reff_W_UC <- as.numeric((alpha*theta*sigma*N_eq*gam_Wxi(W_UC, xi)*omega*Lambda)/((mu_I*(mu_N+sigma)+Lambda*mu_I+sigma*Lambda)*(mu_H_C+mu_W)*W_UC))
-    Reff_W_TA <- as.numeric((alpha*theta*sigma*N_eq*gam_Wxi(W_TA, xi)*omega*Lambda)/((mu_I*(mu_N+sigma)+Lambda*mu_I+sigma*Lambda)*(mu_H_C+mu_W)*W_TA))
-    Reff_W_UA <- as.numeric((alpha*theta*sigma*N_eq*gam_Wxi(W_UA, xi)*omega*Lambda)/((mu_I*(mu_N+sigma)+Lambda*mu_I+sigma*Lambda)*(mu_H_C+mu_W)*W_UA))
+  #Density dependence parameters
+    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
-  # Net Reff
-    Reff <- Reff_W_TC*pars["H_TC"]/H_tot+
-            Reff_W_UC*pars["H_UC"]/H_tot+
-            Reff_W_TA*pars["H_TA"]/H_tot+
-            Reff_W_UA*pars["H_UA"]/H_tot
+  #Human parameters
+    H = pars["H"]
+    h_tc = pars["h_tc"]         # Proportion of treated children
+    h_uc = pars["h_uc"]          # Proportion of untreated children
+    h_ta = pars["h_ta"]           # Proportion of treated adults
+    h_ua = pars["h_ua"]         # Proportion of untreated adults
+    U_C = pars["U_C"]          # mL urine produced per child per day /10mL https://doi.org/10.1186/s13071-016-1681-4
+    U_A = pars["U_A"]          # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
+    omega_c = pars["omega_c"]          #  infection risk/contamination of SAC  (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    omega_a = pars["omega_a"]          #  infection risk/contamination of adults (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    Omega = pars["Omega"]          # relative infection risk/contamination of SAC vs adults
 
-  return(c("W_bar" = as.numeric(W_bar),
-           "Reff" = as.numeric(Reff),
-           "Reff_W_TC" = Reff_W_TC,
-           "Reff_W_UC" = Reff_W_UC,
-           "Reff_W_TA" = Reff_W_TA,
-           "Reff_W_UA" = Reff_W_UA))
+  #Transmission parameters
+    alpha=pars["alpha"]       # Cercarial infection probability
+    Lambda_0=pars["Lambda_0"]         # first parameter of non-linear man-to-snail FOI
+
+  # Get miracidial density as function of worm burdens
+    #Update clumping parameter, k from estimate of worm burden in each population
+      k_TC = k_from_log_W(W_TC)
+      k_UC = k_from_log_W(W_UC)
+      k_TA = k_from_log_W(W_TA)
+      k_UA = k_from_log_W(W_UA)
+
+    #Estimate mating probability within each strata
+      phi_W_TC = phi_Wk(W = W_TC, k = k_TC)  #Mating probability in treated SAC population
+      phi_W_UC = phi_Wk(W = W_UC, k = k_UC)  #Mating probability in untreated SAC population
+      phi_W_TA = phi_Wk(W = W_TA, k = k_TA)  #Mating probability in treated adult population
+      phi_W_UA = phi_Wk(W = W_UA, k = k_UA)  #Mating probability in untreated adult population
+
+    # Estimate total miracidia entering snail habitat
+      M_tot = 0.5*H*omega_a*v*m*((W_TC*phi_W_TC) * rho_Wk(W_TC, zeta, k_TC) * U_C*h_tc*Omega +
+                                   (W_UC*phi_W_UC) * rho_Wk(W_UC, zeta, k_UC) * U_C*h_uc*Omega +
+                                   (W_TA*phi_W_TA) * rho_Wk(W_TA, zeta, k_TA) * U_A*h_ta +
+                                   (W_UA*phi_W_UA) * rho_Wk(W_UA, zeta, k_UA) * U_A*h_ua)
+
+  # Get man-to-snail FOI as solution given M_tot and other parameters
+      Lambda <- uniroot(function(L) beta*M/(K*(1-(mu_N+L)/(r*(1+L/(mu_N+sigma)))))-L,
+                        interval = c(0, 10))$root
+
+  return(Lambda)
+}
+
+#' Estimate endemic equilibrium given infected snail prevalence
+#'
+#' Using Reff expression and fact that Reff=1 at the endemic equilibrium, we can express the endemic equilibirum in terms of
+#' the man-to-snail FOI, Lambda. We can also express Lambda in terms of the infected snail prevalence, I_P,
+#' therefore we can estimate the endemic equilibrium as a function of model parameters and input snail prevalence
+#'
+#' @param I_P infected snail prevalence
+#' @param pars named vector or list of other parameters
+#'
+#' @return estimate of the breakpoint
+#' @export
+
+I_P_get_W_eq <- function(I_P, pars){
+  ##standard snail parameters
+    r=pars["r"]             # recruitment rate (from sokolow et al)
+    K=pars["K"]          # carrying capacity corresponding to 50 snails per square meter
+    mu_N=pars["mu_N"]          # Mean mortality rate of snails (assuming lifespan of 60days)
+    sigma=pars["sigma"]         # Transition rate from exposed to infected (assuming pre-patency period of ~4 weeks) doi:10.4269/ajtmh.16-0614
+    mu_I=pars["mu_I"]          # Increased mortality rate of infected snails
+    theta=pars["theta"]          # mean cercarial shedding rate per adult snail doi:10.4269/ajtmh.16-0614
+
+  #Adult Worm, Miracidia and Cercariae Parameters
+    mu_W = pars["mu_W"]   # death rate of adult worms
+    mu_H_A = pars["mu_H_A"] # death rate of adult humans
+    mu_H_C = pars["mu_H_C"] # death rate of children
+    m = pars["m"]             # mean eggs shed per female worm per 10mL urine (truscott et al)
+    v = pars["v"]           # mean egg viability (miracidia per egg)
+
+  #Density dependence parameters
+    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
+
+  #Human parameters
+    H = pars["H"]
+    h_tc = pars["h_tc"]         # Proportion of treated children
+    h_uc = pars["h_uc"]          # Proportion of untreated children
+    h_ta = pars["h_ta"]           # Proportion of treated adults
+    h_ua = pars["h_ua"]         # Proportion of untreated adults
+    U_C = pars["U_C"]          # mL urine produced per child per day /10mL https://doi.org/10.1186/s13071-016-1681-4
+    U_A = pars["U_A"]          # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
+    omega_c = pars["omega_c"]          #  infection risk/contamination of SAC  (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    omega_a = pars["omega_a"]          #  infection risk/contamination of adults (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    Omega = pars["Omega"]          # relative infection risk/contamination of SAC vs adults
+
+  #Transmission parameters
+    alpha=pars["alpha"]       # Cercarial infection probability
+    Lambda_0=pars["Lambda_0"]         # first parameter of non-linear man-to-snail FOI
+    beta=pars["beta"]       # Man to snail trnamission probability for linear FOI
+
+    munsig = mu_N+sigma
+    sigmui = mu_I+sigma
+
+  W_eq <- (alpha*omega_c*theta*K*I_P*mu_I*munsig*(1+(I_P*mu_I/(sigma-I_P*sigmui))-mu_N/r-I_P*mu_I*munsig/(r*(sigma-I_P*sigmui)))) /
+      ((1-I_P*mu_I/sigma-I_P)*(mu_W+mu_H_C)*(mu_I*(mu_N+sigma+I_P*mu_I*munsig/(sigma-I_P*sigmui))+I_P*mu_I*munsig/(1-I_P*mu_I/sigma-I_P))*(1+(I_P*mu_I/(sigma-I_P*sigmui))))
+
+  return(W_eq)
+}
+
+#' Estimate Snail infection class distribution given mean worm burden in different infection/treatment classes
+#'
+#' Takes mean worm burden estimates in different worm burden classes and estimates miraicidial concentration
+#' Then uses snail population dynamics equation as a function of LINEAR snail FOI to estimate snail population size
+#' Then uses parameters to estimate infection class distribution from total snail population size
+#'
+#' @param W_TC mean worm burden in treated SAC group
+#' @param W_UC mean worm burden in untreated SAC group
+#' @param W_TA mean worm burden in treated adult group
+#' @param W_UA mean worm burden in untreated adult group
+#' @param pars named vector or list of other parameters
+#'
+#' @return estimate of N, S, E, and I
+#' @export
+
+W_ij_get_N_S_E_I <- function(W_TC, W_UC, W_TA, W_UA, pars){
+  ##standard snail parameters
+    r=pars["r"]             # recruitment rate (from sokolow et al)
+    K=pars["K"]          # carrying capacity corresponding to 50 snails per square meter
+    mu_N=pars["mu_N"]          # Mean mortality rate of snails (assuming lifespan of 60days)
+    sigma=pars["sigma"]         # Transition rate from exposed to infected (assuming pre-patency period of ~4 weeks) doi:10.4269/ajtmh.16-0614
+    mu_I=pars["mu_I"]          # Increased mortality rate of infected snails
+    theta=pars["theta"]          # mean cercarial shedding rate per adult snail doi:10.4269/ajtmh.16-0614
+
+  #Adult Worm, Miracidia and Cercariae Parameters
+    mu_W = pars["mu_W"]   # death rate of adult worms
+    mu_H_A = pars["mu_H_A"] # death rate of adult humans
+    mu_H_C = pars["mu_H_C"] # death rate of children
+    m = pars["m"]             # mean eggs shed per female worm per 10mL urine (truscott et al)
+    v = pars["v"]           # mean egg viability (miracidia per egg)
+
+  #Density dependence parameters
+    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
+
+  #Human parameters
+    H = pars["H"]
+    h_tc = pars["h_tc"]         # Proportion of treated children
+    h_uc = pars["h_uc"]          # Proportion of untreated children
+    h_ta = pars["h_ta"]           # Proportion of treated adults
+    h_ua = pars["h_ua"]         # Proportion of untreated adults
+    U_C = pars["U_C"]          # mL urine produced per child per day /10mL https://doi.org/10.1186/s13071-016-1681-4
+    U_A = pars["U_A"]          # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
+    omega_c = pars["omega_c"]          #  infection risk/contamination of SAC  (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    omega_a = pars["omega_a"]          #  infection risk/contamination of adults (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    Omega = pars["Omega"]          # relative infection risk/contamination of SAC vs adults
+
+  #Transmission parameters
+    alpha=pars["alpha"]       # Cercarial infection probability
+    Lambda_0=pars["Lambda_0"]         # first parameter of non-linear man-to-snail FOI
+    beta=pars["beta"]       # Man to snail trnamission probability for linear FOI
+
+  # Get miracidial density as function of worm burdens
+    #Update clumping parameter, k from estimate of worm burden in each population
+      k_TC = k_from_log_W(W_TC)
+      k_UC = k_from_log_W(W_UC)
+      k_TA = k_from_log_W(W_TA)
+      k_UA = k_from_log_W(W_UA)
+
+    #Estimate mating probability within each strata
+      phi_W_TC = phi_Wk(W = W_TC, k = k_TC)  #Mating probability in treated SAC population
+      phi_W_UC = phi_Wk(W = W_UC, k = k_UC)  #Mating probability in untreated SAC population
+      phi_W_TA = phi_Wk(W = W_TA, k = k_TA)  #Mating probability in treated adult population
+      phi_W_UA = phi_Wk(W = W_UA, k = k_UA)  #Mating probability in untreated adult population
+
+    # Estimate total miracidia entering snail habitat
+      M = 0.5*H*omega_a*v*m*((W_TC*phi_W_TC) * rho_Wk(W_TC, zeta, k_TC) * U_C*h_tc*Omega +
+                               (W_UC*phi_W_UC) * rho_Wk(W_UC, zeta, k_UC) * U_C*h_uc*Omega +
+                               (W_TA*phi_W_TA) * rho_Wk(W_TA, zeta, k_TA) * U_A*h_ta +
+                               (W_UA*phi_W_UA) * rho_Wk(W_UA, zeta, k_UA) * U_A*h_ua)
+
+  #Estimate N
+    N <- uniroot.all(function(N) r*(1-N/K)*(1+(beta*M)/(N*(mu_N+sigma)))-mu_N-beta*M/N,
+                     interval = c(0,K))
+
+    Lambda <- beta*M/N
+
+    S <- as.numeric(N/(1+Lambda/(mu_N+sigma)+(sigma*Lambda)/(mu_I*(mu_N+sigma))))
+
+    E <- as.numeric(S*Lambda/(mu_N+sigma))
+
+    I <- as.numeric(S*Lambda*sigma/(mu_I*(mu_N+sigma)))
+
+    return(c(N, S, E, I))
+
 }
 
 
+
+
+
+
+
+
+
+
+
+#NEED UPDATING
 #' Stochastic version of the age stratified schistosomiasis model
 #'
 #' A stochastic schistosomiasis model with same structure as the age stratified schisto model

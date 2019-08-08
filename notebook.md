@@ -60,7 +60,13 @@ Formalized fitting functions and other helper functions in the R package (added 
 Worked on coding Reff estimation for age stratified model. Worked on figuring out model parametrs as functions of equilibrium state variable values
 
 # 8/5/2019  
-Finished figuring out estimation of model parameters from equilibirum state variable values, documented in `Parameters_from_eq_states.Rmd`. Coded and documented all resulting functions in `schisto_age_structured_models.R`. Next need to finish updating stochastic model, update the $R_{eff}$ expression, fit the model based on some equilibrium data, and run simulations.
+Finished figuring out estimation of model parameters from equilibirum state variable values, documented in `Parameters_from_eq_states.Rmd`. Coded and documented all resulting functions in `schisto_age_structured_models.R`. Also updated the $R_{eff}$ function, but still need to better document its derivation. Also ran some simulations based on input data from [Gurarie et al](https://doi.org/10.1186/s13071-016-1681-4). Next need to finish updating stochastic model.
+
+# 8/6/19  
+Lots of debugging $R_{eff}$ expressions and trying to get to the bottom of whether non-linear snail FOI eliminates the breakpoint. I'm beginning to believe it's possible because any effect of the positive density dependence is filtered through the exponent in the FOI expression, but I think another possibility is just that the parameters make it such that the breakpoint is so vanishingly small that it's currently not being picked up. Will have to keep exploring
+
+# 8/7/19  
+Gave up (at least for the moment) on the non-linear snail FOI and was finally able to make substantial progress. Have a function that takes model parameters fit to endemic infection levels and returns an estimate of the snail infection prevlance and mean worm burden at the transmission breakpoint. Was also thinking that $R_{eff}$ derived from a model with stratified worm burden compartments could be estimated as a population-weighted average of $R_{eff}$ in each population strata, but this was very wrong. Good news is I instead was able to derive an expression of $R_{eff}$ that is a function of the mean worm burden weighted by population groups and the infected snail prevalence. It's a subtle difference, but makes all the difference. Next steps will be to generate breakpoint estimations from these results and then express them in terms of infected snail prevalence and MDA coverage.
 
 # To-dos  
 ### Generalizable model structure for interventions in schisto stochastic model

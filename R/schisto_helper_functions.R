@@ -36,7 +36,12 @@ phi_Wk <- function(W, k) {
 #' @export
 
   rho_Wk <- function(W, zeta, k) {
-    (1 + ((W*(1-(exp(-zeta))))/k))^(-k-1)
+    if(k == 0){
+      rho = 1
+    } else {
+      rho = (1 + ((W*(1-(exp(-zeta))))/k))^(-k-1)
+    }
+    return(rho)
   }
 
 
@@ -160,4 +165,15 @@ gen_force_fx <- function(burn_in, t_int, t_max, freq, par_set, par, par_change){
   )), rule = 2)
 
   return(force_fx)
+}
+
+#' Return 1
+#'
+#' Function to take any input and return 1, used as a placeholder in some functions where input density dependent functions are required
+#'
+#' @return 1
+#' @export
+#'
+nil_1 <- function(...){
+  return(1)
 }

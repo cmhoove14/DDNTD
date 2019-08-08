@@ -4,7 +4,8 @@
 \alias{infection_inputs_get_pars}
 \title{Function to input observed equilibrium infection values and return fully "fit" parameter set based on observed infection values}
 \usage{
-infection_inputs_get_pars(W_A, kap_A, H_A, W_C, kap_C, H_C, I_P, pars)
+infection_inputs_get_pars(W_A, kap_A, H_A, cvrg_A, W_C, kap_C, H_C, cvrg_C,
+  K_ratio = 1, I_P, pars)
 }
 \arguments{
 \item{W_A}{equilibrium mean worm burden in adult population, can be estimated from egg burden and prevalence using `convert_burden_egg_to_worm`}
@@ -13,11 +14,17 @@ infection_inputs_get_pars(W_A, kap_A, H_A, W_C, kap_C, H_C, I_P, pars)
 
 \item{H_A}{adult human population size}
 
+\item{cvrg_A}{MDA coverage of the adult population}
+
 \item{W_C}{equilibrium mean worm burden in child population, can be estimated from egg burden and prevalence using `convert_burden_egg_to_worm`}
 
 \item{kap_C}{equilibrium clumping parameter in child population, can be estimated from egg burden and prevalence using `convert_burden_egg_to_worm`}
 
 \item{H_C}{child human population size}
+
+\item{cvrg_C}{MDA coverage of the child population}
+
+\item{K_ratio}{ratio of snail carrying capacity to human population size. defaults to 1, but should be increased for environments/communities that have particularly intense snail habitat or tranmission}
 
 \item{I_P}{infected snail prevalence, observed or input}
 

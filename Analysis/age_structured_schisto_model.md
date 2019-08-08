@@ -4,181 +4,309 @@ Age structured schistosomiasis model
 Age structured model
 ====================
 
-``` r
-H = 300
-area = 200
-
-age_strat_pars <- c(
-  ##standard snail parameters
-    f_N=0.10, # recruitment rate (from sokolow et al)
-    C=50*area, # carrying capacity corresponding to 50 snails per square meter
-    mu_N=1/60, #Mean mortality rate of snails (assuming lifespan of 60days)
-    sigma=1/40, #Transition rate from exposed to infected (assuming pre-patency period of 40 days)
-    mu_I=1/10 - 1/60, # Increased mortality rate of infected snails
-
-  #Adult Worm, Miracidia and Circariae Parameters
-    mu_W = 1/(3.3*365), # death rate of adult worms
-    m = 5.2,            # mean eggs shed per female worm per 10mL urine (truscott et al)
-    v = 0.08,           # mean egg viability of eggs shed into environment
-
-  #Density dependence parameters
-    gamma = 5e-3,       # parameter of fecundity reduction function
-    xi = 2.8e-3,        # parameter for acquired immunity funtion
-
-  #Human parameters
-    H = H,          # Total number of people
-    prop_SAC = 0.5,       #Percent of people that are school age children (SAC)
-    prop_adult = 0.5, #percent of people that are not school age children (assumed here to be adults)
-    cvrg_SAC = 0.9,  #MDA coverage in SAC population
-    cvrg_adult = 0,  #MDA coverage in adult population
-    u_SAC = 50, # mL urine per SAC/day/10mL assumed to be half of adult (approximate, ranges from 20 - 100)
-    u_adult = 100, # mL urine per adult/day/10mL (approximate, ranges from 80 - 200)
-    rho_SAC = 0.3, # relative number of eggs shed by SAC that make it to snail habitat (~sanitation)
-    rho_adult = 0.015, # relative number of eggs shed by adults that make it to snail habitat (~sanitation); 5% of SAC (truscott et al)
-    omega_SAC = 1,     # relative infection risk of SAC (related to clean water access/education/water contact)
-    omega_adult = 0.1,   # relative infection risk of adults (related to clean water access/education/water contact)
-
-  #Transmission parameters
-    lambda=1.2e-3, # snail-to-man transmission
-    beta=1.6e-3  # man-to-snail transmission
-)
-
-schisto_age_strat_mod <- function(t, n, parameters) {
-  with(as.list(parameters),{
-
-    S=n[1]
-    E=n[2]
-    I=n[3]
-    Wt_SAC=n[4]
-    Wu_SAC=n[5]
-    Wt_adult=n[6]
-    Wu_adult=n[7]
-
-    #Total snail population
-      N=S+E+I
-
-    #weighting treated and untreated populations among SAC
-      W_SAC = (cvrg_SAC*Wt_SAC) + ((1-cvrg_SAC)*Wu_SAC)
-
-    #weighting treated and untreated populations among adults
-      W_adult = (cvrg_adult*Wt_adult) + ((1-cvrg_adult)*Wu_adult)
-
-    #Weighting SAC and adult populations
-      W_tot = W_SAC*prop_SAC + W_adult*prop_adult
-
-    #Update clumping parameter, k from estimate of eggs burden per 10mL estimate
-      k_t_SAC = k_from_log_W(Wt_SAC)
-      k_u_SAC = k_from_log_W(Wu_SAC)
-      k_t_adult = k_from_log_W(Wt_adult)
-      k_u_adult = k_from_log_W(Wu_adult)
-
-    #Estimate mating probability within each strata
-      phi_Wt_SAC = phi_Wk(W = Wt_SAC, k = k_t_SAC)  #Mating probability in treated SAC population
-      phi_Wu_SAC = phi_Wk(W = Wu_SAC, k = k_u_SAC)  #Mating probability in untreated SAC population
-      phi_Wt_adult = phi_Wk(W = Wt_adult, k = k_t_adult)  #Mating probability in treated adult population
-      phi_Wu_adult = phi_Wk(W = Wu_adult, k = k_u_adult)  #Mating probability in untreated adult population
-
-    #Estimate mean eggs produced per person in each strata as product of
-    # mated female worms,
-    # eggs produced per female worm per 10mL urine,
-    # and reduction in fecundity due to crowding
-      eggs_Wt_SAC = 0.5*(Wt_SAC*phi_Wt_SAC) * m * f_Wgk(Wt_SAC, gamma, k_t_SAC)
-
-      eggs_Wu_SAC = 0.5*(Wu_SAC*phi_Wu_SAC) * m * f_Wgk(Wu_SAC, gamma, k_u_SAC)
-
-      eggs_Wt_adult = 0.5*(Wt_adult*phi_Wt_adult) * m * f_Wgk(Wt_adult, gamma, k_t_adult)
-
-      eggs_Wu_adult = 0.5*(Wu_adult*phi_Wu_adult) * m * f_Wgk(Wu_adult, gamma, k_u_adult)
-
-    #Estimate miracidia produced by each strata as product of
-    # mean eggs per 10 mL urine for individuals in each strata,
-    # number of people in each strata,
-    # egg viability
-    # mean mL urine produced by an average individual in each group/10,
-    # contamination coefficient for SAC/adults,
-
-      M_Wt_SAC = eggs_Wt_SAC * ((H*prop_SAC)*cvrg_SAC) * v * u_SAC * rho_SAC
-
-      M_Wu_SAC = eggs_Wu_SAC * ((H*prop_SAC)*(1-cvrg_SAC)) * v * u_SAC * rho_SAC
-
-      M_Wt_adult = eggs_Wt_adult * ((H*prop_adult)*cvrg_adult) * v * u_adult * rho_adult
-
-      M_Wu_adult = eggs_Wu_adult * ((H*prop_adult)*(1-cvrg_adult)) * v * u_adult * rho_adult
-
-    # Estimate total miracidia entering snail habitat
-      M_tot = M_Wt_SAC + M_Wu_SAC + M_Wt_adult + M_Wu_adult
-      
-      #if(t %% 100 == 0) print(1-exp(-M_tot/N))
-
-    # Snail infection dynamics
-      dSdt= f_N*(1-(N/C))*(S+E) - mu_N*S - beta*(1-exp(-M_tot/N))*S #Susceptible snails
-
-      dEdt= beta*(1-exp(-M_tot/N))*S - (mu_N+sigma)*E #Exposed snails
-
-      dIdt= sigma*E - (mu_N+mu_I)*I #Infected snails
-
-    #worm burden in human populations
-      dWt_SACdt= (omega_SAC*lambda*I*R_Wv(Wt_SAC, xi)) - (mu_W*Wt_SAC)
-      dWu_SACdt= (omega_SAC*lambda*I*R_Wv(Wu_SAC, xi)) - (mu_W*Wu_SAC)
-      dWt_adultdt= (omega_adult*lambda*I*R_Wv(Wt_adult, xi)) - (mu_W*Wt_adult)
-      dWu_adultdt= (omega_adult*lambda*I*R_Wv(Wu_adult, xi)) - (mu_W*Wu_adult)
-
-    return(list(c(dSdt,dEdt,dIdt,
-                  dWt_SACdt,dWu_SACdt,
-                  dWt_adultdt, dWu_adultdt)))
-  })
-}
-```
-
-``` r
-years <- 20
-age_time <- c(1:(365*years))
-
-age_start <- c(S=5000, E=0, I=0, Wt_SAC=10, Wu_SAC=10, Wt_adult=10, Wu_adult=10)
-
-#Run to equibrium with base parameter set
-age_eqbm <- runsteady(y = age_start, func = schisto_age_strat_mod,
-                      parms = age_strat_pars)[["y"]]
-
-schisto_age_sim <- sim_schisto_mod(nstart = age_eqbm, 
-                                   time = age_time, 
-                                   model = schisto_age_strat_mod,
-                                   parameters = age_strat_pars,
-                                   events_df = NA)
-```
-
-Simulate MDA in 75% of SAC populaition
+Simulations in high prevalence setting
 --------------------------------------
 
 ``` r
-eff <- 0.93
-age_strat_pars["cvrg_SAC"] <- 0.75
+# Egg burdens and prevalence from V1, tbales 6 and 7 https://doi.org/10.1186/s13071-016-1681-4 
+C_est_V1 <- convert_burden_egg_to_worm(60, 0.1, 126, 0.71, age_strat_pars["m"], age_strat_pars["zeta"])
+A_est_V1 <- convert_burden_egg_to_worm(10, 0.1, 19, 0.33, age_strat_pars["m"], age_strat_pars["zeta"])
 
-sac_mda <- data.frame(var = rep('Wt_SAC', years/2),
-                      time = c(1:(years/2))*365,
-                      value = rep((1 - eff), years/2),
-                      method = rep('mult', years/2))
+V1_pars <- infection_inputs_get_pars(W_A = A_est_V1[1],
+                                                kap_A = A_est_V1[2],
+                                                H_A = 508,
+                                                cvrg_A = 0,
+                                                W_C = C_est_V1[1],
+                                                kap_C = C_est_V1[2],
+                                                H_C = 602,
+                                                cvrg_C = 0.8,
+                                                I_P = 0.1,
+                                                age_strat_pars)
 
-schisto_mda_sim <- sim_schisto_mod(nstart = age_eqbm, 
+  Reff_Wij(V1_pars, C_est_V1[1], C_est_V1[1], A_est_V1[1], A_est_V1[1])
+```
+
+    ##      W_bar       Reff  Reff_W_TC  Reff_W_UC  Reff_W_TA  Reff_W_UA 
+    ## 36.9499070  0.9903141  1.0000000  1.0000000  0.9788360  0.9788360
+
+``` r
+#Get equilibrium values of state variables
+  eq_vals_V1 <- c(S=as.numeric(V1_pars["S_eq"]), 
+               E=as.numeric(V1_pars["E_eq"]), 
+               I=as.numeric(V1_pars["I_eq"]), 
+               W_TC=C_est_V1[1], W_UC=C_est_V1[1], W_TA=A_est_V1[1], W_UA=A_est_V1[1])
+
+#time frame of simulation  
+  years <- 20
+  age_time <- c(1:(365*years))
+
+#create MDA events data frame  
+  eff <- 0.93
+  sac_mda <- data.frame(var = rep('W_TC', years/2),
+                        time = c(1:(years/2))*365,
+                        value = rep((1 - eff), years/2),
+                        method = rep('mult', years/2))
+```
+
+### Simulate 10 years of annual MDA in 80% of SAC populaition
+
+``` r
+V1_SAC_mda_sim <- sim_schisto_mod(nstart = eq_vals_V1, 
                                    time = age_time, 
                                    model = schisto_age_strat_mod,
-                                   parameters = age_strat_pars,
-                                   events_df = sac_mda)
+                                   pars = V1_pars,
+                                   events_df = sac_mda) %>% 
+  mutate(mean_W = (W_TC*V1_pars["h_tc"] +
+                        W_UC*V1_pars["h_uc"] +
+                        W_TA*V1_pars["h_ta"] + 
+                        W_UA*V1_pars["h_ua"]),
+         I_prev = I/(S+E+I),
+         Reff = mapply(Reff_Wij, W_TC, W_UC, W_TA, W_UA, MoreArgs = list(pars = V1_pars))[2,])
 ```
 
     ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
     ## the first element will be used
 
 ``` r
-schisto_mda_sim %>% 
-  gather("Treatment", "Worm Burden",  Wt_SAC:Wu_adult) %>% 
+V1_SAC_mda_sim %>% 
+  gather("Treatment", "Worm Burden",  W_TC:mean_W) %>% 
   ggplot(aes(x = time, y = `Worm Burden`, lty = Treatment)) +
     geom_line() +
     theme_classic() +
-    theme(legend.position = c(0.6,0.8)) +
-    ylim(c(0,100)) +
+    theme(legend.position = c(0.9,0.5)) +
     scale_x_continuous(breaks = c(0:years)*365,
-                       labels = c(-1:(years-1)))
+                       labels = c(-1:(years-1))) +
+    labs(x = "time (years)",
+         y = expression(Mean~Worm~Burden~(W[ij])),
+         title = "School-based MDA simulation in high prevalence setting")
 ```
 
 ![](age_structured_schisto_model_files/figure-markdown_github/sim_mda_sac-1.png)
+
+``` r
+V1_SAC_mda_sim %>% 
+  ggplot(aes(x = mean_W, y = Reff)) +
+    geom_line() +
+    theme_classic() +
+    labs(x = "Population mean worm burden",
+         y = expression(R[eff]),
+         title = "Mean worm burden and Reff relationship during school-based MDA")
+```
+
+![](age_structured_schisto_model_files/figure-markdown_github/Reff_plot-1.png)
+
+So that makes it look like we're not even close to reaching the breakpoint and maybe haven't even reached *R*<sub>*p**e**a**k*</sub>. Let's increase coverage in SAC and add MDA in adult population and see what plot lokos like
+
+### Simulate 20 years of annucal MDA in 90% SAC and 50% adult populations
+
+``` r
+#SAME SETUP ROUTINE 
+#add transmission and other parameters to parameter set
+V1_pars2 <- infection_inputs_get_pars(W_A = A_est_V1[1],
+                                                 kap_A = A_est_V1[2],
+                                                 H_A = 508,
+                                                 cvrg_A = 0.5,
+                                                 W_C = C_est_V1[1],
+                                                 kap_C = C_est_V1[2],
+                                                 H_C = 602,
+                                                 cvrg_C = 0.9,
+                                                 I_P = 0.1,
+                                                 age_strat_pars)
+
+#time frame of simulation  
+  years40 <- 40
+  age_time40yrs <- c(1:(365*years40))
+    
+    
+#create MDA events data frame  
+  eff <- 0.93
+  com_mda <- data.frame(var = rep(c('W_TC', "W_TA"), years40/2),
+                        time = rep(c(1:(years40/2))*365, each = 2),
+                        value = rep((1 - eff), years40),
+                        method = rep('mult', years40))
+
+#MODEL RUN  
+V1_CWT_mda_sim <- sim_schisto_mod(nstart = eq_vals_V1, 
+                                   time = age_time40yrs, 
+                                   model = schisto_age_strat_mod,
+                                   pars = V1_pars2,
+                                   events_df = com_mda) %>% 
+  mutate(mean_W = (W_TC*V1_pars2["h_tc"] +
+                        W_UC*V1_pars2["h_uc"] +
+                        W_TA*V1_pars2["h_ta"] + 
+                        W_UA*V1_pars2["h_ua"]),
+         I_prev = I/(S+E+I),
+         Reff = mapply(Reff_Wij, W_TC, W_UC, W_TA, W_UA, MoreArgs = list(pars = V1_pars2))[2,])
+```
+
+    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
+    ## the first element will be used
+
+``` r
+V1_CWT_mda_sim %>% 
+  gather("Treatment", "Worm Burden",  W_TC:mean_W) %>% 
+  ggplot(aes(x = time, y = `Worm Burden`, lty = Treatment)) +
+    geom_line() +
+    theme_classic() +
+    theme(legend.position = c(0.9,0.5)) +
+    scale_x_continuous(breaks = c(0:years)*365,
+                       labels = c(-1:(years-1))) +
+    labs(x = "time (years)",
+         y = expression(Mean~Worm~Burden~(W[ij])),
+         title = "Community wide MDA simulation in high prevalence setting")
+```
+
+![](age_structured_schisto_model_files/figure-markdown_github/sim_com-1.png)
+
+Let's see if the expanded MDA did anything in terms of reaching the breakpoint
+
+``` r
+V1_CWT_mda_sim %>% 
+  ggplot(aes(x = mean_W, y = Reff)) +
+    geom_line() +
+    theme_classic() +
+    labs(x = "time (years)",
+         y = expression(Mean~Worm~Burden~(W[ij])),
+         title = "Community wide MDA simulation in high prevalence setting")
+```
+
+![](age_structured_schisto_model_files/figure-markdown_github/Reff_V12_CWT-1.png)
+
+Simulations in low prevalence setting
+-------------------------------------
+
+``` r
+# Egg burdens and prevalence from V12, tbales 6 and 7 https://doi.org/10.1186/s13071-016-1681-4 
+C_est_V12 <- convert_burden_egg_to_worm(W_guess = 15, 
+                                        kap_guess = 0.1, 
+                                        egg_burden = 46, 
+                                        prevalence = 0.23, 
+                                        m = age_strat_pars["m"], zeta = age_strat_pars["zeta"])
+
+A_est_V12 <- convert_burden_egg_to_worm(W_guess = 3, 
+                                        kap_guess = 0.05, 
+                                        egg_burden = 6, 
+                                        prevalence = 0.12, 
+                                        m = age_strat_pars["m"], zeta = age_strat_pars["zeta"])
+
+V12_pars <- infection_inputs_get_pars(W_A = A_est_V12[1],
+                                      kap_A = A_est_V12[2],
+                                      H_A = 746,
+                                      cvrg_A = 0,
+                                      W_C = C_est_V12[1],
+                                      kap_C = C_est_V12[2],
+                                      H_C = 803,
+                                      cvrg_C = 0.8,
+                                      I_P = 0.1,
+                                      age_strat_pars)
+
+  Reff_Wij(V12_pars, C_est_V12[1], C_est_V12[1], A_est_V12[1], A_est_V12[1])
+```
+
+    ##      W_bar       Reff  Reff_W_TC  Reff_W_UC  Reff_W_TA  Reff_W_UA 
+    ## 14.0811719  0.9898074  1.0000000  1.0000000  0.9788360  0.9788360
+
+``` r
+#Get equilibrium values of state variables
+  eq_vals_V12 <- c(S=as.numeric(V12_pars["S_eq"]), 
+                   E=as.numeric(V12_pars["E_eq"]), 
+                   I=as.numeric(V12_pars["I_eq"]), 
+                   W_TC=C_est_V12[1], W_UC=C_est_V12[1], W_TA=A_est_V12[1], W_UA=A_est_V12[1])
+```
+
+### 10 years of annual MDA in SAC population
+
+``` r
+V12_SAC_mda_sim <- sim_schisto_mod(nstart = eq_vals_V12, 
+                                   time = age_time, 
+                                   model = schisto_age_strat_mod,
+                                   pars = V12_pars,
+                                   events_df = sac_mda) %>% 
+  mutate(mean_W = (W_TC*V12_pars["h_tc"] +
+                     W_UC*V12_pars["h_uc"] +
+                     W_TA*V12_pars["h_ta"] + 
+                     W_UA*V12_pars["h_ua"]),
+         I_prev = I/(S+E+I),
+         Reff = mapply(Reff_Wij, W_TC, W_UC, W_TA, W_UA, MoreArgs = list(pars = V12_pars))[2,])
+```
+
+    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
+    ## the first element will be used
+
+``` r
+V12_SAC_mda_sim %>% 
+  gather("Treatment", "Worm Burden",  W_TC:mean_W) %>% 
+  ggplot(aes(x = time, y = `Worm Burden`, lty = Treatment)) +
+    geom_line() +
+    theme_classic() +
+    theme(legend.position = c(0.9,0.5)) +
+    #ylim(c(0,100)) +
+    scale_x_continuous(breaks = c(0:years)*365,
+                       labels = c(-1:(years-1))) +
+    labs(x = "time (years)",
+         y = expression(Mean~Worm~Burden~(W[ij])),
+         title = "School-based MDA simulation in low prevalence setting")
+```
+
+![](age_structured_schisto_model_files/figure-markdown_github/V12_SAC_MDA-1.png)
+
+``` r
+V12_SAC_mda_sim %>% 
+  ggplot(aes(x = mean_W, y = Reff)) +
+    geom_line() +
+    theme_classic() +
+    labs(x = "Population mean worm burden",
+         y = expression(R[eff]),
+         title = "Mean worm burden and Reff relationship during school-based MDA")
+```
+
+![](age_structured_schisto_model_files/figure-markdown_github/V12_Reff_plot-1.png)
+
+### Simulate 20 years of annucal MDA in 90% SAC and 50% adult populations
+
+``` r
+#SAME SETUP ROUTINE 
+#add transmission and other parameters to parameter set
+V12_pars2 <- infection_inputs_get_pars(W_A = A_est_V12[1],
+                                      kap_A = A_est_V12[2],
+                                      H_A = 746,
+                                      cvrg_A = 0.5,
+                                      W_C = C_est_V12[1],
+                                      kap_C = C_est_V12[2],
+                                      H_C = 803,
+                                      cvrg_C = 0.9,
+                                      I_P = 0.1,
+                                      age_strat_pars)
+
+#MODEL RUN  
+V12_CWT_mda_sim <- sim_schisto_mod(nstart = eq_vals_V12, 
+                                   time = age_time40yrs, 
+                                   model = schisto_age_strat_mod,
+                                   pars = V12_pars2,
+                                   events_df = com_mda) %>% 
+  mutate(mean_W = (W_TC*V1_pars2["h_tc"] +
+                        W_UC*V1_pars2["h_uc"] +
+                        W_TA*V1_pars2["h_ta"] + 
+                        W_UA*V1_pars2["h_ua"]),
+         I_prev = I/(S+E+I),
+         Reff = mapply(Reff_Wij, W_TC, W_UC, W_TA, W_UA, MoreArgs = list(pars = V12_pars2))[2,])
+```
+
+    ## Warning in if (is.na(events_df)) {: the condition has length > 1 and only
+    ## the first element will be used
+
+``` r
+V1_CWT_mda_sim %>% 
+  gather("Treatment", "Worm Burden",  W_TC:mean_W) %>% 
+  ggplot(aes(x = time, y = `Worm Burden`, lty = Treatment)) +
+    geom_line() +
+    theme_classic() +
+    theme(legend.position = c(0.9,0.5)) +
+    scale_x_continuous(breaks = c(0:years)*365,
+                       labels = c(-1:(years-1))) +
+    labs(x = "time (years)",
+         y = expression(Mean~Worm~Burden~(W[ij])),
+         title = "Community wide MDA simulation in low prevalence setting")
+```
+
+![](age_structured_schisto_model_files/figure-markdown_github/V12_sim_com_MDA-1.png)

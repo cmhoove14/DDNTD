@@ -44,26 +44,132 @@ and
 
 Which simplifies to:
 
-`r latexImg("I^*=\\frac{K\\sigma\\Big(1-\\frac{\\mu_N+\\Lambda}{r\\big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}\\big)}\\Big)}{\\Big(\\frac{\\mu_I(\\mu_N+\\sigma)}{\\Lambda}+\\mu_I+\\sigma\\Big)}")`
+`r latexImg("I^*=\\frac{K\\sigma\\Big(1-\\frac{\\mu_N+\\Lambda}{r\\big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}\\big)}\\Big)}{\\Big(\\frac{\\mu_I(\\mu_N+\\sigma)}{\\Lambda}+\\mu_I+\\sigma\\Big)}=\\frac{\\sigma N^*}{\\Big(\\frac{\\mu_I(\\mu_N+\\sigma)}{\\Lambda}+\\mu_I+\\sigma\\Big)}")`
 
 Therefore with infected snail prevalence, $I_P=I^*/N^*$, and other snail population and infection parameters as inputs, we can estimate $\Lambda$ as:
 
+`r latexImg("I_P=\\frac{\\sigma}{\\frac{\\mu_I(\\mu_N+\\sigma)}{\\Lambda}+\\mu_I+\\sigma}")`
+
 `r latexImg("\\Lambda=\\frac{\\mu_I(\\mu_N+\\sigma)}{\\frac{\\sigma}{I_P}-\\mu_I-\\sigma}")`
 
-## Contamination fraction, $\Omega$, and miracidia invasion rate, $\Lambda_0$, as function of equilibrium worm burden in children and adults  
+## Contamination fraction, $\Omega$, and snail FOI parameters, ($\beta$ or $\Lambda_0$), as function of equilibrium worm burden in children and adults  
 We first assume that differences in child and adult infection rates arise predominately from variation in behavior that affects both exposure and contribution to infection in the same manner. Parameter $\Omega$ therefore represents the relative exposure/contamination of children to adults, $\Omega=\omega_C/\omega_A$, which can be estimated from the equilibrium infection ratio $\Omega=W^*_C/W^*_A$.
 
 With this parameter, we can estimate the equilibirum miracidial density $M$ as:
 
 `r latexImg("M=0.5\\mathbf{H}m\\omega_A(W_C^* h_C\\Phi(W_C^*)\\rho(W_C^*)U_C\\Omega+W_A^* h_A\\Phi(W_A^*)\\rho(W_A^*)U_A)")`
 
-Now, since $\Lambda$ has been estimated above, $N^*$ can be estimated as a function of $\Lambda$, and we have an equilibrium estimate of miracidial density, $M$, we can estimate the baseline miracidial invasion rate, $\Lambda_0$:
+### Saturating man-to-snail FOI  
+
+Now, since $\Lambda$ has been estimated above, $N^*$ can be estimated as a function of $\Lambda$, and we have an equilibrium estimate of miracidial density, $M$, we can estimate the baseline miracidial invasion rate, $\Lambda_0$, of the saturating form of the man-to-snail FOI:
 
 `r latexImg("\\Lambda_0=\\frac{\\Lambda}{(1-e^{-M/N^*(\\Lambda)})}")`
 
-Except in rare circumstances, $\Lambda\approx\Lambda_0$ because of the high $M/N$ ratio in transmission settings that have not been intervened upon (i.e. equilibrium settings)
+Except in rare circumstances, $\Lambda\approx\Lambda_0$ because of the high $M/N$ ratio in transmission settings that have not been intervened upon (i.e. equilibrium settings).
+
+### Linear man-to-snail FOI  
+As an alternative, we can use the more common (but perhaps less accurate) linear form of the man-to-snail FOI:
+
+`r latexImg("\\Lambda=\\frac{\\beta M}{N^*(\\Lambda)}")`
+
+to estimate the probability of snail infection given miracidial density, $\beta$ as:
+
+`r latexImg("\\beta=\\frac{\\Lambda N^*(\\Lambda)}{M}")`
 
 ## Worm establishment rate, $\alpha$, as function of equilibrium worm burden    
-Assuming the observed mean worm burden in each population fraction prior to intervention is approximately at equilibrium, the worm acquisition rate, $\lambda_ij$, for each group can be estimated as a function of the exposure fractions, $\omega_a$ and $\omega_c$, the infected snail density, $I^*=I_PN^*$, the snail cercarial shedding rate, $\theta$, and the probability of cercarial establishment per exposure, $\alpha$, with $\alpha$ being the only unkown and estimated as:
+Assuming the observed mean worm burden in each population fraction prior to intervention is approximately at equilibrium, the worm acquisition rate, $\lambda_{ij}$, for each group can be estimated as a function of the exposure fractions, $\omega_a$ and $\omega_c$, the infected snail density, $I^*=I_PN^*$, the snail cercarial shedding rate, $\theta$, and the probability of cercarial establishment per exposure, $\alpha$, with $\alpha$ being the only unknown and estimated as:
 
 `r latexImg("\\alpha=\\frac{W_i^*(\\mu_W+\\mu_H_i)}{\\omega_i I^*\\theta}")`
+
+## $R_{eff}$ derivation with linear snail FOI   
+The effective reproduction number, $R_{eff}$, for schistosomiasis is defined as the number of mated adult female worms produced by a single adult female worm over the course of her lifetime. Unlike teh basic reproduction number, $R_0$, $R_{eff}$ changes as a function of the current level of infection, here measured in terms of the mean worm burden, $W$. From Anderson and May **Infectious Diseases of Humans**, we can estimate the effective reproduction number from the rate of worm burden change as:
+
+`r latexImg("\\frac{dW}{dt}=\\lambda-(\\mu_W+\\mu_H)W")`
+
+`r latexImg("\\frac{dW}{dt}=(\\mu_W+\\mu_H)W\\Big(\\frac{\\lambda}{(\\mu_W+\\mu_H)W}-1\\Big)")`
+
+`r latexImg("\\frac{dW}{dt}=(\\mu_W+\\mu_H)W\\Big(R_{eff}(W)-1\\Big)")`
+
+`r latexImg("R_{eff}(W)=\\frac{\\lambda}{(\\mu_W+\\mu_H)W}")`  
+
+Where $\lambda$ is the worm acquisition rate or snail-to-man FOI and is a function of the exposure coefficient, $\omega$, probability of worm acquisition given exposure, $\alpha$, and cercarial concentration estimated as a function of cercarial shedding and the infected snail population assuming fast snail infection dynamics: `r latexImg("C=\\theta I^*")`. If we incorporate linear snail FOI and the infected snail population in terms of the total snail population, $N$, we have:
+
+`r latexImg("R_{eff}(W)=\\frac{\\alpha\\omega\\theta}{W\\big(\\mu_W+\\mu_H\\big)}\\times\\frac{\\sigma N}{\\Big(\\frac{\\mu_I(\\mu_N+\\sigma)}{\\Lambda}+\\mu_I+\\sigma\\Big)}")`
+
+Given that N can be estimated as a function of $\Lambda$ which is a function of $W$, we can estimate $N$ and `r latexImg("R_{eff}")` from input W by solving for each from:
+
+`r latexImg("R_{eff}(W)=\\frac{\\alpha\\omega\\theta\\sigma N(W)}{W\\big(\\mu_W+\\mu_H\\big)\\Big(\\frac{\\mu_I(\\mu_N+\\sigma)}{\\Lambda(W)}+\\mu_I+\\sigma\\Big)}")`
+
+`r latexImg("N(W)=K\\Big(1-\\frac{\\mu_N+\\Lambda(W)}{r\\big(1+\\frac{\\Lambda(W)}{\\mu_N+\\sigma}\\big)}\\Big)")`
+
+Alternatively, we can make one more substitution based on the fact that infected snail prevalence can be estimated as a function of snail FOI:
+
+`r latexImg("I_P=\\frac{\\sigma}{\\frac{\\mu_I(\\mu_N+\\sigma)}{\\Lambda}+\\mu_I+\\sigma}")`
+
+therefore we can substitute in terms of infected snail prevalence, $I_P$, to get:
+
+`r latexImg("R_{eff}(W, I_P)=\\frac{\\alpha\\omega\\theta N I_P}{W\\big(\\mu_W+\\mu_H\\big)}")`
+
+And then in particular with linear FOI, `r latexImg("\\Lambda=\\beta M/N")`substitute for N in terms of $I_P$ to get:
+
+`r latexImg("R_{eff}(W, I_P)=\\frac{\\alpha\\omega^2\\theta\\beta\\phi(W)\\rho(W)HmvU I_P}{2\\big(\\mu_W+\\mu_H\\big)\\big(\\mu_I(\\mu_N+\\sigma)\\big)}")`
+
+```{r eval = FALSE, include = FALSE}
+#This was from another parameterization of R_eff, but the one in the document is simpler as it replaces K*(1-...) with N
+
+#`r latexImg("I^*=\\frac{K\\sigma\\Big(1-\\frac{\\mu_N+\\Lambda}{r\\big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}\\big)}\\Big)}{\\Big(\\frac{\\mu_I(\\mu_N+\\sigma)}{\\Lambda}+\\mu_I+\\sigma\\Big)}")`
+
+#Therefore we can estimate $R_{eff}$ as:
+
+#`r latexImg("R_{eff}(W)=\\frac{\\alpha\\omega\\theta K\\sigma\\Big(1-\\frac{\\mu_N+\\Lambda}{r\\big(1+\\frac{\\Lambda}{(\\mu_N+\\sigma)}\\big)}\\Big)}{W\\Big(\\mu_W+\\mu_H\\Big)\\Big(\\frac{\\mu_I(\\mu_N+\\sigma)}{\\Lambda}+\\mu_I+\\sigma\\Big)}")`
+
+#Which can be (slightly) simplified to:
+
+#`r latexImg("R_{eff}(W)=\\frac{\\alpha\\omega\\theta K\\sigma\\Lambda\\Big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}-\\frac{\\mu_N}{r}-\\frac{\\Lambda}{r}\\Big)}{W\\big(\\mu_W+\\mu_H\\big)\\big(\\mu_I(\\mu_N+\\sigma+\\Lambda)+\\sigma\\Lambda\\big)\\big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}\\big)}")`
+
+#We also note that the man-to-snail FOI, $\Lambda$, is largely a function of miracidial density, $M$, which is determined by the mean worm burden and associated density dependent mating probability, $\Phi$, and density dependent fecundity $\rho$, therefore it is more accurate to denote $\Lambda$ as a function of $W$:
+
+#`r latexImg("R_{eff}(W)=\\frac{\\alpha\\omega\\theta K\\sigma\\Lambda(W)\\Big(1+\\frac{\\Lambda(W)}{\\mu_N+\\sigma}-\\frac{\\mu_N}{r}-\\frac{\\Lambda(W)}{r}\\Big)}{W\\big(\\mu_W+\\mu_H\\big)\\big(\\mu_I(\\mu_N+\\sigma+\\Lambda(W))+\\sigma\\Lambda(W)\\big)\\big(1+\\frac{\\Lambda(W)}{\\mu_N+\\sigma}\\big)}")`
+
+```
+
+### $R_{eff}$ for stratified worm burdens  
+While the mean worm burden is often modeled as a single state variable, it is more accurate to further stratify the compartment to more accurately capture the skewed distribution of worms amongst the human population or to more accurately model interventions such as MDA that are often only administered to SAC or that systematically miss particular portions of the population. We therefore wish to express `r latexImg("R_{eff}")` as a function of the population mean worm burden, `r latexImg("\\bar{W}")`, derived from multiple treatment groups, $i$, and age groups, $j$, where:
+
+`r latexImg("\\bar{W}=\\sum_i\\sum_j h_{ij}W_{ij}")`
+
+The net `r latexImg("R_{eff}")` can be thought of similarly as some weighted average of contributions from all treatment groups:
+
+`r latexImg("R_{eff}(\\bar{W}, I_P)=\\sum_i\\sum_j \\frac{h_{ij}\\alpha\\theta\\beta HmvI_P\\omega_{ij}^2\\phi(W_{ij})\\rho(W_{ij})U_j }{2\\big(\\mu_W+\\mu_H\\big)\\big(\\mu_I(\\mu_N+\\sigma)\\big)}")`
+
+Which we can simplify if we pull out some constants to express in terms of `r latexImg("\\bar{W}")` and `r latexImg("I_P")`as:
+
+`r latexImg("R_{eff}(\\bar{W}, I_P)=\\frac{\\alpha\\theta\\beta HmvI_P}{2\\big(\\mu_W+\\mu_H\\big)\\big(\\mu_I(\\mu_N+\\sigma)\\big)}\\sum_i\\sum_j h_{ij}\\omega_{ij}^2\\phi(W_{ij})\\rho(W_{ij})U_j ")`
+
+Alternatively, we can estimate $N$ and `r latexImg("R_{eff}")` from `r latexImg("\\bar{W}")` by solving:
+
+`r latexImg("R_{eff}(\\bar{W})=\\frac{\\alpha\\theta\\beta Hmv\\sigma}{2\\big(\\mu_W+\\mu_H\\big)\\big(\\mu_I(\\mu_N+\\sigma)\\big)}\\sum_i\\sum_j \\frac{h_{ij}\\omega_{ij}^2\\phi(W_{ij})\\rho(W_{ij})U_j}{\\frac{\\mu_I(\\mu_N+\\sigma)}{\\Lambda(\\bar{W})}+\\mu_I+\\sigma} ")`
+
+`r latexImg("N(\\bar{W})=K\\Big(1-\\frac{\\mu_N+\\Lambda(\\bar{W})}{r\\big(1+\\frac{\\Lambda(\\bar{W})}{\\mu_N+\\sigma}\\big)}\\Big)")`
+
+
+## Worm burden breakpoint estimation  
+The breakpoint worm burden population size, `r latexImg("W_{bp}")` is an unstable equilibrium at which each female worm replaces herself, i.e. `r latexImg("R_{eff}=1")` therefore:
+
+`r latexImg("R_{eff}(W_{bp})=1=\\frac{\\alpha\\omega\\theta K\\sigma\\Lambda\\Big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}-\\frac{\\mu_N}{r}-\\frac{\\Lambda}{r}\\Big)}{W_{bp}\\big(\\mu_W+\\mu_H\\big)\\big(\\mu_I(\\mu_N+\\sigma+\\Lambda)+\\sigma\\Lambda\\big)\\big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}\\big)}")`
+
+We can then estimate the breakpoint as:
+
+`r latexImg("W_{bp}=\\frac{\\alpha\\omega\\theta K\\sigma\\Lambda\\Big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}-\\frac{\\mu_N}{r}-\\frac{\\Lambda}{r}\\Big)}{\\big(\\mu_W+\\mu_H\\big)\\big(\\mu_I(\\mu_N+\\sigma+\\Lambda)+\\sigma\\Lambda\\big)\\big(1+\\frac{\\Lambda}{\\mu_N+\\sigma}\\big)}")`
+
+Obviously the man-to-snail FOI, $\Lambda$ is a major determinant of the breakpoint. As noted previously, we can estimate it given infected snail prevalence,
+
+`r latexImg("\\Lambda=\\frac{\\mu_I(\\mu_N+\\sigma)}{\\frac{\\sigma}{I_P}-\\mu_I-\\sigma}")`
+
+And express the breakpoint in terms of infected snail prevalence as:
+
+`r latexImg("W_{bp}(I_P)=\\frac{\\alpha\\omega\\theta K\\sigma\\frac{\\mu_I(\\mu_N+\\sigma)}{\\frac{\\sigma}{I_P}-\\mu_I-\\sigma}\\Big(1+\\frac{\\frac{\\mu_I(\\mu_N+\\sigma)}{\\frac{\\sigma}{I_P}-\\mu_I-\\sigma}}{\\mu_N+\\sigma}-\\frac{\\mu_N}{r}-\\frac{\\frac{\\mu_I(\\mu_N+\\sigma)}{\\frac{\\sigma}{I_P}-\\mu_I-\\sigma}}{r}\\Big)}{\\big(\\mu_W+\\mu_H\\big)\\big(\\mu_I(\\mu_N+\\sigma+\\frac{\\mu_I(\\mu_N+\\sigma)}{\\frac{\\sigma}{I_P}-\\mu_I-\\sigma})+\\sigma\\frac{\\mu_I(\\mu_N+\\sigma)}{\\frac{\\sigma}{I_P}-\\mu_I-\\sigma}\\big)\\big(1+\\frac{\\frac{\\mu_I(\\mu_N+\\sigma)}{\\frac{\\sigma}{I_P}-\\mu_I-\\sigma}}{\\mu_N+\\sigma}\\big)}")`
+
+Which simplifies (somewhat) to:
+
+`r latexImg("W_{bp}(I_P)=\\frac{\\alpha\\omega\\theta KI_P\\mu_I(\\mu_N+\\sigma)\\Big(1+\\frac{I_P\\mu_I}{\\sigma-I_P(\\mu_I+\\sigma)}-\\frac{\\mu_N}{r}-\\frac{I_P\\mu_I(\\mu_N+\\sigma)}{r(\\sigma-I_P(\\mu_I+\\sigma))}\\Big)}{\\big(1-\\frac{I_P\\mu_I}{\\sigma}-I_P\\big)\\big(\\mu_W+\\mu_H\\big)\\big(\\mu_I(\\mu_N+\\sigma+\\frac{I_P\\mu_I(\\mu_N+\\sigma)}{\\sigma-I_P(\\mu_I+\\sigma)})+\\frac{I_P\\mu_I(\\mu_N+\\sigma)}{1-\\frac{I_P\\mu_I}{\\sigma}-I_P}\\big)\\big(1+\\frac{I_P\\mu_I}{\\sigma-I_P(\\mu_I+\\sigma)}\\big)}")`

@@ -1,0 +1,190 @@
+---
+title: "$R_{eff}$ Simulations with age-structured model"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+devtools::load_all()
+require(tidyverse)
+```
+
+## $R_{eff}$ curve in high prevalence V1) setting  
+```{r}
+# Egg burdens and prevalence from V1, tables 6 and 7 https://doi.org/10.1186/s13071-016-1681-4 
+C_est_V1 <- convert_burden_egg_to_worm(60, 0.1, egg_burden = 126, prevalence = 0.71, age_strat_pars["m"], age_strat_pars["zeta"])
+A_est_V1 <- convert_burden_egg_to_worm(10, 0.1, egg_burden = 19, prevalence = 0.33, age_strat_pars["m"], age_strat_pars["zeta"])
+
+V1_pars <- infection_inputs_get_pars(W_A = A_est_V1[1],
+                                     kap_A = A_est_V1[2],
+                                     H_A = 508,
+                                     cvrg_A = 0,
+                                     W_C = C_est_V1[1],
+                                     kap_C = C_est_V1[2],
+                                     H_C = 602,
+                                     cvrg_C = 0,
+                                     K_ratio = 1,
+                                     I_P = 0.1,
+                                     pars = age_strat_pars)
+
+  Reff_Wij(V1_pars, C_est_V1[1], C_est_V1[1], A_est_V1[1], A_est_V1[1],
+           PDD = phi_Wk, DDF = rho_Wk, S_FOI = "saturating", DDI = nil_1)
+  
+    Reff_Wij(V1_pars, C_est_V1[1], C_est_V1[1], A_est_V1[1], A_est_V1[1],
+           PDD = phi_Wk, DDF = rho_Wk, S_FOI = "linear", DDI = nil_1)
+
+
+```
+
+```{r eval = FALSE, include = FALSE}
+W_bar_grid <- expand.grid(W_C = W_C_seq, W_A = W_A_seq) %>% 
+  mutate(W_bar = W_C * V1_pars["h_c"] + W_A * V1_pars["h_a"],
+         Reff1 = mapply(Reff_Wij, W_C, W_C, W_A, W_A, MoreArgs = list(pars = V1_pars, 
+                                                                      PDD = phi_Wk, 
+                                                                      DDF = rho_Wk, 
+                                                                      S_FOI = "saturating", 
+                                                                      DDI = nil_1))[2,],
+         Reff2 = mapply(Reff_Wij, W_C, W_C, W_A, W_A, MoreArgs = list(pars = V1_pars, 
+                                                                      PDD = phi_Wk, 
+                                                                      DDF = rho_Wk, 
+                                                                      S_FOI = "linear", 
+                                                                      DDI = nil_1))[2,],
+         Reff3 = mapply(Reff_Wij, W_C, W_C, W_A, W_A, MoreArgs = list(pars = V1_pars, 
+                                                                      PDD = phi_Wk, 
+                                                                      DDF = nil_1, 
+                                                                      S_FOI = "saturating", 
+                                                                      DDI = nil_1))[2,],
+         Reff4 = mapply(Reff_Wij, W_C, W_C, W_A, W_A, MoreArgs = list(pars = V1_pars, 
+                                                                      PDD = nil_1, 
+                                                                      DDF = rho_Wk, 
+                                                                      S_FOI = "saturating", 
+                                                                      DDI = nil_1))[2,],
+         Reff5 = mapply(Reff_Wij, W_C, W_C, W_A, W_A, MoreArgs = list(pars = V1_pars, 
+                                                                      PDD = nil_1, 
+                                                                      DDF = nil_1, 
+                                                                      S_FOI = "saturating", 
+                                                                      DDI = nil_1))[2,],
+         Reff6 = mapply(Reff_Wij, W_C, W_C, W_A, W_A, MoreArgs = list(pars = V1_pars, 
+                                                                      PDD = nil_1, 
+                                                                      DDF = nil_1, 
+                                                                      S_FOI = "linear", 
+                                                                      DDI = nil_1))[2,])
+  
+W_bar_grid %>% 
+  filter(W_A <= 0.00011) %>% mutate(W_bar = W_C) %>% 
+  ggplot(aes(x = W_bar, y = Reff1)) + 
+    geom_line() +
+    theme_classic() +
+    scale_x_continuous(trans = "log",
+                       breaks = c(1e-4, 1e-3, 1e-2, 0.1, 1, 10, 100),
+                       labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(1e-4, 200))
+
+```
+
+```{r Reff_S_FOI_curves}
+W_C_seq <- exp_seq(1e-4, 200, 200)
+W_A_seq <- exp_seq(1e-4, 200, 200)
+
+Reff_hi_prev_PDD_DDF_SAT <- as.data.frame(
+  t(mapply(Reff_Wij, W_C_seq, W_C_seq, W_A_seq, W_A_seq, 
+           MoreArgs = list(pars = V1_pars, 
+                           PDD = phi_Wk, 
+                           DDF = rho_Wk, 
+                           S_FOI = "saturating", 
+                           DDI = nil_1)))
+) %>% 
+  mutate(PDD = "PDD",
+         DDF = "DDF",
+         S_FOI = "SAT",
+         DDI = "No DDI")
+
+Reff_hi_prev_PDD_DDF_LIN <- as.data.frame(
+  t(mapply(Reff_Wij, W_C_seq, W_C_seq, W_A_seq, W_A_seq, 
+           MoreArgs = list(pars = V1_pars, 
+                           PDD = phi_Wk, 
+                           DDF = rho_Wk, 
+                           S_FOI = "linear", 
+                           DDI = nil_1)))
+) %>% 
+  mutate(PDD = "PDD",
+         DDF = "DDF",
+         S_FOI = "LIN",
+         DDI = "No DDI")
+
+bind_rows(Reff_hi_prev_PDD_DDF_SAT, Reff_hi_prev_PDD_DDF_LIN) %>% 
+  ggplot(aes(x = W_bar, y = Reff, col = S_FOI)) +
+    geom_line(size = 1.2) +
+    geom_hline(yintercept = 1, lty = 2) +
+    theme_classic() +
+        scale_x_continuous(trans = "log",
+                       breaks = c(1e-4, 1e-3, 1e-2, 0.1, 1, 10, 100),
+                       labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(1e-4, 200))
+
+    
+    
+```
+
+```{r Reff_PDD_curves}
+W_C_seq <- exp_seq(1e-4, 200, 200)
+W_A_seq <- exp_seq(1e-4, 200, 200)
+
+Reff_hi_prev_NoPDD_DDF_SAT <- as.data.frame(
+  t(mapply(Reff_Wij, W_C_seq, W_C_seq, W_A_seq, W_A_seq, 
+           MoreArgs = list(pars = V1_pars, 
+                           PDD = nil_1, 
+                           DDF = rho_Wk, 
+                           S_FOI = "saturating", 
+                           DDI = nil_1)))
+) %>% 
+  mutate(PDD = "No PDD",
+         DDF = "DDF",
+         S_FOI = "SAT",
+         DDI = "No DDI")
+
+bind_rows(Reff_hi_prev_PDD_DDF_SAT, Reff_hi_prev_NoPDD_DDF_SAT) %>% 
+  ggplot(aes(x = W_bar, y = Reff, col = PDD)) +
+    geom_line(size = 1.2) +
+    geom_hline(yintercept = 1, lty = 2) +
+    theme_classic() +
+        scale_x_continuous(trans = "log",
+                       breaks = c(1e-4, 1e-3, 1e-2, 0.1, 1, 10, 100),
+                       labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(1e-4, 200))
+
+    
+    
+```
+
+```{r Reff_unstratified}
+test_reff <- data.frame(W = exp_seq(1e-4,200,200)) %>% 
+  mutate(I05 = sapply(W, R_eff_W_I_P, I_P = 0.05, pars = V1_pars)[1,],
+         I025 = sapply(W, R_eff_W_I_P, I_P = 0.025, pars = V1_pars)[1,],
+         I01 = sapply(W, R_eff_W_I_P, I_P = 0.01, pars = V1_pars)[1,],
+         R0_05 = sapply(W, R_eff_W_I_P, I_P = 0.05, pars = V1_pars)[2,])
+
+test_reff %>% 
+  gather("I_prev", "Reff", I05:R0_05) %>% 
+  ggplot(aes(x = W, y = Reff, col = I_prev)) +
+    geom_line(size = 1.2) +
+    geom_hline(yintercept = 1, lty = 2) +
+    theme_classic() +
+        scale_x_continuous(trans = "log",
+                       breaks = c(1e-4, 1e-3, 1e-2, 0.1, 1, 10, 100),
+                       labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(1e-4, 200))
+
+```
+
+
+```{r Reff_Wij_Ip}
+
+Reff_Wij_I_P(V1_pars, C_est_V1[1], C_est_V1[1], A_est_V1[1], A_est_V1[1], I_P = 0.1,
+             PDD = phi_Wk, DDF = rho_Wk, DDI = nil_1)
+
+
+```
+
+
