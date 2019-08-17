@@ -12,6 +12,127 @@ require(tidyverse)
 ```
 
 # Age structured model  
+
+```{r}
+Reff_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA,
+                     PDD, DDF, S_FOI, DDI){
+  # Get mean worm burden of total population as weighted sum of worm burden in each age/treatment group
+  W_bar <- W_TC*pars["h_tc"]+
+           W_UC*pars["h_uc"]+
+           W_TA*pars["h_ta"]+
+           W_UA*pars["h_ua"]
+
+  ##standard snail parameters
+    r=pars["r"]             # recruitment rate (from sokolow et al)
+    K=pars["K"]          # carrying capacity corresponding to 50 snails per square meter
+    mu_N=pars["mu_N"]          # Mean mortality rate of snails (assuming lifespan of 60days)
+    sigma=pars["sigma"]         # Transition rate from exposed to infected (assuming pre-patency period of ~4 weeks) doi:10.4269/ajtmh.16-0614
+    mu_I=pars["mu_I"]          # Increased mortality rate of infected snails
+    theta=pars["theta"]          # mean cercarial shedding rate per adult snail doi:10.4269/ajtmh.16-0614
+
+  #Adult Worm, Miracidia and Cercariae Parameters
+    mu_W = pars["mu_W"]   # death rate of adult worms
+    mu_H_A = pars["mu_H_A"] # death rate of adult humans
+    mu_H_C = pars["mu_H_C"] # death rate of children
+    m = pars["m"]             # mean eggs shed per female worm per 10mL urine (truscott et al)
+    v = pars["v"]           # mean egg viability (miracidia per egg)
+
+  #Density dependence parameters
+    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
+
+  #Human parameters
+    H = pars["H"]
+    h_c = pars["h_c"]         # Proportion of treated children
+    h_a = pars["h_a"]           # Proportion of treated adults
+    h_tc = pars["h_tc"]         # Proportion of treated children
+    h_uc = pars["h_uc"]          # Proportion of untreated children
+    h_ta = pars["h_ta"]           # Proportion of treated adults
+    h_ua = pars["h_ua"]         # Proportion of untreated adults
+    U_C = pars["U_C"]          # mL urine produced per child per day /10mL https://doi.org/10.1186/s13071-016-1681-4
+    U_A = pars["U_A"]          # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
+    omega_c = pars["omega_c"]          #  infection risk/contamination of SAC  (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    omega_a = pars["omega_a"]          #  infection risk/contamination of adults (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
+    Omega = pars["Omega"]          # relative infection risk/contamination of SAC vs adults
+
+  #Transmission parameters
+    alpha=pars["alpha"]       # Cercarial infection probability
+    Lambda_0=pars["Lambda_0"]         # first parameter of non-linear man-to-snail FOI
+    beta=pars["beta"]       # Man to snail trnamission probability for linear FOI
+
+  # Get miracidial density as function of worm burdens
+    #Update clumping parameter, k from estimate of worm burden in each population
+      k_TC = k_from_log_W(W_TC)
+      k_UC = k_from_log_W(W_UC)
+      k_TA = k_from_log_W(W_TA)
+      k_UA = k_from_log_W(W_UA)
+
+    #Estimate mating probability within each strata
+      phi_W_TC = PDD(W = W_TC, k = k_TC)  #Mating probability in treated SAC population
+      phi_W_UC = PDD(W = W_UC, k = k_UC)  #Mating probability in untreated SAC population
+      phi_W_TA = PDD(W = W_TA, k = k_TA)  #Mating probability in treated adult population
+      phi_W_UA = PDD(W = W_UA, k = k_UA)  #Mating probability in untreated adult population
+
+    #Estimate density dependent fecundity
+      rho_W_TC = DDF(W_TC, zeta, k_TC)
+      rho_W_UC = DDF(W_UC, zeta, k_UC)
+      rho_W_TA = DDF(W_TA, zeta, k_TA)
+      rho_W_UA = DDF(W_UA, zeta, k_UA)
+
+    # Estimate total miracidia entering snail habitat
+      M_tot = 0.5*H*omega_a*v*m*((W_TC*phi_W_TC) * rho_W_TC * U_C*h_tc*Omega +
+                                   (W_UC*phi_W_UC) * rho_W_UC * U_C*h_uc*Omega +
+                                   (W_TA*phi_W_TA) * rho_W_TA * U_A*h_ta +
+                                   (W_UA*phi_W_UA) * rho_W_UA * U_A*h_ua)
+
+  # Get man-to-snail FOI as solution given M_tot and other parameters and choice of specification
+    if(S_FOI == "linear"){
+
+      #Estimate N
+        N <- uniroot.all(function(N) K*(1-(mu_N+(beta*M_tot/N))/(r*(1+(beta*M_tot/(N*(mu_N+sigma))))))-N,
+                         interval = c(0,K))
+
+        Lambda <- beta*M_tot/N
+
+    } else if(S_FOI == "saturating"){
+
+      N <- uniroot.all(function(N) K*(1-(mu_N+(Lambda_0*(1-exp(-M_tot/N))))/(r*(1+((Lambda_0*(1-exp(-M_tot/N)))/(mu_N+sigma)))))-N,
+                       interval = c(0,K))
+
+      Lambda <- Lambda_0*(1-exp(-M_tot/N))
+
+    } else if(!(S_FOI %in% c("linear", "saturating"))){
+
+      stop("S_FOI must be either linear or saturating")
+
+    }
+
+  #Density dependent acquired immunity
+    gam_W_TC = DDI(W_TC, xi)
+    gam_W_UC = DDI(W_UC, xi)
+    gam_W_TA = DDI(W_TA, xi)
+    gam_W_UA = DDI(W_UA, xi)
+
+  # Net Reff
+    sum_bit <- (h_tc*omega_c)/(W_TC*(mu_W+mu_H_C)) +
+               (h_uc*omega_c)/(W_UC*(mu_W+mu_H_C)) +
+               (h_ta*omega_a)/(W_TA*(mu_W+mu_H_A)) +
+               (h_ua*omega_a)/(W_UA*(mu_W+mu_H_A))
+
+    sum_bit2 <- (h_c*omega_c)/((mu_W+mu_H_C)) +
+               (h_a*omega_a)/((mu_W+mu_H_A)) 
+
+    
+    Reff <- ((alpha*theta*sigma*N)/((mu_I*(mu_N+sigma)/Lambda)+mu_I+sigma))*sum_bit
+    Reff2 <- ((alpha*theta*sigma*N)/(W_bar*((mu_I*(mu_N+sigma)/Lambda)+mu_I+sigma)))*sum_bit2
+
+  return(c("W_bar" = as.numeric(W_bar),
+           "Reff" = as.numeric(Reff),
+           "Reff2" = as.numeric(Reff2),
+           "N" = N))
+}
+```
+
 ## Simulations in high prevalence setting    
 ```{r mod_setup}
 # Egg burdens and prevalence from V1, tbales 6 and 7 https://doi.org/10.1186/s13071-016-1681-4 
@@ -26,12 +147,12 @@ V1_pars <- infection_inputs_get_pars(W_A = A_est_V1[1],
                                      kap_C = C_est_V1[2],
                                      H_C = 602,
                                      cvrg_C = 0.8,
-                                     K_ratio = 3,
+                                     K_ratio = 15,
                                      I_P = 0.1,
                                      age_strat_pars)
 
   Reff_Wij(V1_pars, C_est_V1[1], C_est_V1[1], A_est_V1[1], A_est_V1[1],
-           PDD = phi_Wk, DDF = rho_Wk, S_FOI = "saturating", DDI = nil_1)
+           PDD = phi_Wk, DDF = rho_Wk, S_FOI = "linear", DDI = nil_1)
 
 #Get equilibrium values of state variables
   eq_vals_V1 <- c(S=as.numeric(V1_pars["S_eq"]), 
@@ -51,6 +172,26 @@ V1_pars <- infection_inputs_get_pars(W_A = A_est_V1[1],
                         method = rep('mult', years/2))
 ```
 
+## $R_{eff} Curve  
+```{r}
+Reff_Wij_df <- expand.grid(W_TC = exp_seq(1e-4, 1,10),
+                           W_UC = exp_seq(1e-4, 1,10),
+                           W_TA = exp_seq(1e-4, 1,10),
+                           W_UA = exp_seq(1e-4, 1,10)) %>% 
+  mutate(W_bar = (W_TC*V1_pars["h_tc"] +
+                    W_UC*V1_pars["h_uc"] +
+                    W_TA*V1_pars["h_ta"] + 
+                    W_UA*V1_pars["h_ua"]),
+         R_eff_W_bar = mapply(Reff_Wij, W_TC, W_UC, W_TA, W_UA, 
+                              MoreArgs = list(pars = V1_pars, PDD = phi_Wk, DDF = rho_Wk, S_FOI = "linear", DDI = nil_1))[2,])
+                           
+Reff_Wij_df %>% 
+  ggplot(aes(x = W_bar, y = R_eff_W_bar)) +
+    geom_point() +
+    theme_classic()
+```
+
+
 ### Simulate 10 years of annual MDA in 80% of SAC populaition  
 ```{r sim_mda_sac}
 V1_SAC_mda_sim <- sim_schisto_mod(nstart = eq_vals_V1, 
@@ -62,7 +203,9 @@ V1_SAC_mda_sim <- sim_schisto_mod(nstart = eq_vals_V1,
                         W_UC*V1_pars["h_uc"] +
                         W_TA*V1_pars["h_ta"] + 
                         W_UA*V1_pars["h_ua"]),
-         I_prev = I/(S+E+I))
+         I_prev = I/(S+E+I),
+         Reff_W_bar = mapply(Reff_Wij, W_TC, W_UC, W_TA, W_UA, 
+                             MoreArgs = list(pars = V1_pars, PDD = phi_Wk, DDF = rho_Wk, S_FOI = "linear", DDI = nil_1))[2,])
 
 V1_SAC_mda_sim %>% 
   gather("Treatment", "Worm Burden",  W_TC:mean_W) %>% 
@@ -93,17 +236,9 @@ V1_SAC_mda_sim %>%
 
 ```
 
-
 ```{r Reff_plot}
-as.data.frame(
-  t(mapply(Reff_Wij, V1_SAC_mda_sim$W_TC, V1_SAC_mda_sim$W_UC, V1_SAC_mda_sim$W_TA, V1_SAC_mda_sim$W_UA, 
-           MoreArgs = list(pars = V1_pars, 
-                           PDD = phi_Wk, 
-                           DDF = rho_Wk, 
-                           S_FOI = "saturating", 
-                           DDI = nil_1)))
-) %>% 
-  ggplot(aes(x = W_bar, y = Reff)) +
+V1_SAC_mda_sim %>% 
+  ggplot(aes(x = time, y = Reff_W_bar)) +
     geom_line() +
     theme_classic() +
     geom_hline(yintercept = 1, lty = 2) +
@@ -114,19 +249,19 @@ as.data.frame(
 
 So that makes it look like we're not even close to reaching the breakpoint and maybe haven't even reached $R_{peak}$. Let's increase coverage in SAC and add MDA in adult population and see what plot lokos like
 
-### Simulate 20 years of annucal MDA in 90% SAC and 50% adult populations  
+### Simulate 20 years of annucal MDA in 99% SAC and 99% adult populations  
 ```{r sim_com}
 #SAME SETUP ROUTINE 
 #add transmission and other parameters to parameter set
 V1_pars2 <- infection_inputs_get_pars(W_A = A_est_V1[1],
                                       kap_A = A_est_V1[2],
                                       H_A = 508,
-                                      cvrg_A = 0.5,
+                                      cvrg_A = 0.99,
                                       W_C = C_est_V1[1],
                                       kap_C = C_est_V1[2],
                                       H_C = 602,
-                                      cvrg_C = 0.9,
-                                      K_ratio = 1, 
+                                      cvrg_C = 0.99,
+                                      K_ratio = 15, 
                                       I_P = 0.1,
                                       age_strat_pars)
 
@@ -152,7 +287,9 @@ V1_CWT_mda_sim <- sim_schisto_mod(nstart = eq_vals_V1,
                         W_UC*V1_pars2["h_uc"] +
                         W_TA*V1_pars2["h_ta"] + 
                         W_UA*V1_pars2["h_ua"]),
-         I_prev = I/(S+E+I))
+         I_prev = I/(S+E+I),
+         Reff_W_bar = mapply(Reff_Wij, W_TC, W_UC, W_TA, W_UA, 
+                             MoreArgs = list(pars = V1_pars, PDD = phi_Wk, DDF = rho_Wk, S_FOI = "linear", DDI = nil_1))[2,])
   
 V1_CWT_mda_sim %>% 
   gather("Treatment", "Worm Burden",  W_TC:mean_W) %>% 
@@ -187,21 +324,14 @@ V1_CWT_mda_sim %>%
 Let's see if the expanded MDA did anything in terms of reaching the breakpoint
 
 ```{r Reff_V12_CWT}
-as.data.frame(
-  t(mapply(Reff_Wij, V1_CWT_mda_sim$W_TC, V1_CWT_mda_sim$W_UC, V1_CWT_mda_sim$W_TA, V1_CWT_mda_sim$W_UA, 
-           MoreArgs = list(pars = V1_pars, 
-                           PDD = phi_Wk, 
-                           DDF = rho_Wk, 
-                           S_FOI = "saturating", 
-                           DDI = nil_1)))
-) %>% 
-  ggplot(aes(x = mean_W, y = Reff)) +
+V1_CWT_mda_sim %>% 
+  ggplot(aes(x = time, y = Reff_W_bar)) +
     geom_line() +
     theme_classic() +
     geom_hline(yintercept = 1, lty = 2) +
-    labs(x = "time (years)",
-         y = expression(Mean~Worm~Burden~(W[ij])),
-         title = "Community wide MDA simulation in high prevalence setting")
+    labs(x = "Population mean worm burden",
+         y = expression(R[eff]),
+         title = "Mean worm burden and Reff relationship during 99% community-wide MDA")
 
 ```
 

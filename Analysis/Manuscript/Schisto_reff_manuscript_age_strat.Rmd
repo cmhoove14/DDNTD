@@ -1,0 +1,179 @@
+---
+title: "Estimating transmission breakpoints for human helminths: methods and implications for control strategies"
+author: "Chris Hoover, Suzanne Lenhart, Jason Rohr, Giulio de Leo, Sanna Sokolow, Justin V. Remais"
+bibliography: "references.bib"
+csl: "plos.csl"
+output: 
+  word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+require(tidyverse)
+require(knitcitations)
+  cleanbib()
+  cite_options(cite.style = "numeric",
+               citation_format = "pandoc")
+devtools::load_all()
+```
+
+# Introduction  
+Mathematical models have been used for more than five decades to investigate the complex transmission dynamics of schistosomiasis. Schistosome parasites transition between human and snail hosts via two free-living, host-seeking larval forms: miracidia (shed by humans, infect snails) and cercariae (shed by snails, infect humans). Special attention has been paid to investigating transmission dynamics when perturbed by control efforts such as mass drug administration (MDA) to treat the human population. This focus is at least in part driven by an early finding of Macdonald's [CITE] that there exists a transmission breakpoint (also known as a strong Allee effect) due to a positive density dependence (PDD) arising from the dioecious nature of adult schistosome worms. This implies that elimination could be achieved if schistosome worm burdens are suppressed below the breakpoint, e.g. via widespread treatment of infected individuals with MDA. However, subsequent analyses [CITE] determined that the breakpoint occurs at such small worm burdens as to be irrelevant to control efforts.
+
+Another key finding of Macdonald's is that, in the absence of a breakpoint, elimination is only achieved via permanent alterations that suppress the basic reproduction number, $R_0$, below the critical threshold of 1. More recently, such interventions have been referred to as "transmission controls". `r citet("10.1371/journal.pntd.0004794")` This, combined with the finding of extremely small breakpoint population sizes, suggests that efforts to eliminate schistosomiasis should include transmission controls that suppress $R_0$. Indeed, a recent analysis of control and elimination efforts over the past century shows that snail control--in addition to or in the context of developmental improvements such as sanitation, water access, and mechanization of agriculture--is most likely to result in successful elimination. `r citet("10.1371/journal.pntd.0004794")` But current control strategies rely on preventive chemotherapy by MDA to treat high-risk populations. School-aged children (SAC; ages 5-14) are frequently targeted for MDA as they are both at high risk for infection and are easily reached. Community-based MDA strategies that seek to treat adults and pre-school aged children in addition to SAC are also pursued, but are logistically challenging. [CITE] 
+
+In many areas, these MDA-based strategies have reduced schistosomiasis infection levels as measured by overall prevalence, prevalence of heavy infections, and individual parasite burdens. [CITE] National control programs across sub-Saharan Africa, large philanthropic donations from national, international, and private organizations, and donations of the anthelminthic drug Praziquantel from Merck have contributed to this success. [CITE WHO](https://www.who.int/neglected_diseases/resources/9789241503174/en/) `r citet("https://www.who.int/neglected_diseases/resources/9789241503174/en/")` `r citet("10.1371/journal.pntd.0006484")` However, more than **X** people still require treatment, and **Y** people remain at risk in areas with active schistosomiasis transmission. Furthermore, there is ever increasing understanding of the wide array of disability caused by schistosomiasis infection [CITE] suggesting even more disability-adjusted life-years (DALYs) lost due to schistosomiasis infection than the **Z** estimated by the most recent global burden of disease study.
+
+In addition to shortcomings caused by drug shortages and implementation challenges, schistosomiasis prevalence in many communities remains stable even after multiple years of MDA. `r citet(c("10.1017/S0022149X11000290", "10.1086/520515", "10.1371/journal.pntd.0001774"))` In these communities, schistosomiasis prevalence quickly rebounds back to pre-MDA levels, often within a year of treatment. For instance in a large group of studies conducted by the Schistosomiasis Consortium for Operational Research and Evaluation (SCORE; https://score.uga.edu/), multiple community- and school-based MDA strategies with different frequencies and "drug holiday years" were tested. Across these strategies, many communities experienced substantial reductions in prevalence between baseline surveys and reassessment at five years. Still other communities, termed "persistent hot-spots", experienced minor changes or even increases in prevalence. `r citet("10.4269/ajtmh.19-0193")` Finescale variation between so-called "responder" communities and persistent hot spots also suggests that highly local factors determine the success or failure of MDA-based control. 
+
+[Paragraph on integrated control strategies in China and their success.] `r citet(c("10.1186/s40249-017-0290-6", "10.1073/pnas.0701878104", "10.1016/bs.apar.2016.02.004"))`. Translating the successful strategies employed in China into control programs in sub-Saharan Africa--where more than 90% of schistosomiasis cases occur--represents a major opportunity. However, progress along this front remains elusive in part due to the lack of a generalizable framework to simultaneously quantify the effects of transmission control, MDA, and their interactions. `r citet("10.1186/s40249-018-0506-4")`
+
+Here, we present such a framework that focuses on estimation of the effective reproduction number, $R_{eff}$ and the transmission breakpoint, $W_{bp}$, using model parameters fitted to infection rebound data. We build on this finding to demonstrate that the breakpoint is manipulable through interventions that reduce the basic reproduction number, $R_0$, and propose methods to estimate the MDA coverage necessary to reduce the population mean worm burden below the breakpoint. We conclude with simulations from a stochastic model of schistosomiasis transmission in which we compare control strategies in different transmission and intervention scenarios with respect to their estimated probability of achieving elimination.
+
+#### Other potential intro anecdotes     
+Mothers with small children may be a particularly relevant class that is both vulnerable to schistosomiasis (re)infection and may play a key role in sustaining it following MDA campaigns in which they are not routinely targeted `r citet("10.1186/s40249-016-0215-9")`
+
+Metrics of success that incorporate environmental surveillance of intermediate host snails as well as detection of free-swimming miracidia and cercariae using eDNA techniques have been suggested `r citet("10.1186/s40249-016-0215-9")`.
+
+Integrated strategies targeting the intermediate host snail population through both mollusciciding and habitat reduction, zoonotic reservoirs, improved sanitation and water access (e.g. WASH interventions), and education on exposure and transmission prevention have beenextremely successful in reducing transmission in Chengdu Province, China. `r citet("10.1186/s40249-017-0290-6")` Fuerthermore, recent analyses have shown that adding routine mollusciciding to MDA efforts is highly cost-effective in terms of DALYs-averted per dollar invested. `r citet("10.1073/pnas.1708729114")`
+
+# Methods  
+## Basic schistosomiasis model  
+### Intermediate host snail infection dynamics  
+We expand on classic "MacDonald-type" models [CITE] and our more recently published models [CITE] to explore the role of X, Y, and Z on `____`. The basic schistosomiasis model represents susceptible-exposed-infected (state variables $S$, $E$, and $I$ respectively) infection dynamics among the intermediate host snail population, $\mathbf{N}$, in order to account for the delay (pre-patent period, $1/\sigma$) between infection ($S \rightarrow E$) and active shedding of cercariae (patency, ($E \rightarrow I$)). 
+
+$$\frac{dS}{dt}=f_N(S+E)-\mu_N S-\Lambda S$$
+
+$$\frac{dE}{dt}=\Lambda S-(\mu_N+\sigma)E$$
+
+$$\frac{dI}{dt}=\sigma E - \mu_I I$$
+
+Infected snails, $I$, do not reproduce due to parasitic castration and the snail population growth rate, $f_N$, is logistic with max reproduction rate, $r$, and carrying capacity, $K$, giving $f_N=r(1-N/K)$. Snail infection dynamics are linked to the human population via the man-to-snail force of infection (FOI), $\Lambda$, described further below.
+
+### Human infection dynamics  
+Human infection across age groups, $i\in(\underline{\textbf{C}}hildren,\underline{\textbf{A}}dult)$, and treatment groups, $j\in(\underline{\textbf{T}}reated,\underline{\textbf{U}}ntreated)$ is modeled via state variables $W_{ij}$ representing the mean worm burden in each segment of the human population, assumed to be negative binomially distributed with independent clumping parameters $\kappa_{ij}$.
+
+$$\frac{dW_{ij}}{dt}=\lambda_{i}-(\mu_W+\mu_H)W_{ij}$$
+
+Human infection dynamics are linked to the intermediate host snail population via the snail-to-man FOI or "worm acquisition rate", $\lambda_i$. This process is modeled as the product of cercarial density, $C$, age-dependent exposure/contamination rate, $\omega_i$, and the probability of a cercarial contact resulting in an adult worm infection, $\alpha$. Infected snails shed cercariae at daily rate $\theta$, giving $C=\theta I$ and $\lambda_{ij}=\alpha\omega_i\theta I$.
+
+### Man-to-snail FOI, $\Lambda$  
+Snail FOI, $\Lambda$ is estimated primarily as a function of miracidial density, $M$, and the probability of infection per miracidial contact, $\beta$:
+
+$$\Lambda=\beta M/\mathbf{N}$$
+
+Miracidial density is estimated as the product of mean egg output in each worm burden group, $\mathcal{E}_{ij}$; the age-dependent exposure/contamination rate related to differences in sanitation and other behaviors between SAC and adults, $\omega_i$; schistosome egg viability, $v$, and the population fraction of each group, $h_{ij}$. 
+
+Mean egg output is estimated assuming a 1:1 sex ratio and a negative binomial distribution of adult worms among definitive human hosts in each age and treatment strata. Within each of these strata, key density depdendent functions representing the mating probability, $\Phi(W_{ij})$, and reductions in egg production due to crowding, $\rho(W_{ij})$, are estimated as a function of the mean worm burden, $W_{ij}$, and the dispersion parameter of the negative binomial distribution, $\kappa_{ij}$ (details in SI;  `r citet("10.1016/0025-5564(77)90030-X")`). Previous analyses of the distribution of estimated worm counts within definitive human host populations have shown that the dispersion parameter varies predictably as a function of the overall mean worm burden and can change quite dramatically following reductions in the worm burden such as those induced by MDA. `r citet(c("10.1016/S1473-3099(16)30073-1", "10.1371/journal.pone.0115875"))` In particular, $\kappa_{ij}$ decreases, implying more skewed distributions in which fewer individuals harbor more worms, as $W_{ij}$ decreases. This leads to an increase in the mating probability, $\Phi$, relative to an assumption of constant values of $\kappa_{ij}$, even as worm populations decrease due to MDA or other interventions. The dispersion parameter in each strata is therefore modeled as a function of the mean worm burden:
+
+$$\kappa_{ij}=e^{\big(a-b\log(W_{ij})\big)}$$
+
+and both $\Phi$ and $\rho$ can be expressed in terms of the mean worm burden alone. 
+
+The mean egg output from each strata can therefore be estimated as $\mathcal{E}_{ij}=0.5W_{ij}\Phi(W_{ij})\rho(W_{ij})mU_{i}$ wwith additional model parameters defined in Table 1. Taking a weighted sum across all groups and multiplying by the total human population, $mathbf{H}$, gives an estimate of total daily miracidial density:
+
+$$M=\mathbf{H}\sum_i\sum_j 0.5h_{ij}W_{ij}\Phi(W_{ij})\rho(W_{ij})mvU_{i}\omega_i$$
+
+
+## $R_{eff}(W)$ and $W_{bp}$    
+
+From this model, we derive an analytic expression of two key quantities: the breakpoint mean population worm burden, $W_{bp}$, and the effective reproduction number, $R_{eff}(W)$. We next describe different sources of resilience to control and elimination by MDA and the quantitative representation of each in the model. Each source of resilience is incorporated individually into expressions of $W_{bp}$ and $R_{eff}(W)$ to estimate their effect on these key metrics.
+
+## Worm burden breakpoint, $W_{bp}$, estimation from model parameters  
+
+## Modeling drug administration and coverage necessary to reach the breakpoint  
+
+## Model fit and parameter estimation   
+In previous modeling efforts we have fit mean worm burden outputs from the model to longitudinal reinfection data measured via parasitological surveys of SAC over the course of a multi-year MDA campaign `r citet(c("10.1038/s41467-018-03189-w", "10.1371/journal.pntd.0006794", "10.1038/s41893-019-0301-7"))`. Because estimates of the contribution to transmission of the adult population are key in the analyses presented here, we instead rely on the data sources and approximate methods presented in `r citet(c("10.1073/pnas.1708729114", "10.1371/journal.pntd.0006514"))` to estimate the parameters $\alpha$, $\beta$, and $\omega$.  
+
+## Stochastic model simulating control strategies and probability of elimination as a metric of potential success   
+
+### Transmission scenarios
+
+#### Control strategies  
+* No intervention (baseline)  
+* School-based MDA (coverage informed by estimates from Senegal? Score?)  
+* Community-wide MDA (coverage informed by estimates from Senegal? Score?)  
+* Each MDA strategy with snail control  
+* Initial `_`% reduction in snail habitat followed by `___` MDA strategy  
+* Gradual `_`% reduction in snail habitat in conjunction with `___` MDA strategy  
+* Gradual improvements in sanitation and hygiene in conjunction with MDA  
+
+#### Metrics from stochastic model  
+* 100 rounds of 100 stochastic simulations used to estimate:  
+  * **Probability of elimination as a public health problem** -- Morbidity control and less than 1% prevalence of heavy (>50 eggs/mL) infections
+  * **Probability of interruption of transmission** -- No incident cases  
+  * **Probability of outright elimination** -- No infected vectors or individuals after ten years
+
+# Results  
+### Potential Figures (in no particular order)  
+#### - $R_{eff}$ curve pointing out $W_{bp}$, 
+#### - $R_{eff}$ time series  
+Shows that MDA except at extremely high levels of coverage increases transmission (as measured by $R_{eff}$) by reducing influence of negative density dependence, leads to return towards pre-intervention levels of infection
+
+#### - $W_{bp}$ comparisons between models to show influence of sources of resilience on the breakpoint population size. e.g. what is breakpoint with no PDD, with PDD, with PDD+non-linear huma-snail FOI, etc...    
+
+#### - $W_{bp}$ across values of parameters that can be changed via control measures  
+
+#### - Example stochastic time series from different control strategies, delineate chains that successfully control/eliminate (based on WHO definition) from those that rebound with different colors  
+
+### Table (further divided by intervention strategy):  
+```{r echo = FALSE}
+data.frame(row.names = c("High prevalence setting", 
+                         "Medium prevalence setting",
+                         "Low prevalence setting"),
+           "Probability of transmission control" = c(NA,NA,NA),
+           "Probability of elimination as a public health problem" = c(NA,NA,NA),
+           "Probability of outright elimination" = c(NA,NA,NA)) %>% 
+  knitr::kable(format = "markdown",
+               row.names = TRUE,
+               caption = "Results of stochastic simulations indicating the probability of meeting different WHO criteria for progress towards schistosomiasis control and elimination in different transmission settings and with different control strategies")
+```
+
+# Discussion  
+Diagnostics that are more sensitive than egg-counts from urine or stool samples are necessary in low-transmission and post-elimination settings. `r citet("10.1186/s40249-017-0289-z")`
+
+Additional drugs already approved for other uses may be helpful in the treatment and prevention of schistosomiasis by targeting different parasite development stages. `r citet("10.1186/s40249-017-0286-2") `
+
+Positive density dependent sources in other helminth infections: L3 suppression in Lymphatic Filiriasis `r citet("10.1111/j.1365-2915.2006.00629.x")`, immunosuppression in onchocerciasis `r citet("10.1016/S0035-9203(03)90132-5")`
+
+Non-linear snail FOI, $\Lambda=\Lambda_0\big(1-e^{-\beta M/N}\big)$ where the miracidium invasion rate, $\Lambda_0$, is moderated by the probability of invasion assuming a Poisson distribution of miracidia per snail (see `r citet("10.1371/journal.pntd.0006514")`).
+
+# References  
+`r write.bibtex(file = "references.bib")`
+
+# Supplementary Information  
+
+#### Density dependent fecundity  
+$\rho(W, \zeta,\kappa)=\bigg(1+\frac{(1-e^{-\zeta})W}{\kappa}\bigg)^{-(\kappa+1)}$
+
+#### Acquired immunity  
+$\gamma(W, \xi)=e^{(1-\xi W-e^{-\xi W})}$
+
+
+# Miscellaneous/Scratch  
+#### Snail logistic population growth  
+Snail reproduction is modeled assuming logistic population growth such that the fecundity rate, $f_N$, is a function of the intrinsic reproduction rate, $r$, the environmental carrying capacity, $K$, and the total snail population, $N$:
+
+$$f_N=r\Big(1-\frac{N}{K}\Big)$$
+
+As $N\rightarrow 0$, $f_N\rightarrow r$. This implies resilience to interventions such as mollusciciding as the fecundity rate increases as the sail population decreases, leading to quicker rebound of the snail population following perturbation than would be expected given a constant fecundity rate.
+
+And also "Civitello effect"?  
+
+#### Non linear snail FOI (can be framed as a density dependence?)  
+Compared to a linear snail FOI of the form $\Lambda=\beta M$, this formulation leads to higher FOIs at lower values of $M$, reflecting the amplifying role of the intermediate host snail population in transmission. Less infectious material from the human population is required to reach higher rates of infection in the intermediate host snail population. A small number of infected individuals could therefore be sufficient to maintain man-to-snail transmission, even as the majority of a community is treated via MDA.
+
+### Reservoirs of infection  
+Miracidial density, $M$, is estimated as the sum of infectious input across all definitive human host populations:  
+
+$$M=\mathbf{H}\sum_i\sum_j 0.5W_{ij}h_{ij}\Phi(W_{ij})m\rho(W_{ij})v\omega$$
+
+with mean worm burden, $W_{ij}$, modeled separately for each age and treatment group; $h_{ij}$ is the population fraction of each group; $\Phi(W_{ij})$ is the mating probability of adult worms in each population with the dispersion parameter of the negative binomially distributed worm population, $\kappa_{ij}$, estimated as a function of the mean worm burden, $W_{ij}$ (see below); $\rho(W_{ij})$ is the density-dependent fecundity; and $\omega_i$ is a contamination coefficient related to sanitation and other behaviors that vary between SAC and adults.
+
+MDA in the affected population is modeled as a reduction in the mean worm burden by $\epsilon$, the efficacy of the drug intervention, in the following timestep of the model: $W_{ijt}=\epsilon W_{ijt-1}$. Mean worm burden in the other populations remain unaffected except via changes in the man-to-snail FOI as a result of treating the affected population.
+
+
+
+

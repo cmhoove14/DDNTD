@@ -21,10 +21,11 @@ devtools::load_all("../../DDNTD")
 # Effects of MDA on $R_{eff}$  
 
 ## Basic schistosomiasis model simulation with MDA administered to treated segment of the population and untreated segment of the population left alone  
+
 ```{r base_sim}
 #Base time and starting values for state variables
 base_start <- c(S=5000, E=0, I=0, Wt=10, Wu=10)
-years <- 30
+years <- 20
 base_time <- c(1:(365*years))
 
 #Run to equibrium with base parameter set
@@ -43,21 +44,18 @@ mda.events = data.frame(var = rep('Wt', years/2),
 schisto_base_sim <- sim_schisto_mod(nstart = base_eqbm, 
                                     time = base_time, 
                                     model = schisto_base_mod,
-                                    parameters = base_pars,
+                                    pars = base_pars,
                                     events_df = mda.events) %>% 
   mutate(W = Wt*base_pars["cvrg"] + Wu*(1-base_pars["cvrg"]),
-         kap = map_dbl(W, k_from_log_W),
-         kap_Wt = map_dbl(Wt, k_from_log_W),
-         kap_Wu = map_dbl(Wu, k_from_log_W),
-         Reff = pmap_dbl(list(parameters = list(base_pars),
-                              W = W,
-                              kap = kap), getReff),
-         Reff_Wt = pmap_dbl(list(parameters = list(base_pars),
-                              W = Wt,
-                              kap = kap_Wt), getReff),
-         Reff_Wu = pmap_dbl(list(parameters = list(base_pars),
-                              W = Wu,
-                              kap = kap_Wu), getReff),
+         kap = sapply(W, k_from_log_W),
+         kap_Wt = sapply(Wt, k_from_log_W),
+         kap_Wu = sapply(Wu, k_from_log_W),
+         Reff = sapply(W, Reff_W,
+                       pars = base_pars)[1,],
+         Reff_Wt = sapply(Wt, Reff_W,
+                          pars = base_pars)[1,],
+         Reff_Wu = sapply(Wu, Reff_W,
+                          pars = base_pars)[1,],
          Reff2 = Reff_Wt * base_pars["cvrg"] + Reff_Wu * (1-base_pars["cvrg"]),
          Coverage = base_pars["cvrg"])
 
@@ -93,24 +91,21 @@ schisto_cvrg_fx <- function(pars){
   schisto_sim <- sim_schisto_mod(nstart = base_eqbm, 
                                       time = base_time, 
                                       model = schisto_base_mod,
-                                      parameters = pars,
+                                      pars = pars,
                                       events_df = mda.events) %>% 
   mutate(W = Wt*pars["cvrg"] + Wu*(1-pars["cvrg"]),
-         kap = map_dbl(W, k_from_log_W),
-         kap_Wt = map_dbl(Wt, k_from_log_W),
-         kap_Wu = map_dbl(Wu, k_from_log_W),
-         Reff = pmap_dbl(list(parameters = list(pars),
-                              W = W,
-                              kap = kap), getReff),
-         Reff_Wt = pmap_dbl(list(parameters = list(pars),
-                              W = Wt,
-                              kap = kap_Wt), getReff),
-         Reff_Wu = pmap_dbl(list(parameters = list(pars),
-                              W = Wu,
-                              kap = kap_Wu), getReff),
+         kap = sapply(W, k_from_log_W),
+         kap_Wt = sapply(Wt, k_from_log_W),
+         kap_Wu = sapply(Wu, k_from_log_W),
+         Reff = sapply(W, Reff_W,
+                       pars = base_pars),
+         Reff_Wt = sapply(Wt, Reff_W,
+                          pars = base_pars),
+         Reff_Wu = sapply(Wu, Reff_W,
+                          pars = base_pars),
          Reff2 = Reff_Wt * pars["cvrg"] + Reff_Wu * (1-pars["cvrg"]),
          Coverage = pars["cvrg"])
-  
+ 
   return(schisto_sim)
 }
 
@@ -136,7 +131,7 @@ schisto_cvrgs_plot <- schisto_cvrgs_df %>%
                          labels = c(-1:(years-1))) +
       theme_classic() +
       labs(title = "Human infection dynamics", 
-           subtitle = paste0("Anual MDA for ", years/2, " years at variable coverage"),
+           subtitle = paste0("Annual MDA for ", years/2, " years at variable coverage"),
            x = "Time (years)",
            color = "Coverage")
 
@@ -153,15 +148,12 @@ w_anim
 
 ## Baseline $R_{eff}$ curve with base parameter set  
 ```{r reff_curve}
-test_ws <- seq(1e-2, sqrt(100), 
-               by = sqrt(100*2)/1000)^2
+test_ws <- exp_seq(1e-4,200,200)
 
 #Get values of mean worm burden to plot R effective curve over
 Reffs <- data.frame(test_ws = test_ws) %>% 
   mutate(w_det_ks = sapply(test_ws, k_from_log_W),
-         Reff = pmap_dbl(list(parameters = list(base_pars),
-                              W = test_ws,
-                              kap = w_det_ks), getReff))
+         Reff = sapply(test_ws, Reff_W, pars = base_pars)[1,])
 
 base_reff <- Reffs %>% 
   ggplot(aes(x = test_ws, y = Reff)) +

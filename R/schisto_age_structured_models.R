@@ -51,7 +51,7 @@ schisto_age_strat_mod <- function(t, n, pars) {
 
   #Transmission parameters
     alpha=pars["alpha"]       # Cercarial infection probability
-    Lambda_0=pars["Lambda_0"]         # first parameter of non-linear man-to-snail FOI
+    beta=pars["beta"]         # first parameter of non-linear man-to-snail FOI
 
   #State variables #######
     S=n[1]
@@ -97,12 +97,12 @@ schisto_age_strat_mod <- function(t, n, pars) {
       # contamination coefficient for SAC/adults,
 
     # Estimate total miracidia entering snail habitat
-      M_tot = H*omega_a*v*(eggs_W_TC*h_tc*Omega + eggs_W_UC*h_uc*Omega + eggs_W_TA*h_ta + eggs_W_UA*h_ua)
+      M = H*omega_a*v*(eggs_W_TC*h_tc*Omega + eggs_W_UC*h_uc*Omega + eggs_W_TA*h_ta + eggs_W_UA*h_ua)
 
     # Snail infection dynamics
-      dSdt= r*(1-(N/K))*(S+E) - mu_N*S - Lambda_0*(1-exp(-M_tot/N))*S #Susceptible snails
+      dSdt= r*(1-(N/K))*(S+E) - mu_N*S - (beta*M/N)*S #Susceptible snails
 
-      dEdt= Lambda_0*(1-exp(-M_tot/N))*S - (mu_N+sigma)*E #Exposed snails
+      dEdt= (beta*M/N)*S - (mu_N+sigma)*E #Exposed snails
 
       dIdt= sigma*E - mu_I*I #Infected snails
 
@@ -430,11 +430,22 @@ infection_inputs_get_pars <- function(W_A, kap_A, H_A, cvrg_A, W_C, kap_C, H_C, 
                                        I_P = I_P,
                                        N_eq = new_pars["N_eq"])
 
-  #Miricidia concentration from inputs
+    #Miricidia concentration from inputs
+    if(H_A == 0){
+
+      M = 0.5*H*omega_c*m*v*W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,zeta,kap_C)*U_C*h_c
+
+    } else if(H_C == 0){
+
+      M = 0.5*H*omega_c*m*v*W_A*phi_Wk(W_A, kap_A)*rho_Wk(W_A,zeta,kap_A)*U_A*h_a
+
+    } else {
+
       M = 0.5*H*omega_a*m*v*
-          (W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,zeta,kap_C)*U_C*h_c*Omega +
+        (W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,zeta,kap_C)*U_C*h_c*Omega +
            W_A*phi_Wk(W_A, kap_A)*rho_Wk(W_A,zeta,kap_A)*U_A*h_a)
 
+    }
       new_pars["Lambda_0"] <- Lambda/(1-exp(-M/N_eq))
       new_pars["beta"] <- Lambda*N_eq/M
 
@@ -791,85 +802,6 @@ schisto_stoch_mod <- function(x, p, t){
            (p["mu_W"] + p["mu_H"]) * Wu))    #Adult worm in untreated population dies
 
 }
-
-
-#' Simulate the stochastic version of age-stratified schistosomiasis model
-#'
-#' Uses the `schisto_stoch_mod` function to simulate the stochastic model through time
-#'
-#' @param nstart starting values of state variables, must be whole numbers
-#' @param transitions list of all possible transitions between state variables, defaults to transitions possible in `schisto_stoch_mod`
-#' @param sfx function to feed into adaptive tau, uses `schisto_stoch_mod` as default
-#' @param params named vector of parameter values used in model
-#' @param tf numeric of total time to run simulation
-#' @param events_df Data frame of events such as MDA with columns "var", "time", "value", and "method"
-#'
-#' @return matrix of state variables and values at time points up until tf
-#' @export
-#'
-sim_schisto_stoch_mod <- function(nstart,
-                                  transitions = list(c(S = 1),             #New snail born
-                                                     c(S = -1),            #Susceptible snail dies
-                                                     c(S = -1, E = 1),     #Susceptible snail becomes exposed
-                                                     c(E = -1),            #Exposed snail dies
-                                                     c(E = -1, I = 1),     #Exposed snail becomes Infected
-                                                     c(I = -1),            #Infected snail dies
-                                                     c(Wt = 1),            #Infected snail emits cercaria that produces an adult worm in treated population
-                                                     c(Wu = 1),            #Infected snail emits cercaria that produces an adult worm in untreated population
-                                                     c(Wt = -1),           #Adult worm in the treated population dies
-                                                     c(Wu = -1)),           #Adult worm in the untreated population dies
-                                  sfx = schisto_stoch_mod,
-                                  params,
-                                  tf,
-                                  events_df = NA){
-  if(class(events_df) == "data.frame"){
-    n_parts <- nrow(events_df) + 2
-
-    stoch_sim <- list()
-
-    #Start with 1 year run in
-    stoch_sim[[1]] <- adaptivetau::ssa.adaptivetau(nstart, transitions, sfx, params, 365)
-
-    for(i in 1:nrow(events_df)){
-      # reset initial states
-      init = setNames(as.numeric(stoch_sim[[i]][dim(stoch_sim[[i]])[1],c(2:6)]),
-                      colnames(stoch_sim[[i]])[c(2:6)])
-
-      # event occurrence
-      init[[as.character(events_df[["var"]][i])]] =
-        round(init[as.character(events_df[["var"]][i])]*events_df[["value"]][i])
-
-      #stochastic sim for allotted time (time between event occurrences in events_df)
-      t_sim <- ifelse(i == 1,
-                      events_df[["time"]][i],
-                      events_df[["time"]][i] - events_df[["time"]][i-1])
-
-      stoch_sim[[i+1]] = adaptivetau::ssa.adaptivetau(init, transitions, sfx, params, t_sim)
-
-      #adjust time in section of full simulation
-      stoch_sim[[i+1]] <- stoch_sim[[i+1]][-nrow(stoch_sim[[i+1]]),]
-
-      stoch_sim[[i+1]][,"time"] = stoch_sim[[i+1]][,"time"] + events_df[["time"]][i]
-
-    }
-
-    #Correct time on one year run in simulation
-    stoch_sim[[1]] <- stoch_sim[[1]][-nrow(stoch_sim[[1]]),]
-
-    #Run for remaining time allotted
-    stoch_sim[[n_parts]] <- adaptivetau::ssa.adaptivetau(init, transitions, sfx, params, tf - max(events_df[["time"]]))
-
-    #adjust time for remaining sim
-    stoch_sim[[n_parts]][,"time"] = stoch_sim[[n_parts]][,"time"] + max(events_df[["time"]]) + 365
-
-    return(as.data.frame(do.call(rbind, stoch_sim)))
-
-  } else {
-    return(as.data.frame(adaptivetau::ssa.adaptivetau(nstart, transitions, sfx, params, tf)))
-  }
-
-}
-
 
 
 # Deprecated FUNCTIONS #############

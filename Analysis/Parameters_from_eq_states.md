@@ -103,6 +103,10 @@ Given that N can be estimated as a function of *Λ* which is a function of *W*, 
 
 ![](http://latex.codecogs.com/gif.latex?N(W)%3DK%5CBig(1-%5Cfrac%7B%5Cmu_N+%5CLambda(W)%7D%7Br%5Cbig(1+%5Cfrac%7B%5CLambda(W)%7D%7B%5Cmu_N+%5Csigma%7D%5Cbig)%7D%5CBig))
 
+Or:
+
+![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W)%3D%5Cfrac%7BK%5Calpha%5Comega%5Ctheta%5Csigma%5Cbig(1+%5Cfrac%7B%5CLambda(W)%7D%7B%5Cmu_N+%5Csigma%7D-%5Cfrac%7B%5Cmu_I%7D%7Br%7D-%5Cfrac%7B%5CLambda(W)%7D%7Br%7D%5Cbig)%7D%7BW%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5CBig(%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5CLambda(W)%7D+%5Cmu_I+%5Csigma%5CBig)%5CBig(1+%5Cfrac%7B%5CLambda(W)%7D%7B%5Cmu_N+%5Csigma%7D%5CBig)%7D)
+
 Alternatively, we can make one more substitution based on the fact that infected snail prevalence can be estimated as a function of snail FOI:
 
 ![](http://latex.codecogs.com/gif.latex?I_P%3D%5Cfrac%7B%5Csigma%7D%7B%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5CLambda%7D+%5Cmu_I+%5Csigma%7D)
@@ -111,9 +115,13 @@ therefore we can substitute in terms of infected snail prevalence, *I*<sub>*P*</
 
 ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W,%20I_P)%3D%5Cfrac%7B%5Calpha%5Comega%5Ctheta%20N%20I_P%7D%7BW%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%7D)
 
-And then in particular with linear FOI, ![](http://latex.codecogs.com/gif.latex?%5CLambda%3D%5Cbeta%20M/N)substitute for N in terms of *I*<sub>*P*</sub> to get:
+And then with linear FOI, ![](http://latex.codecogs.com/gif.latex?%5CLambda%3D%5Cbeta%20M/N)substitute for N in terms of *I*<sub>*P*</sub>:
 
-![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W,%20I_P)%3D%5Cfrac%7B%5Calpha%5Comega%5E2%5Ctheta%5Cbeta%5Cphi(W)%5Crho(W)HmvU%20I_P%7D%7B2%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5Cbig(%5Cmu_I(%5Cmu_N+%5Csigma)%5Cbig)%7D)
+![](http://latex.codecogs.com/gif.latex?N%3D%5Cfrac%7B%5Cbeta%20M%5Cbig(%5Cfrac%7B%5Csigma%7D%7BI_P%7D-%5Cmu_I-%5Csigma%5Cbig)%7D%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%3D%5Cfrac%7B%5Cbeta%5Comega%20WHmv%5CPhi(W)%5Crho(W)U%5Cbig(%5Cfrac%7B%5Csigma%7D%7BI_P%7D-%5Cmu_I-%5Csigma%5Cbig)%7D%7B2%5Cmu_I(%5Cmu_N+%5Csigma)%7D)
+
+and get:
+
+![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W,%20I_P)%3D%5Cfrac%7B%5Calpha%5Comega%5E2%5Ctheta%5Cbeta%5Cphi(W)%5Crho(W)HmvU(%5Csigma-I_P%5Cmu_I-I_P%5Csigma)%7D%7B2%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5Cbig(%5Cmu_I(%5Cmu_N+%5Csigma)%5Cbig)%7D)
 
 ### *R*<sub>*e**f**f*</sub> for stratified worm burdens
 
@@ -123,15 +131,13 @@ While the mean worm burden is often modeled as a single state variable, it is mo
 
 The net ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D) can be thought of similarly as some weighted average of contributions from all treatment groups:
 
-![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(%5Cbar%7BW%7D,%20I_P)%3D%5Csum_i%5Csum_j%20%5Cfrac%7Bh_%7Bij%7D%5Calpha%5Ctheta%5Cbeta%20HmvI_P%5Comega_%7Bij%7D%5E2%5Cphi(W_%7Bij%7D)%5Crho(W_%7Bij%7D)U_j%20%7D%7B2%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5Cbig(%5Cmu_I(%5Cmu_N+%5Csigma)%5Cbig)%7D)
+![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(%5Cbar%7BW%7D)%3D%5Csum_i%5Csum_jh_%7Bij%7D%5Cfrac%7B%5Calpha%5Comega_i%5Ctheta%5Csigma%20N(%5Cbar%7BW%7D)%7D%7BW_%7Bij%7D%5Cbig(%5Cmu_W+%5Cmu_%7BH_i%7D%5Cbig)%5CBig(%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5CLambda(%5Cbar%7BW%7D)%7D+%5Cmu_I+%5Csigma%5CBig)%7D)
 
-Which we can simplify if we pull out some constants to express in terms of ![](http://latex.codecogs.com/gif.latex?%5Cbar%7BW%7D) and ![](http://latex.codecogs.com/gif.latex?I_P)as:
+![](http://latex.codecogs.com/gif.latex?N(%5Cbar%7BW%7D)%3DK%5CBig(1-%5Cfrac%7B%5Cmu_N+%5CLambda(%5Cbar%7BW%7D)%7D%7Br%5Cbig(1+%5Cfrac%7B%5CLambda(%5Cbar%7BW%7D)%7D%7B%5Cmu_N+%5Csigma%7D%5Cbig)%7D%5CBig))
 
-![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(%5Cbar%7BW%7D,%20I_P)%3D%5Cfrac%7B%5Calpha%5Ctheta%5Cbeta%20HmvI_P%7D%7B2%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5Cbig(%5Cmu_I(%5Cmu_N+%5Csigma)%5Cbig)%7D%5Csum_i%5Csum_j%20h_%7Bij%7D%5Comega_%7Bij%7D%5E2%5Cphi(W_%7Bij%7D)%5Crho(W_%7Bij%7D)U_j%20)
+Which we can express as:
 
-Alternatively, we can estimate *N* and ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D) from ![](http://latex.codecogs.com/gif.latex?%5Cbar%7BW%7D) by solving:
-
-![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(%5Cbar%7BW%7D)%3D%5Cfrac%7B%5Calpha%5Ctheta%5Cbeta%20Hmv%5Csigma%7D%7B2%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5Cbig(%5Cmu_I(%5Cmu_N+%5Csigma)%5Cbig)%7D%5Csum_i%5Csum_j%20%5Cfrac%7Bh_%7Bij%7D%5Comega_%7Bij%7D%5E2%5Cphi(W_%7Bij%7D)%5Crho(W_%7Bij%7D)U_j%7D%7B%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5CLambda(%5Cbar%7BW%7D)%7D+%5Cmu_I+%5Csigma%7D%20)
+![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(%5Cbar%7BW%7D)%3D%5Cfrac%7B%5Calpha%5Ctheta%5Csigma%20N(%5Cbar%7BW%7D)%7D%7B%5Cbar%7BW%7D%5CBig(%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5CLambda(%5Cbar%7BW%7D)%7D+%5Cmu_I+%5Csigma%5CBig)%7D%5Csum_i%20h_%7Bi%7D%5Cfrac%7B%5Comega_i%7D%7B%5Cbig(%5Cmu_W+%5Cmu_%7BH_i%7D%5Cbig)%7D)
 
 ![](http://latex.codecogs.com/gif.latex?N(%5Cbar%7BW%7D)%3DK%5CBig(1-%5Cfrac%7B%5Cmu_N+%5CLambda(%5Cbar%7BW%7D)%7D%7Br%5Cbig(1+%5Cfrac%7B%5CLambda(%5Cbar%7BW%7D)%7D%7B%5Cmu_N+%5Csigma%7D%5Cbig)%7D%5CBig))
 
@@ -140,9 +146,24 @@ Worm burden breakpoint estimation
 
 The breakpoint worm burden population size, ![](http://latex.codecogs.com/gif.latex?W_%7Bbp%7D) is an unstable equilibrium at which each female worm replaces herself, i.e. ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D%3D1) therefore:
 
-![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W_%7Bbp%7D)%3D1%3D%5Cfrac%7B%5Calpha%5Comega%5Ctheta%20K%5Csigma%5CLambda%5CBig(1+%5Cfrac%7B%5CLambda%7D%7B%5Cmu_N+%5Csigma%7D-%5Cfrac%7B%5Cmu_N%7D%7Br%7D-%5Cfrac%7B%5CLambda%7D%7Br%7D%5CBig)%7D%7BW_%7Bbp%7D%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5Cbig(%5Cmu_I(%5Cmu_N+%5Csigma+%5CLambda)+%5Csigma%5CLambda%5Cbig)%5Cbig(1+%5Cfrac%7B%5CLambda%7D%7B%5Cmu_N+%5Csigma%7D%5Cbig)%7D)
+![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W_%7Bbp%7D,%20I_P)%3D1%3D%5Cfrac%7B%5Calpha%5Comega%5E2%5Ctheta%5Cbeta%5Cphi(W_%7Bbp%7D)%5Crho(W_%7Bbp%7D)HmvU%20I_P%7D%7B2%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5Cbig(%5Cmu_I(%5Cmu_N+%5Csigma)%5Cbig)%7D)
 
-We can then estimate the breakpoint as:
+From this, it's clear that interplay between the density dependence functions is key in determining ![](http://latex.codecogs.com/gif.latex?W_%7Bbp%7D), particularly:
+
+![](http://latex.codecogs.com/gif.latex?%5Cphi(W_%7Bbp%7D)%5Crho(W_%7Bbp%7D)%3D%5Cfrac%7B2%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5Cbig(%5Cmu_I(%5Cmu_N+%5Csigma)%5Cbig)%7D%7B%5Calpha%5Comega%5E2%5Ctheta%5Cbeta%20HmvU%20I_P%7D)
+
+### MDA coverage necessary to reach the breakpoint
+
+Another useful outcome is the MDA coverage necessary to reach the breakpoint. We can model MDA as a reduction in the mean worm burden at the following time step in terms of the MDA coverage and drug efficacy, *ϵ*:
+
+![](http://latex.codecogs.com/gif.latex?W_%7Bt+1%7D%3D(1-%5Cepsilon)cvrgW_t+(1-cvrg)W_t)
+
+If our goal is to reduce the worm burden to or below the breakpoint (i.e. ![](http://latex.codecogs.com/gif.latex?W_%7Bt+1%7D%5Cleq%20W_%7Bbp%7D)) with MDA, we can estimate the coverage required as:
+
+![](http://latex.codecogs.com/gif.latex?cvrg%3D%5Cfrac%7B%5Cfrac%7BW_%7Bbp%7D%7D%7BW_t%7D-1%7D%7B-%5Cepsilon%7D)
+
+NEEDS UPDATING
+==============
 
 ![](http://latex.codecogs.com/gif.latex?W_%7Bbp%7D%3D%5Cfrac%7B%5Calpha%5Comega%5Ctheta%20K%5Csigma%5CLambda%5CBig(1+%5Cfrac%7B%5CLambda%7D%7B%5Cmu_N+%5Csigma%7D-%5Cfrac%7B%5Cmu_N%7D%7Br%7D-%5Cfrac%7B%5CLambda%7D%7Br%7D%5CBig)%7D%7B%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5Cbig(%5Cmu_I(%5Cmu_N+%5Csigma+%5CLambda)+%5Csigma%5CLambda%5Cbig)%5Cbig(1+%5Cfrac%7B%5CLambda%7D%7B%5Cmu_N+%5Csigma%7D%5Cbig)%7D)
 

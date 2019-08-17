@@ -60,8 +60,6 @@ Reff_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA,
     Lambda_0=pars["Lambda_0"]         # first parameter of non-linear man-to-snail FOI
     beta=pars["beta"]       # Man to snail trnamission probability for linear FOI
 
-  N_eq = pars["N_eq"]
-
   # Get miracidial density as function of worm burdens
     #Update clumping parameter, k from estimate of worm burden in each population
       k_TC = k_from_log_W(W_TC)
@@ -91,14 +89,14 @@ Reff_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA,
     if(S_FOI == "linear"){
 
       #Estimate N
-        N <- uniroot.all(function(N) r*(1-N/K)*(1+(beta*M_tot)/(N*(mu_N+sigma)))-mu_N-beta*M_tot/N,
+        N <- uniroot.all(function(N) K*(1-(mu_N+(beta*M_tot/N))/(r*(1+(beta*M_tot/(N*(mu_N+sigma))))))-N,
                          interval = c(0,K))
 
-      Lambda <- beta*M_tot/N
+        Lambda <- beta*M_tot/N
 
     } else if(S_FOI == "saturating"){
 
-      N <- uniroot.all(function(N) r*(1-N/K)*(1+(Lambda_0*(1-exp(-M_tot/N)))/(mu_N+sigma))-mu_N-Lambda_0*(1-exp(-M_tot/N)),
+      N <- uniroot.all(function(N) K*(1-(mu_N+(Lambda_0*(1-exp(-M_tot/N))))/(r*(1+((Lambda_0*(1-exp(-M_tot/N)))/(mu_N+sigma)))))-N,
                        interval = c(0,K))
 
       Lambda <- Lambda_0*(1-exp(-M_tot/N))
@@ -116,19 +114,16 @@ Reff_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA,
     gam_W_UA = DDI(W_UA, xi)
 
   # Net Reff
-    sum_bit <- h_tc*omega_c^2*phi_W_TC*rho_W_TC*gam_W_TC*U_C/(mu_W+mu_H_C) +
-               h_uc*omega_c^2*phi_W_UC*rho_W_UC*gam_W_UC*U_C/(mu_W+mu_H_C) +
-               h_ta*omega_a^2*phi_W_TA*rho_W_TA*gam_W_TA*U_A/(mu_W+mu_H_A) +
-               h_ua*omega_a^2*phi_W_UA*rho_W_UA*gam_W_UA*U_A/(mu_W+mu_H_A)
+    sum_bit <- (h_tc*omega_c)/(W_TC*(mu_W+mu_H_C)) +
+               (h_uc*omega_c)/(W_UC*(mu_W+mu_H_C)) +
+               (h_ta*omega_a)/(W_TA*(mu_W+mu_H_A)) +
+               (h_ua*omega_a)/(W_UA*(mu_W+mu_H_A))
 
-    Reff <- (0.5*alpha*theta*beta*H*m*v*(sigma/(mu_I*(mu_N+sigma)/Lambda+mu_I+sigma))/(2*mu_I*(mu_N+sigma)))*sum_bit
+    Reff <- ((alpha*theta*sigma*N)/((mu_I*(mu_N+sigma)/Lambda)+mu_I+sigma))*sum_bit
 
   return(c("W_bar" = as.numeric(W_bar),
            "Reff" = as.numeric(Reff),
-           "Reff_W_TC" = Reff_W_TC,
-           "Reff_W_UC" = Reff_W_UC,
-           "Reff_W_TA" = Reff_W_TA,
-           "Reff_W_UA" = Reff_W_UA))
+           "N" = N))
 }
 
 
@@ -220,12 +215,12 @@ Reff_Wij_I_P <- function(pars, W_TC, W_UC, W_TA, W_UA, I_P,
     gam_W_UA = DDI(W_UA, xi)
 
   # Net Reff
-    sum_bit <- h_tc*omega_c^2*phi_W_TC*rho_W_TC*gam_W_TC*U_C/(mu_W+mu_H_C) +
-               h_uc*omega_c^2*phi_W_UC*rho_W_UC*gam_W_UC*U_C/(mu_W+mu_H_C) +
-               h_ta*omega_a^2*phi_W_TA*rho_W_TA*gam_W_TA*U_A/(mu_W+mu_H_A) +
-               h_ua*omega_a^2*phi_W_UA*rho_W_UA*gam_W_UA*U_A/(mu_W+mu_H_A)
+    sum_bit <- (h_tc*omega_c^2*phi_W_TC*rho_W_TC*gam_W_TC*U_C)/(mu_W+mu_H_C) +
+               (h_uc*omega_c^2*phi_W_UC*rho_W_UC*gam_W_UC*U_C)/(mu_W+mu_H_C) +
+               (h_ta*omega_a^2*phi_W_TA*rho_W_TA*gam_W_TA*U_A)/(mu_W+mu_H_A) +
+               (h_ua*omega_a^2*phi_W_UA*rho_W_UA*gam_W_UA*U_A)/(mu_W+mu_H_A)
 
-    Reff <- (0.5*alpha*theta*beta*H*m*v*I_P/(2*mu_I*(mu_N+sigma)))*sum_bit
+    Reff <- ((alpha*theta*beta*H*m*v*I_P)/(2*mu_I*(mu_N+sigma)))*sum_bit
 
 
   return(c("W_bar" = as.numeric(W_bar),

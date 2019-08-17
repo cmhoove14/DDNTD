@@ -1,18 +1,22 @@
-area = 200
 H = 300
 
-base_pars <- c("f_N" = 0.1,
-               "C" = 50*area,
+base_pars <- c("r" = 0.1,
+               "K" = H*15,
                "mu_N" = 1/60,
                "sigma" = 1/40,
-               "mu_I" = 1/10 - 1/60,
+               "mu_I" = 1/10,
                "mu_W" = 1/(365*3.3),
+               "theta" = 500,
+               "U" = 120,
+               "m" = 5.2,
+               "v" = 0.08,
+               "omega" = 0.01,
                "H" = H,
                "mu_H" = 1/(60*365),
-               "lambda" = 2.074609e-04,
-               "beta" = 1.6e-6,
+               "alpha" = 2e-4,
+               "beta" = 2e-4,
                "cvrg" = 0.43,
-               "zeta" = 5e-3,
+               "zeta" = 5e-4,
                "xi" = 2.8e-3)
 
 usethis::use_data(base_pars, overwrite = TRUE)
@@ -29,6 +33,7 @@ age_strat_pars <- c(
     mu_W = 1/(4*365),   # death rate of adult worms
     mu_H_A = 1/(50*365),# death rate of adult humans
     mu_H_C = 1/(70*365),# death rate of children
+    mu_H = 1/(70*365),  # For non age-stratified
     m = 5.2,             # mean eggs shed per female worm per 10mL urine (truscott et al)
     v = 0.08,           # mean egg viability (miracidia per egg)
 
@@ -38,7 +43,9 @@ age_strat_pars <- c(
 
   #Human parameters
     U_C = 110,          # mL urine produced per child per day /10mL https://doi.org/10.1186/s13071-016-1681-4
+    U = 120, # For non age-stratified
     omega_c = 0.01,       # amount of infectious material that reaches snail environment
+    omega = 0.01,    # For non age-stratified
     U_A = 130           # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
 )
 

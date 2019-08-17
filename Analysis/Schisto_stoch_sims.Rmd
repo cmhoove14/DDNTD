@@ -1,5 +1,5 @@
 ---
-title: "Schisto stochastic mode Probability of Elimination"
+title: "Schisto stochastic model Probability of Elimination"
 author: "Chris Hoover"
 date: "July 11, 2019"
 output: github_document
@@ -18,32 +18,64 @@ require(furrr)
 require(tidyverse)
 ```
 
+```{r}
+W = 60
+Lambda = 0.025
+fit_pars <- base_pars
+fit_pars["cvrg"] = 0
+
+  M = 0.5*W*base_pars["H"]*phi_Wk(W, k_from_log_W(W))*rho_Wk(W, base_pars["zeta"], k_from_log_W(W))*base_pars["omega"]*base_pars["U"]*base_pars["m"]*base_pars["v"]  
+  
+  N_eq = Lambda_get_N_eq(Lambda, base_pars["K"], base_pars["mu_N"], base_pars["r"], base_pars["sigma"])
+  I_eq = (base_pars["sigma"]*N_eq)/(base_pars["mu_I"]*(base_pars["mu_N"]+base_pars["sigma"])/Lambda+base_pars["mu_I"]+base_pars["sigma"])
+  
+  fit_pars["beta"] = Lambda*M/N_eq
+  
+  fit_pars["alpha"] = (W*(base_pars["mu_H"] + base_pars["mu_W"]))/(base_pars["omega"]*I_eq*base_pars["theta"])
+  
+base_start <- c(S=as.numeric(N_eq)*0.5, E=0, I=as.numeric(I_eq), Wt=W, Wu=W)
+    
+base_eqbm <- runsteady(y = base_start, func = schisto_base_mod,
+                       parms = fit_pars)[["y"]]
+
+Reff_W(base_eqbm["Wt"], fit_pars)
+    
+data.frame("W" = exp_seq(1e-4,100,200),
+              "Reff" = sapply(X = exp_seq(1e-4,100,200), FUN = Reff_W, pars = fit_pars)[1,]) %>% 
+  ggplot(aes(x = W, y = Reff)) +
+    geom_line() +
+    theme_classic() +
+    geom_hline(yintercept = 1, lty = 2) +
+    scale_x_continuous(trans = "log",
+                       breaks = c(1e-4,1e-3,1e-2,0.1,1,10,100))
+
+```
+
+
 ```{r interventions_setup}
 years <- 10
-mda.eff <- 0.93
+mda.eff <- 0.94
 snail.eff <- 0.85
 
 #Base time and starting values for state variables
-base_start <- c(S=5000, E=0, I=0, Wt=10, Wu=10)
 base_time <- c(0:(365*(years*2)))
-
 
 #Intervention parameter sets 
   # 80 % MDA coverage
-    base_pars -> pars_cvrg80 ; pars_cvrg80["cvrg"] = .80
+    fit_pars -> pars_cvrg80 ; pars_cvrg80["cvrg"] = .80
   
-  # 80% MDA coverage and 20% reduction in snail habitat
-    pars_cvrg80 -> pars_cvrg80_C20 ; pars_cvrg80_C20["C"] = pars_cvrg80["C"]*0.8
+  # 80% MDA coverage and 20% reduction in exposure/contamination
+    pars_cvrg80 -> pars_cvrg80_om20 ; pars_cvrg80_om20["omega"] = fit_pars["omega"]*0.8
 
   # 60 % MDA coverage
-    base_pars -> pars_cvrg60 ; pars_cvrg60["cvrg"] = .60
+    fit_pars -> pars_cvrg60 ; pars_cvrg60["cvrg"] = .60
   
-  # 60% MDA coverage and 20% reduction in snail habitat
-    pars_cvrg60 -> pars_cvrg60_C20 ; pars_cvrg60_C20["C"] = pars_cvrg60["C"]*0.8
+  # 60% MDA coverage and 20% reduction in exposure contamination
+    pars_cvrg60 -> pars_cvrg60_om20 ; pars_cvrg60_om20["omega"] = fit_pars["omega"]*0.8
 
 #Events data frames    
 mda.events <- data.frame(var = rep('Wt', years),
-                         time = c(1:years)*365,
+                         time = c(1:years)*365+1,
                          value = rep((1 - mda.eff), years),
                          method = rep('mult', years))
 
@@ -61,9 +93,9 @@ mda.snail.events <- rbind(mda.events, snail.annual.events) %>%
 base_eqbm <- runsteady(y = base_start, func = schisto_base_mod,
                        parms = pars_cvrg80)[["y"]]
 
-#Run to equibrium with C20_red parameter set
-C20red_eqbm <- runsteady(y = base_start, func = schisto_base_mod,
-                       parms = pars_cvrg80_C20)[["y"]]
+#Run to equilibrium with om20_red parameter set
+om20red_eqbm <- runsteady(y = base_start, func = schisto_base_mod,
+                         parms = pars_cvrg80_om20)[["y"]]
 
 ```
 
@@ -72,45 +104,45 @@ C20red_eqbm <- runsteady(y = base_start, func = schisto_base_mod,
 schisto_sims <- bind_rows(sim_schisto_mod(nstart = base_eqbm, 
                                           time = base_time, 
                                           model = schisto_base_mod,
-                                          parameters = pars_cvrg80,
+                                          pars = pars_cvrg80,
                                           events_df = NA) %>% 
                             mutate(W = Wt*pars_cvrg80["cvrg"] + Wu*(1-pars_cvrg80["cvrg"]),
                                    Sim = "Nothing"),
                           sim_schisto_mod(nstart = base_eqbm, 
                                           time = base_time, 
                                           model = schisto_base_mod,
-                                          parameters = pars_cvrg80,
+                                          pars = pars_cvrg80,
                                           events_df = mda.events) %>% 
                             mutate(W = Wt*pars_cvrg80["cvrg"] + Wu*(1-pars_cvrg80["cvrg"]),
                                    Sim = "Annual MDA 80% coverage"),
                           sim_schisto_mod(nstart = base_eqbm, 
                                           time = base_time, 
                                           model = schisto_base_mod,
-                                          parameters = pars_cvrg80,
+                                          pars = pars_cvrg80,
                                           events_df = snail.annual.events) %>% 
                             mutate(W = Wt*pars_cvrg80["cvrg"] + Wu*(1-pars_cvrg80["cvrg"]),
                                    Sim = "Annual Snail Control"),
                           sim_schisto_mod(nstart = base_eqbm, 
                                           time = base_time, 
                                           model = schisto_base_mod,
-                                          parameters = pars_cvrg60,
+                                          pars = pars_cvrg60,
                                           events_df = mda.snail.events) %>% 
                             mutate(W = Wt*pars_cvrg60["cvrg"] + Wu*(1-pars_cvrg60["cvrg"]),
                                    Sim = "Annual MDA 60% + Snail Control"),
                           sim_schisto_mod(nstart = base_eqbm, 
                                           time = base_time, 
                                           model = schisto_base_mod,
-                                          parameters = pars_cvrg60_C20,
+                                          pars = pars_cvrg60_om20,
                                           events_df = mda.events) %>% 
-                            mutate(W = Wt*pars_cvrg60_C20["cvrg"] + Wu*(1-pars_cvrg60_C20["cvrg"]),
-                                   Sim = "Annual MDA 60% + Habitat reduction"),
+                            mutate(W = Wt*pars_cvrg60_om20["cvrg"] + Wu*(1-pars_cvrg60_om20["cvrg"]),
+                                   Sim = "Annual MDA 60% + Contamination/Sanitation"),
                           sim_schisto_mod(nstart = base_eqbm, 
                                           time = base_time, 
                                           model = schisto_base_mod,
-                                          parameters = pars_cvrg60_C20,
+                                          pars = pars_cvrg60_om20,
                                           events_df = mda.snail.events) %>% 
-                            mutate(W = Wt*pars_cvrg60_C20["cvrg"] + Wu*(1-pars_cvrg60_C20["cvrg"]),
-                                   Sim = "Annual MDA 60% + Habitat reduction + Snail Control"))
+                            mutate(W = Wt*pars_cvrg60_om20["cvrg"] + Wu*(1-pars_cvrg60_om20["cvrg"]),
+                                   Sim = "Annual MDA 60% + Contamination/Sanitation + Snail Control"))
 
 schisto_sims %>% 
     ggplot(aes(x = time, y = W, col = Sim)) +
@@ -134,10 +166,13 @@ sim_schisto_stoch <- function(sim, pars, events){
                         tf = max(base_time),
                         events_df = events) %>% 
     mutate(W = Wt*pars["cvrg"] + Wu*(1-pars["cvrg"]),
-           kap = map_dbl(W, k_from_log_W),
-           Reff = pmap_dbl(list(parameters = list(pars),
-                                W = W,
-                                kap = kap), getReff),
+           Reff = sapply(W, Reff_W,
+                         pars = pars)[1,],
+           Reff_Wt = sapply(Wt, Reff_W,
+                            pars = pars)[1,],
+           Reff_Wu = sapply(Wu, Reff_W,
+                            pars = pars)[1,],
+           Reff2 = Reff_Wt * pars["cvrg"] + Reff_Wu * (1-pars["cvrg"]),
            sim = sim)
 }
 
@@ -153,6 +188,123 @@ sim_schisto_stoch_elim_1_0 <- function(pars, eqbm, events){
 
 
 ```
+
+```{r test_sim_stoch_mod, eval = FALSE, include = FALSE}
+nstart= round(base_eqbm)
+transitions = list(c(S = 1),             #New snail born
+                   c(S = -1),            #Susceptible snail dies
+                   c(S = -1, E = 1),     #Susceptible snail becomes exposed
+                   c(E = -1),            #Exposed snail dies
+                   c(E = -1, I = 1),     #Exposed snail becomes Infected
+                   c(I = -1),            #Infected snail dies
+                   c(Wt = 1),            #Infected snail emits cercaria that produces an adult worm in treated population
+                   c(Wu = 1),            #Infected snail emits cercaria that produces an adult worm in untreated population
+                   c(Wt = -1),           #Adult worm in the treated population dies
+                   c(Wu = -1))           #Adult worm in the untreated population dies
+sfx = schisto_stoch_mod
+params = pars_cvrg80
+tf = max(base_time)
+events_df = mda.snail.events
+
+    n_parts <- length(unique(events_df$time)) + 2
+    n_vars <- length(unique(events_df$var))
+
+    stoch_sim <- list()
+
+    #Start with 1 year run in
+    stoch_sim[[1]] <- adaptivetau::ssa.adaptivetau(nstart, transitions, sfx, params, 365)
+
+    for(i in 1:(n_parts-2)){
+      # reset initial states from end of last sim section
+      init = stoch_sim[[i]][dim(stoch_sim[[i]])[1],c(2:6)]
+      
+      print(init)
+
+      # event occurrence on affected state variables
+      for(j in 1:n_vars){
+        init[[as.character(events_df[["var"]][((i-1)*n_vars)+j])]] =
+          round(init[as.character(events_df[["var"]][((i-1)*n_vars)+j])]*events_df[["value"]][((i-1)*n_vars)+j])
+
+        print(c(i, j,((i-1)*n_vars)+j,init))
+      }
+
+      #stochastic sim for allotted time (time between event occurrences in events_df)
+      t_sim <- ifelse(i == 1,
+                      events_df[["time"]][i],
+                      events_df[["time"]][i*n_vars+1] - events_df[["time"]][i*n_vars])
+
+      stoch_sim[[i+1]] = adaptivetau::ssa.adaptivetau(init, transitions, sfx, params, t_sim)
+
+    #adjust time in section of full simulation
+      #remove very last observation
+      stoch_sim[[i+1]] <- stoch_sim[[i+1]][-nrow(stoch_sim[[i+1]]),]
+
+      stoch_sim[[i+1]][,"time"] = stoch_sim[[i+1]][,"time"] + events_df[["time"]][i*n_vars]
+
+    }
+
+    #Correct time on one year run in simulation
+    stoch_sim[[1]] <- stoch_sim[[1]][-nrow(stoch_sim[[1]]),]
+
+    #Run for remaining time allotted
+    stoch_sim[[n_parts]] <- adaptivetau::ssa.adaptivetau(init, transitions, sfx, params, tf - max(events_df[["time"]]))
+
+    #adjust time for remaining sim
+    stoch_sim[[n_parts]][,"time"] = stoch_sim[[n_parts]][,"time"] + max(events_df[["time"]])
+
+    as.data.frame(do.call(rbind, stoch_sim)) %>% 
+      mutate(W = params["cvrg"]*Wt+(1-params["cvrg"])*Wu) %>% 
+      gather("Treatment", "Mean Worm Burden", Wt:W) %>% 
+        ggplot(aes(x = time, y = `Mean Worm Burden`, col = Treatment)) +
+        geom_line(size = 1.1) +
+        theme_bw() +
+        geom_vline(xintercept = unique(events_df$time), lty = 2, col = "red")
+
+    as.data.frame(do.call(rbind, stoch_sim)) %>% 
+      mutate(N = S+E+I) %>% 
+      gather("Infection Class", "Density", S:I,N) %>% 
+        ggplot(aes(x = time, y = Density, col = `Infection Class`)) +
+        geom_line(size = 1.1) +
+        theme_bw() +
+        geom_vline(xintercept = unique(events_df$time), lty = 2, col = "red")
+
+```
+
+```{r test_stoch}
+test_stoch <- sim_schisto_stoch_mod(nstart= round(base_eqbm),
+                      transitions = list(c(S = 1),             #New snail born
+                                         c(S = -1),            #Susceptible snail dies
+                                         c(S = -1, E = 1),     #Susceptible snail becomes exposed
+                                         c(E = -1),            #Exposed snail dies
+                                         c(E = -1, I = 1),     #Exposed snail becomes Infected
+                                         c(I = -1),            #Infected snail dies
+                                         c(Wt = 1),            #Infected snail emits cercaria that produces an adult worm in treated population
+                                         c(Wu = 1),            #Infected snail emits cercaria that produces an adult worm in untreated population
+                                         c(Wt = -1),           #Adult worm in the treated population dies
+                                         c(Wu = -1)),           #Adult worm in the untreated population dies
+                      sfx = schisto_stoch_mod,
+                      params = pars_cvrg80,
+                      tf = max(base_time),
+                      events_df = mda.snail.events)
+
+test_stoch %>% 
+      mutate(W = pars_cvrg80["cvrg"]*Wt+(1-pars_cvrg80["cvrg"])*Wu) %>% 
+      gather("Treatment", "Mean Worm Burden", Wt:W) %>% 
+        ggplot(aes(x = time, y = `Mean Worm Burden`, col = Treatment)) +
+        geom_line(size = 1.1) +
+        theme_bw() +
+        geom_vline(xintercept = unique(mda.snail.events$time), lty = 2, col = "red")
+
+test_stoch %>% 
+      mutate(N = S+E+I) %>% 
+      gather("Infection Class", "Density", S:I,N) %>% 
+        ggplot(aes(x = time, y = Density, col = `Infection Class`)) +
+        geom_line(size = 1.1) +
+        theme_bw() +
+        geom_vline(xintercept = unique(mda.snail.events$time), lty = 2, col = "red")
+
+```
+
 
 ```{r stoch_sims_plot_example, cache=TRUE}
 set.seed(10)
@@ -187,49 +339,62 @@ schisto_stoch_sims_plot
 
 ```{r prob_elim, cache = TRUE}
 n_sims <- 100
-n_reps <- 20
+n_reps <- 100
 
-set.seed(430)
-# 80% MDA coverage only
-pe_mda80 <- replicate(n_reps, sum(replicate(n_sims, sim_schisto_stoch_elim_1_0(pars_cvrg80, 
+#create cluster
+library(parallel)
+cl <- makeCluster(detectCores()-1)  
+# get library support needed to run the code
+clusterEvalQ(cl,library(DDNTD))
+# put objects in place that might be needed for the code
+clusterExport(cl,c("n_sims", "n_reps", "sim_schisto_stoch_elim_1_0", "sim_schisto_stoch_mod",
+                   "mda.events", "mda.snail.events", "pars_cvrg60", "pars_cvrg60_om20",
+                   "pars_cvrg80", "pars_cvrg80_om20", "base_eqbm", "base_time"))
+# Set a different seed on each member of the cluster (just in case)
+clusterSetRNGStream(cl)
+
+#60% MDA coverage only #############
+pe_mda60 <- replicate(n_reps, 
+                      sum(parSapply(cl, 1:n_sims, 
+                                    function(... ) sim_schisto_stoch_elim_1_0(pars_cvrg60, 
                                                                                base_eqbm, 
                                                                                mda.events))))
-mean(pe_mda80)
-sd(pe_mda80)
 
-#60% MDA coverage only
-pe_mda60 <- replicate(n_reps, sum(replicate(n_sims, sim_schisto_stoch_elim_1_0(pars_cvrg60, 
-                                                                               base_eqbm, 
-                                                                               mda.events))))
-mean(pe_mda60)
-sd(pe_mda60)
+#60% MDA coverage and annual snail control ############
+pe_mda60_snails <- replicate(n_reps, 
+                      sum(parSapply(cl, 1:n_sims, 
+                                    function(... ) sim_schisto_stoch_elim_1_0(pars_cvrg60, 
+                                                                              base_eqbm, 
+                                                                              mda.snail.events))))
 
-#60% MDA coverage and annual snail control
-#pe_mda60_snails <- replicate(n_reps, sum(replicate(n_sims, sim_schisto_stoch_elim_1_0(pars_cvrg60, 
- #                                                                   base_eqbm, 
- #                                                                   mda.snail.events))))
-#mean(pe_mda60_snails)
-#sd(pe_mda60_snails)
+#60% MDA coverage and 20% Contamination/Sanitation ############
+  pe_mda60_Cred <- replicate(n_reps, 
+                             sum(parSapply(cl, 1:n_sims, 
+                                           function(... ) sim_schisto_stoch_elim_1_0(pars_cvrg60_om20, 
+                                                                                     base_eqbm, 
+                                                                                     mda.events))))
 
-#60% MDA coverage and 20% snail habitat reduction
-pe_mda60_Cred <- replicate(n_reps, sum(replicate(n_sims, sim_schisto_stoch_elim_1_0(pars_cvrg60_C20, 
-                                                                                    C20red_eqbm, 
-                                                                                    mda.events))))
-mean(pe_mda60_Cred)
-sd(pe_mda60)
-#60% MDA coverage and 20% snail habitat reduction and annual snail control
-#pe_mda60_snails_Cred <- replicate(n_reps, sum(replicate(n_sims, sim_schisto_stoch_elim_1_0(pars_cvrg60_C20, 
-#                                                                         base_eqbm, 
-#                                                                         mda.snail.events))))
-#mean(pe_mda60_snails_Cred)
-#sd(pe_mda60_snails_Cred)
+#60% MDA coverage and 20% Contamination/Sanitation and annual snail control ###########
+  pe_mda60_snails_Cred <- replicate(n_reps, 
+                                    sum(parSapply(cl, 1:n_sims, 
+                                                  function(... ) sim_schisto_stoch_elim_1_0(pars_cvrg60_om20, 
+                                                                                            base_eqbm, 
+                                                                                            mda.snail.events))))
+
+#stop the cluster
+stopCluster(cl)
+  
 ```
 
 ```{r}
-data.frame("Intervention" = c("Annual MDA 80% Coverage",
-                              "Annual MDA 60% Coverage",
-                              "Annual MDA 60% Coverage + 20% Habitat reduction"),
-           "Mean P(e)" = round(c(mean(pe_mda80), mean(pe_mda60), mean(pe_mda60_Cred)), 2),
-           "St Dev P(e)" = round(c(sd(pe_mda80), sd(pe_mda60), sd(pe_mda60_Cred)), 2)) %>% 
-knitr::kable(format = "markdown")
+data.frame("Intervention" = c("Annual MDA 60% Coverage",
+                              "Annual MDA 60% Coverage + Snail Control",
+                              "Annual MDA 60% Coverage + 20% Contamination/Sanitation",
+                              "Annual MDA 60% Coverage + Snail Control + 20% Contamination/Sanitation"),
+           "Mean P(e)" = round(c(mean(pe_mda60/n_sims), mean(pe_mda60_snails/n_sims), 
+                                 mean(pe_mda60_Cred/n_sims), mean(pe_mda60_snails_Cred/n_sims)), 4),
+           "St Dev P(e)" = round(c(sd(pe_mda60/n_sims), sd(pe_mda60_snails/n_sims), 
+                                   sd(pe_mda60_Cred/n_sims), sd(pe_mda60_snails_Cred/n_sims)), 4)) %>% 
+knitr::kable(format = "markdown",
+             col.names = c("Intervention", "Mean P(e)", "St. Dev P(e)"))
 ```

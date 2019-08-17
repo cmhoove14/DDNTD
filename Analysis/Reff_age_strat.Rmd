@@ -31,10 +31,11 @@ V1_pars <- infection_inputs_get_pars(W_A = A_est_V1[1],
   Reff_Wij(V1_pars, C_est_V1[1], C_est_V1[1], A_est_V1[1], A_est_V1[1],
            PDD = phi_Wk, DDF = rho_Wk, S_FOI = "saturating", DDI = nil_1)
   
-    Reff_Wij(V1_pars, C_est_V1[1], C_est_V1[1], A_est_V1[1], A_est_V1[1],
+  Reff_Wij(V1_pars, C_est_V1[1], C_est_V1[1], A_est_V1[1], A_est_V1[1],
            PDD = phi_Wk, DDF = rho_Wk, S_FOI = "linear", DDI = nil_1)
 
-
+  Reff_Wij_I_P(V1_pars, C_est_V1[1], C_est_V1[1], A_est_V1[1], A_est_V1[1], I_P = 0.1,
+               PDD = phi_Wk, DDF = rho_Wk, DDI = nil_1)
 ```
 
 ```{r eval = FALSE, include = FALSE}
