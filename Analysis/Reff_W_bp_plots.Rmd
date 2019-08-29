@@ -10,42 +10,44 @@ devtools::load_all()
 
 require(tidyverse)
 require(viridis)
+require(RColorBrewer)
 ```
 
-```{r}
-W = 60
-Lambda = 0.025
-fit_pars <- base_pars
-fit_pars["cvrg"] = 0
+```{r reff_setup}
+W_eq <- 60
+Ip_eq <- 0.1
 
-  M = 0.5*W*base_pars["H"]*phi_Wk(W, k_from_log_W(W))*rho_Wk(W, base_pars["zeta"], k_from_log_W(W))*base_pars["omega"]*base_pars["U"]*base_pars["m"]*base_pars["v"]  
+fit_pars <- base_pars
+fit_alpha_beta_Neq <- fit_pars_from_eq_vals(beta_guess = 2e-4, alpha_guess = 2e-4, Neq_guess = 1000, 
+                                            W = W_eq, Ip = Ip_eq, pars = base_pars)
+
+fit_pars["beta"] <- fit_alpha_beta_Neq[1]
+fit_pars["alpha"] <- fit_alpha_beta_Neq[2]
+N_eq = fit_alpha_beta_Neq[3]
+I_eq = N_eq*Ip_eq
   
-  N_eq = Lambda_get_N_eq(Lambda, base_pars["K"], base_pars["mu_N"], base_pars["r"], base_pars["sigma"])
-  I_eq = (base_pars["sigma"]*N_eq)/(base_pars["mu_I"]*(base_pars["mu_N"]+base_pars["sigma"])/Lambda+base_pars["mu_I"]+base_pars["sigma"])
-  
-  fit_pars["beta"] = Lambda*M/N_eq
-  
-  fit_pars["alpha"] = (W*(base_pars["mu_H"] + base_pars["mu_W"]))/(base_pars["omega"]*I_eq*base_pars["theta"])
+Reff_W(W = W_eq, pars = fit_pars)  
+R_eff_W_I(W = W_eq, I = I_eq, pars = fit_pars)  
 
 W_seq <- exp_seq(1e-4, 200, 200)
 
 Reff_R0 <- data.frame(W = W_seq) %>% 
   mutate(dWdt = sapply(W, dWdt_W, pars = fit_pars),
-         Reff = sapply(W, R_eff_W_I_P, pars = fit_pars, I_P = 0.12,
-                       PDD = phi_Wk, DDF = rho_Wk, DDI = nil_1)[1,],
-         R0 = sapply(W, R_eff_W_I_P, pars = fit_pars, I_P = 0.12,
-                       PDD = phi_Wk, DDF = rho_Wk, DDI = nil_1)[2,],
+         Reff = sapply(W, R_eff_W_I, pars = fit_pars, I = I_eq,
+                       PDD = phi_Wk, DDF = rho_Wk, DDI = nil_1),
+         R0 = get_R0(fit_pars),
          Reff_W = sapply(W, Reff_W, pars = fit_pars)[1,],
-         I_P = sapply(W, Reff_W, pars = fit_pars)[2,],
-         Lambda = sapply(W, Reff_W, pars = fit_pars)[3,])
+         I_P = sapply(W, Reff_W, pars = fit_pars)[3,],
+         Lambda = sapply(W, Reff_W, pars = fit_pars)[4,])
 
-Reff_R0 %>% 
+reff_crv <- Reff_R0 %>% 
   ggplot(aes(x = W, y = Reff_W)) +
     geom_line(size = 1.2) +
     geom_hline(yintercept = 1, lty = 2) +
     theme_classic() +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14))  +
+    ylim(c(0,2)) +
     scale_x_continuous(trans = "log",
                        breaks = c(1e-4, 1e-3, 1e-2, 0.1, 1, 10, 100),
                        labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
@@ -54,6 +56,7 @@ Reff_R0 %>%
          y = expression(R[eff]),
          title = expression(The~Effective~Reproductive~Rate))
 
+reff_crv
 
 Reff_R0 %>% 
   gather("R", "Value", Reff:Reff_W) %>% 
@@ -61,6 +64,7 @@ Reff_R0 %>%
     geom_line(size = 1.2) +
     geom_hline(yintercept = 1, lty = 2) +
     theme_classic() +
+    ylim(c(0,10)) +
         scale_x_continuous(trans = "log",
                        breaks = c(1e-4, 1e-3, 1e-2, 0.1, 1, 10, 100),
                        labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
@@ -71,28 +75,343 @@ Reff_R0 %>%
 
 ```
 
-Makes sense that these don't match up exactly since the infected snail prevalence is constant in the $I_P$ derived $R_{eff}$
+If you don't allow the infected snail population to change as W changes, Reff -> big numbers as W is reduced
 
-```{r Reff_IP_comp}
-Reff_R0 %>% 
-  ggplot(aes(x = I_P, y = Reff)) + geom_line() + theme_classic() +
-    scale_x_continuous(trans = "log",
-                       breaks = c(1e-4, 1e-3, 1e-2, 0.1),
-                       labels = c("0.0001", "0.001", "0.01", "0.1"),
-                       limits = c(1e-4, 0.25)) +
-  labs(title = "Reff across infected snail prevalence")
-    
+## Simulate treated/untreated worm burden compartment model dynamics through time  
+```{r sim_dynamics}
+#Base time and starting values for state variables
+base_start <- c(S=5000, E=0, I=0, Wt=10, Wu=10)
+years <- 20
+base_time <- c(1:(365*years))
+
+#Run to equibrium with base parameter set
+base_eqbm <- runsteady(y = base_start, func = DDNTD::schisto_base_mod,
+                       parms = fit_pars)[["y"]]
+
+#simulate annual MDA 
+eff = 0.94 #94% efficacy
+fit_pars["cvrg"] <- 0.6 # 60 percent coverage
+
+mda.events = data.frame(var = rep('Wt', years/2),
+                        time = c(1:(years/2))*365,
+                        value = rep((1 - eff), years/2),
+                        method = rep('mult', years/2))
+
+schisto_base_sim <- sim_schisto_mod(nstart = base_eqbm, 
+                                    time = base_time, 
+                                    model = schisto_base_mod,
+                                    pars = fit_pars,
+                                    events_df = mda.events) %>% 
+  mutate(W = Wt*fit_pars["cvrg"] + Wu*(1-fit_pars["cvrg"]),
+         N = S+E+I,
+         Reff = sapply(W, Reff_W,
+                       pars = fit_pars)[1,],
+         Reff_Wt = sapply(Wt, Reff_W,
+                          pars = fit_pars)[1,],
+         Reff_Wu = sapply(Wu, Reff_W,
+                          pars = fit_pars)[1,],
+         Reff2 = Reff_Wt * fit_pars["cvrg"] + Reff_Wu * (1-fit_pars["cvrg"]),
+         reff_w_i = map2_dbl(W, I, R_eff_W_I, pars = fit_pars),
+         Coverage = fit_pars["cvrg"])
+
+schisto_base_plot <- schisto_base_sim %>% 
+  gather("Treatment_Group", "Worm_Burden", Wt:W) %>% 
+    ggplot(aes(x = time, y = Worm_Burden, lty = Treatment_Group)) +
+    annotate("rect", xmin = 365, xmax = max(mda.events$time), ymin = -Inf, ymax = Inf,
+             alpha = .2) +
+      geom_line(size = 1.2, col = "purple") +
+      scale_linetype_manual(values = c("W" = 1,
+                                       "Wt" = 2,
+                                       "Wu" = 3),
+                            labels = c("Mean", "Treated", "Untreated")) +
+      scale_x_continuous(breaks = c(0:years)*365,
+                         labels = c(-1:(years-1))) +
+      theme_classic() +
+      ggtitle("Human infection dynamics", 
+              subtitle = paste0("Anual MDA for ", years/2, " years at ", fit_pars["cvrg"]*100, " % coverage"))
+
+schisto_base_plot
 ```
 
-```{r Reff_Lambda_comp}
-Reff_R0 %>% 
-  ggplot(aes(x = Lambda, y = Reff)) + geom_line() + theme_classic()# +
-    scale_x_continuous(trans = "log",
-                       breaks = c(1e-4, 1e-3, 1e-2, 0.1),
-                       labels = c("0.0001", "0.001", "0.01", "0.1"),
-                       limits = c(1e-4, 0.2))
-    
+```{r snail_dynamics}
+schisto_snail_plot <- schisto_base_sim %>%  
+  dplyr::select(time, S, E, I, N) %>% 
+  gather("Infection_class", "Pop_Size", S:N) %>% 
+    ggplot(aes(x = time, y = Pop_Size/fit_pars["K"], col = Infection_class)) +
+    annotate("rect", xmin = 365, xmax = max(mda.events$time), ymin = -Inf, ymax = Inf,
+             alpha = .2) +
+      geom_line(size = 1.2) +
+      scale_x_continuous(breaks = c(0:years)*365,
+                         labels = c(-1:(years-1))) +
+      theme_classic() +
+      labs(y = "Pop size scaled to carrying capacity, K",
+           x = "time (years)") +
+      ggtitle("Snail infection dynamics", 
+              subtitle = paste0("Anual MDA for ", years/2, " years at ", fit_pars["cvrg"]*100, " % coverage"))
+
+schisto_snail_plot
+
 ```
+
+```{r reff_w_i_time}
+schisto_base_sim %>% 
+  ggplot(aes(x = time, y = reff_w_i)) +
+    geom_line(size = 1.2) 
+```
+
+## Simulate single worm burden compartment model through time   
+### With annual MDA  
+```{r simp_mod_sim}
+#Base time and starting values for state variables
+mod_start <- c(S=5000, E=0, I=0, W=60)
+
+#Run to equibrium with base parameter set
+mod_eqbm <- runsteady(y = mod_start, func = DDNTD::schisto_mod,
+                       parms = fit_pars)[["y"]]
+
+mda.events2 = data.frame(var = rep('W', years/2),
+                        time = c(1:(years/2))*365,
+                        value = rep((1 - eff)*fit_pars["cvrg"]+(1-fit_pars["cvrg"]), years/2),
+                        method = rep('mult', years/2))
+
+schisto_mod_sim <- sim_schisto_mod(nstart = mod_eqbm, 
+                                    time = base_time, 
+                                    model = schisto_mod,
+                                    pars = fit_pars,
+                                    events_df = mda.events2) %>% 
+  mutate(N = S+E+I,
+         Reff = sapply(W, Reff_W,
+                       pars = fit_pars)[1,],
+         reff_w_i = map2_dbl(W, I, R_eff_W_I, pars = fit_pars),
+         Coverage = fit_pars["cvrg"], 
+         Intervention = "Annual MDA")
+
+schisto_mod_plot <- schisto_mod_sim %>% 
+    ggplot(aes(x = time, y = W)) +
+    annotate("rect", xmin = 365, xmax = max(mda.events$time), ymin = -Inf, ymax = Inf,
+             alpha = .2) +
+      geom_line(size = 1.2, col = "purple") +
+      scale_x_continuous(breaks = c(0:years)*365,
+                         labels = c(-1:(years-1))) +
+      theme_classic() +
+      ggtitle("Human infection dynamics", 
+              subtitle = paste0("Annual MDA for ", years/2, " years at ", fit_pars["cvrg"]*100, " % coverage"))
+
+schisto_mod_plot
+
+```
+
+```{r reff_w_i_time_simp_mod}
+schisto_mod_sim %>% 
+  ggplot(aes(x = time, y = reff_w_i)) +
+    geom_line(size = 1.2) +
+    theme_classic() +
+    geom_hline(yintercept = 1, lty = 2) +
+    scale_x_continuous(breaks = c(0:years)*365,
+                       labels = c(-1:(years-1)))
+
+```
+
+
+### With annual snail control  
+```{r schisto_snail_plot}
+snail_eff = 0.85
+
+snail.events = data.frame(var = rep(c('S', "E", "I"), years/2),
+                          time = rep(c(1:(years/2))*365, each = 3),
+                          value = rep(1-snail_eff, (years/2)*3),
+                          method = rep('mult',( years/2)*3))
+
+schisto_snail_sim <- sim_schisto_mod(nstart = mod_eqbm, 
+                                     time = base_time, 
+                                     model = schisto_mod,
+                                     pars = fit_pars,
+                                     events_df = snail.events) %>% 
+  mutate(N = S+E+I,
+         Reff = sapply(W, Reff_W,
+                       pars = fit_pars)[1,],
+         reff_w_i = map2_dbl(W, I, R_eff_W_I, pars = fit_pars),
+         Coverage = fit_pars["cvrg"], 
+         Intervention = "Annual Snail Control")
+
+schisto_snail_plot <- schisto_snail_sim %>% 
+    ggplot(aes(x = time, y = W)) +
+    annotate("rect", xmin = 365, xmax = max(snail.events$time), ymin = -Inf, ymax = Inf,
+             alpha = .2) +
+      geom_line(size = 1.2, col = "purple") +
+      scale_x_continuous(breaks = c(0:years)*365,
+                         labels = c(-1:(years-1))) +
+      theme_classic() +
+      ylim(c(0,62)) +
+      ggtitle("Human infection dynamics", 
+              subtitle = paste0("Anual Snail Control for ", years/2, " years at ", snail_eff*100, " % efficiency"))
+
+schisto_snail_plot
+
+```
+
+```{r reff_w_i_snail_ctrl}
+schisto_snail_sim %>% 
+  ggplot(aes(x = time, y = reff_w_i)) +
+    geom_line(size = 1.2) +
+    theme_classic() +
+    geom_hline(yintercept = 1, lty = 2) +
+    scale_x_continuous(breaks = c(0:years)*365,
+                       labels = c(-1:(years-1)))
+
+```
+
+### Combined snail and MDA intervention  
+```{r simp_mod_comb_int, message = FALSE, warning = FALSE}
+mda.snail.events <- rbind(mda.events2, snail.events) %>% 
+  arrange(time)
+
+schisto_comb_sim <- sim_schisto_mod(nstart = mod_eqbm, 
+                                    time = base_time, 
+                                    model = schisto_mod,
+                                    pars = fit_pars,
+                                    events_df = mda.snail.events) %>% 
+  mutate(N = S+E+I,
+         Reff = sapply(W, Reff_W,
+                       pars = fit_pars)[1,],
+         reff_w_i = map2_dbl(W, I, R_eff_W_I, pars = fit_pars),
+         Coverage = fit_pars["cvrg"], 
+         Intervention = "Annual MDA & Snail Control")
+
+schisto_comb_plot <- schisto_comb_sim %>% 
+    ggplot(aes(x = time, y = W)) +
+    annotate("rect", xmin = 365, xmax = max(mda.snail.events$time), ymin = -Inf, ymax = Inf,
+             alpha = .2) +
+      geom_line(size = 1.2, col = "purple") +
+      scale_x_continuous(breaks = c(0:years)*365,
+                         labels = c(-1:(years-1))) +
+      theme_classic() +
+      ylim(c(0,62)) +
+      ggtitle("Human infection dynamics", 
+              subtitle = paste0("Anual Snail Control for ", years/2, " years at ", snail_eff*100, " % efficiency", 
+                                "/nand Annual Snail Control for ", years/2, " years at ", snail_eff*100, " % efficiency"))
+
+schisto_comb_plot
+
+```
+
+```{r}
+schisto_comb_sim %>% 
+  ggplot(aes(x = time, y = reff_w_i)) +
+    geom_line(size = 1.2) +
+    theme_classic() +
+    geom_hline(yintercept = 1, lty = 2) +
+    scale_x_continuous(breaks = c(0:years)*365,
+                       labels = c(-1:(years-1)))
+
+```
+
+## Check out $R_{eff}$ values over a range of I and W  
+```{r Reff_W_I_heat}
+W_I_grid <- expand.grid(W = exp_seq(0.001, 200, 200),
+                        I = exp_seq(0.001, 200, 200))
+
+#Get reff across all values of W and I
+w_i_reff <- mapply(R_eff_W_I, W_I_grid$W, W_I_grid$I, MoreArgs = list(pars = fit_pars))
+
+W_I_Reff_df <- as.data.frame(cbind(W_I_grid, w_i_reff)) %>% 
+  mutate(W_I_ratio = W/I)
+
+reff1_vals <- W_I_Reff_df %>% 
+  filter(round(w_i_reff,2) == 1.00)
+
+#Get reff just from W (assume fast snail infection dynamics)
+w_reff <- as.data.frame(t(sapply(W_I_grid$W, Reff_W, pars = fit_pars))) %>% 
+  mutate(W = W_I_grid$W,
+         I = N*I_P)
+
+Reff_W_I_heat <- W_I_Reff_df %>% 
+  ggplot(aes(x = W, y = I)) +
+    geom_tile(aes(fill = log(w_i_reff))) +
+    theme_classic() +
+    theme(axis.title = element_text(size = 14),
+          axis.text = element_text(size = 12)) +
+    scale_fill_distiller(type = "div", palette = "RdBu") +
+    scale_x_continuous(trans = "log",
+                       breaks = c(1e-3, 1e-2, 0.1, 1, 10, 100),
+                       labels = c("0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(0.01, 200))  +
+    scale_y_continuous(trans = "log",
+                       breaks = c(1e-3, 1e-2, 0.1, 1, 10, 100),
+                       labels = c("0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(0.01, 200)) +
+    geom_line(data = w_reff, aes(x = W, y = I), col = "white", size = 1.2) +
+    geom_point(data = data.frame(W_endemic = W_eq,
+                                 I_endemic = I_eq),
+               aes(x = W_endemic,
+                   y = I_endemic),
+               col = "red", size = 3) +
+    geom_point(data = w_reff[which(round(w_reff$Reff,2) == 1.00),][1,],
+               aes(x = W,
+                   y = I),
+               col = "blue", size = 3) +
+    geom_line(data = reff1_vals, aes(x = W, y = I), col = "black", lty = 2) +
+    labs(x = expression(Mean~Worm~Burden~(W)),
+         y = expression(Infected~snail~population~size~(I)),
+         fill = expression(paste("log(", R[eff], "(W,I))")))
+
+Reff_W_I_heat
+
+```
+
+### Add intervention simulations through time to plot  
+```{r}
+int_df <- rbind(schisto_mod_sim, schisto_comb_sim)
+
+Reff_W_I_heat +
+  geom_line(data = int_df,# %>% filter(time <= (years/2)*365), 
+            aes(x = W, y = I, col = time, group = Intervention), size = 1.2) +
+    scale_color_viridis(option = "viridis", direction = -1)
+  
+
+```
+
+### Different version showing the Reff curve with the MDA intervention through time  
+```{r reff_curve_mda_traj}
+reff_crv + ylim(c(0,5)) +
+  geom_line(data = schisto_mod_sim,
+            aes(x = W, y = reff_w_i, col = time),
+            size = 1.2) +
+    scale_color_distiller(type = "div", palette = "RdBu")
+```
+
+## Worm burden breakpoint population size across key parameters  
+```{r W_bp_det_heat, message = FALSE}
+low_alpha <- fit_pars_from_eq_vals(2e-4, 2e-4, fit_pars["K"], 10, 0.1, fit_pars)[2]
+
+high_alpha <- fit_pars_from_eq_vals(2e-4, 2e-4, fit_pars["K"], 100, 0.1, fit_pars)[2]
+
+pars_grid <- expand.grid(K = seq(500, 1500, length.out = 5),
+                         mu_W = seq(1/(2*365), 1/(5*365), length.out = 8),
+                         omega = seq(0.01, 0.1, length.out = 5),
+                         alpha = seq(low_alpha, high_alpha, length.out = 20))
+
+#Determine W_bp across parameter and W ranges
+  pars_grid$W_bp <- apply(pars_grid, 1, 
+                           FUN = function(x){use_pars <- fit_pars ; 
+                           use_pars["K"] <- x[["K"]] ;
+                           use_pars["mu_W"] <- x[["mu_W"]] ;
+                           use_pars["omega"] <- x[["omega"]] ;
+                           use_pars["alpha"] <- x[["alpha"]] ;
+                           get_breakpoint_W_N(0.1, use_pars["K"]*0.7, use_pars)[1]})
+
+  pars_grid %>% 
+    ggplot(aes(x = alpha, y = mu_W)) +
+      geom_tile(aes(fill = W_bp)) +
+      theme_classic() +
+      facet_grid(K~omega) +
+      scale_fill_viridis(option = "magma") +
+      scale_y_continuous(name = expression(Mean~Adult~Worm~Lifespan),
+                         breaks = c(1/(2*365),1/(3*365),1/(4*365),1/(5*365)),
+                         labels = c(2:5))
+
+```
+
 
 ```{r N_W_plot}
 W_get_N <- function(W, pars){
@@ -309,6 +628,38 @@ W_bp_R0 %>%
     labs(y = expression(italic(W[bp])),
          x = expression(italic(R[0])))
 
+```
+
+
+```{r cvrg_wt_wu}
+wt_wu <- expand.grid(W_t = exp_seq(0.01, 100, 100),
+                     W_u = exp_seq(0.01, 100, 100))
+
+tau <- mapply(FUN = function(wt, wu){(0.1-wu)/(wt-0.94*wt-wu)},
+              wt_wu$W_t, wt_wu$W_u)*100
+
+tau <- case_when(tau > 0 & tau < 100 ~ tau,
+                 tau < 0 ~ NA_real_,
+                 tau > 100 ~ NA_real_)
+
+cvrg_sum <- cbind(wt_wu, tau)
+
+as.data.frame(cvrg_sum) %>% 
+  ggplot(aes(x = W_t, y = W_u, fill = tau, z = tau)) +
+    scale_x_continuous(trans = "log",
+                       breaks = c(0.1, 1,10,100),
+                       labels = c("0.1", "1", "10", "100")) +
+    scale_y_continuous(trans = "log",
+                       breaks = c(0.1, 1,10,100),
+                       labels = c("0.1", "1", "10", "100")) +
+    geom_tile()
+
+
+wt_tau <- sapply(exp_seq(0.01, 100, 100), function(Wt){(0.1-Wt)/(-0.94*Wt)}) * 100
+wt_tau <- case_when(wt_tau > 0 & wt_tau < 100 ~ wt_tau,
+                 wt_tau < 0 ~ NA_real_,
+                 wt_tau > 100 ~ NA_real_)
+plot(exp_seq(0.01, 100, 100), wt_tau, type = "l", xlim = c(0,5))
 ```
 
 

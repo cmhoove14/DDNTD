@@ -5,17 +5,11 @@
 \title{Estimate MDA coverage necessary to reach breakpoint as a function of parameters
 used to esimate breakpoint, density dependencies,}
 \usage{
-cvrg_from_pars(W_t, W_u, epsilon, pars, PDD = phi_Wk, DDF = rho_Wk,
-  DDI = nil_1)
+cvrg_from_pars(use_pars, PDD = phi_Wk, DDF = rho_Wk, DDI = nil_1)
 }
 \arguments{
-\item{W_t}{mean worm burden prior to MDA in treated population}
-
-\item{W_u}{mean worm burden in untreated population}
-
-\item{epsilon}{MDA efficacy (proportion of worms cleared from those treated)}
-
-\item{pars}{additional parameters}
+\item{use_pars}{list of parameters necessary to estimate breakpoint and coverage including
+mean pre-treatment worm burden in treated population, W_t, mean pre-treatment worm burden in the untreated population, W_u, drug efficacy, epsilon, snail population environmental carrying capacity, K, and sanitation/exposure parameter, omega, and other model parameters, pars}
 
 \item{PDD}{positive density dependence function}
 

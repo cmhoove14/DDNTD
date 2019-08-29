@@ -4,14 +4,9 @@
 \alias{convert_burden_egg_to_worm}
 \title{Function to get solutions for worm burden and clumping parameter from input egg burden and prevalence}
 \usage{
-convert_burden_egg_to_worm(W_guess, kap_guess, egg_burden, prevalence, m,
-  zeta)
+convert_burden_egg_to_worm(egg_burden, prevalence, m, zeta)
 }
 \arguments{
-\item{W_guess}{initial estimate fed to multiroot for mean worm burden}
-
-\item{kap_guess}{initial estimate of clumping parameter fed to multiroot}
-
 \item{egg_burden}{observed mean egg burden in population fraction}
 
 \item{prevalence}{observed prevalence in population fraction}
@@ -19,6 +14,10 @@ convert_burden_egg_to_worm(W_guess, kap_guess, egg_burden, prevalence, m,
 \item{m}{peak egg output per 10mL per mated female worm}
 
 \item{zeta}{density dependent fecundity parameter}
+
+\item{W_guess}{initial estimate fed to multiroot for mean worm burden}
+
+\item{kap_guess}{initial estimate of clumping parameter fed to multiroot}
 }
 \value{
 estimate of the mean worm burden and clumping parameter

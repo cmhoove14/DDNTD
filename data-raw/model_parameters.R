@@ -1,23 +1,24 @@
-H = 300
 
 base_pars <- c("r" = 0.1,
-               "K" = H*15,
+               "K" = 1200,
                "mu_N" = 1/60,
                "sigma" = 1/40,
                "mu_I" = 1/10,
                "mu_W" = 1/(365*3.3),
                "theta" = 500,
-               "U" = 120,
+               "U" = 1200/10, #Urine produced per individual in uits of 10mL
                "m" = 5.2,
                "v" = 0.08,
                "omega" = 0.01,
-               "H" = H,
+               "H" = 1e3,
                "mu_H" = 1/(60*365),
                "alpha" = 2e-4,
                "beta" = 2e-4,
                "cvrg" = 0.43,
                "zeta" = 5e-4,
-               "xi" = 2.8e-3)
+               "xi" = 2.8e-3,
+               "a" = 0.932053935, # intensity to clump parameter from fit to S. haematobium data
+               "b" = -0.009365101) # intensity to clump parameter from fit to S. haematobium data
 
 usethis::use_data(base_pars, overwrite = TRUE)
 

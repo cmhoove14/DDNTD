@@ -9,20 +9,12 @@ cvrg_from_W_bp(W_t, W_bp, epsilon)
 \arguments{
 \item{W_t}{mean worm burden prior to MDA}
 
+\item{W_bp}{breakpoint mean worm burden}
+
 \item{epsilon}{MDA efficacy (proportion of worms cleared from those treated)}
-
-\item{I_P}{infected snail prevalence}
-
-\item{pars}{additional parmaters}
-
-\item{PDD}{positive density dependence function}
-
-\item{DDF}{density dependent fecundity function}
-
-\item{DDI}{density dependent acquired immunity function}
 }
 \value{
-vector with Reff and R0 estimates
+estimate of MDA coverage necessary to reach breakpoint
 }
 \description{
 Estimate MDA coverage necessary to reach breakpoint as a function of infected snail prevalence and parameters

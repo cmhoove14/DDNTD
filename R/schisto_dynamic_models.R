@@ -16,7 +16,24 @@
 #' @export
 
 schisto_mod <- function(t, n, pars) {
-  with(as.list(pars),{
+  r <- pars["r"]
+  K <- pars["K"]
+  mu_N <- pars["mu_N"]
+  sigma <- pars["sigma"]
+  mu_I <- pars["mu_I"]
+  mu_W <- pars["mu_W"]
+  H <- pars["H"]
+  mu_H <- pars["mu_H"]
+  theta <- pars["theta"]
+  U <- pars["U"]
+  m <- pars["m"]
+  v <- pars["v"]
+  omega <- pars["omega"]
+  alpha <- pars["alpha"]
+  beta <- pars["beta"]
+  cvrg <- pars["cvrg"]
+  zeta <- pars["zeta"]
+  xi <- pars["xi"]
 
     S=n[1]
     E=n[2]
@@ -26,24 +43,23 @@ schisto_mod <- function(t, n, pars) {
     N=S+E+I
 
   #Clumping parameters based on worm burden
-    k_W = k_from_log_W(W)
+    k_W = k_w_fx(W)
 
   #Miracidial estimate from treated and untreated populations assuming 1:1 sex ratio, mating probability, density dependence
-    M = (0.5*W*H)*phi_Wk(W, k_W)*rho_Wk(W, zeta, k_W)
+    M = 0.5*W*H*phi_Wk(W, k_W)*rho_Wk(W, zeta, k_W)*omega*U*m*v
 
-  #Snail infection dynamics
-    dSdt= f_N*(1-(N/K))*(S+E) - mu_N*S - beta*M*S #Susceptible snails
+    dSdt= r*(1-(N/K))*(S+E) - (mu_N + (beta*M)/N)*S #Susceptible snails
 
-    dEdt= beta*M*S - (mu_N+sigma)*E #Exposed snails
+    dEdt= ((beta*M)/N)*S - (mu_N+sigma)*E #Exposed snails
 
-    dIdt= sigma*E - (mu_N+mu_I)*I #Infected snails
+    dIdt= sigma*E - mu_I*I #Infected snails
 
-  #worm burden in humans
-    dWdt= (lambda*I*gam_Wxi(W, xi)) - ((mu_W+mu_H)*W)
+    #worm burden in human
+    dWdt= (alpha*omega*theta*I) - ((mu_W+mu_H)*W)
+
 
 
     return(list(c(dSdt,dEdt,dIdt,dWdt)))
-  })
 }
 
 
@@ -97,8 +113,8 @@ schisto_base_mod <- function(t, n, pars) {
     W=(cvrg*Wt) + ((1-cvrg)*Wu) #weighting treated and untreated populations
 
   #Clumping parameters based on worm burden
-    k_Wt = k_from_log_W(Wt)
-    k_Wu = k_from_log_W(Wu)
+    k_Wt = k_w_fx(Wt)
+    k_Wu = k_w_fx(Wu)
 
   #Miracidial estimate from treated and untreated populations assuming 1:1 sex ratio, mating probability, density dependence
     M = 0.5*Wt*H*cvrg*phi_Wk(Wt, k_Wt)*rho_Wk(Wt, zeta, k_Wt)*omega*U*m*v +
@@ -112,8 +128,8 @@ schisto_base_mod <- function(t, n, pars) {
     dIdt= sigma*E - mu_I*I #Infected snails
 
     #worm burden in human
-    dWtdt= (alpha*omega*theta*I*gam_Wxi(Wt, xi)) - ((mu_W+mu_H)*Wt)
-    dWudt= (alpha*omega*theta*I*gam_Wxi(Wu, xi)) - ((mu_W+mu_H)*Wu)
+    dWtdt= (alpha*omega*theta*I) - ((mu_W+mu_H)*Wt)
+    dWudt= (alpha*omega*theta*I) - ((mu_W+mu_H)*Wu)
 
 
 
@@ -170,12 +186,12 @@ schisto_stoch_mod <- function(x, p, t){
   Wt = x['Wt']
   Wu = x['Wu']
 
-  phi_Wt = ifelse(Wt == 0, 0, phi_Wk(W = Wt, k = k_from_log_W(Wt)))
-  phi_Wu = ifelse(Wu == 0, 0, phi_Wk(W = Wu, k = k_from_log_W(Wu)))
+  phi_Wt = ifelse(Wt == 0, 0, phi_Wk(W = Wt, k = k_w_fx(Wt)))
+  phi_Wu = ifelse(Wu == 0, 0, phi_Wk(W = Wu, k = k_w_fx(Wu)))
 
 #Miracidia as sum of contribution from treated and untreated populations
-  M = 0.5*Wt*p["H"]*p["cvrg"]*phi_Wt*rho_Wk(Wt, p["zeta"], k_from_log_W(Wt))*p["omega"]*p["U"]*p["m"]*p["v"] +
-      0.5*Wu*p["H"]*(1-p["cvrg"])*phi_Wu*rho_Wk(Wu, p["zeta"], k_from_log_W(Wu))*p["omega"]*p["U"]*p["m"]*p["v"]
+  M = 0.5*Wt*p["H"]*p["cvrg"]*phi_Wt*rho_Wk(Wt, p["zeta"], k_w_fx(Wt))*p["omega"]*p["U"]*p["m"]*p["v"] +
+      0.5*Wu*p["H"]*(1-p["cvrg"])*phi_Wu*rho_Wk(Wu, p["zeta"], k_w_fx(Wu))*p["omega"]*p["U"]*p["m"]*p["v"]
 
   return(c(p["r"] * (1-N/p["K"]) * (S + E),   #Snail birth
            p["mu_N"] * S,        #Susceptible snail death

@@ -66,10 +66,10 @@ schisto_age_strat_mod <- function(t, n, pars) {
       N=S+E+I
 
     #Update clumping parameter, k from estimate of worm burden in each population
-      k_TC = k_from_log_W(W_TC)
-      k_UC = k_from_log_W(W_UC)
-      k_TA = k_from_log_W(W_TA)
-      k_UA = k_from_log_W(W_UA)
+      k_TC = k_w_fx(W_TC)
+      k_UC = k_w_fx(W_UC)
+      k_TA = k_w_fx(W_TA)
+      k_UA = k_w_fx(W_UA)
 
     #Estimate mating probability within each strata
       phi_W_TC = phi_Wk(W = W_TC, k = k_TC)  #Mating probability in treated SAC population
@@ -125,61 +125,6 @@ schisto_age_strat_mod <- function(t, n, pars) {
                   dW_TAdt, dW_UAdt)))
 }
 
-#' Estimate exposed snail fraction from infected snail prevalence
-#'
-#' Function to estimate proportion of snail population in exposed, E, compartment from model parameters
-#' and infected snail, I, prevalence
-#'
-#' @param I infected snail prevalence
-#' @param pars parameter set
-#'
-#' @return Estimate of porportion of snail population in E compartment
-#' @export
-
-I_get_E <- function(I, pars){
-  mu_I = pars["mu_I"]
-  sigma = pars["sigma"]
-
-  E = (I*mu_I)/sigma
-
-  return(E)
-}
-
-#' Function to estimate Lambda (snail-to-man FOI) as function of snail infection prevalence and snail parameters
-#'
-#' Snail FOI can be estimated as a function of observed infected snail prevalence and additional snail parameters
-#' This is a function to estimate this parameter from input infected snail prevalence and model parameters.
-#'
-#' @param I_P infected snail prevalence
-#' @param mu_N snail daily mortality rate
-#' @param mu_I infected snail daily mortality rate
-#' @param sigma inverse of snail pre-patency period
-#'
-#' @return Estimate of man-to-snail FOI
-#' @export
-
-I_get_Lambda <- function(I_P, mu_N, mu_I, sigma){
-  as.numeric((mu_I*(mu_N+sigma))/((sigma/I_P)-mu_I-sigma))
-}
-
-#' Function to estimate equilibirum snail population size, N_eq, as function of Lambda and snail parameters
-#'
-#' Total equilibrium snail population can be estimated as a function of Lambda, the man-to-snail FOI and other parameters.
-#' This function takes as input Lambda (which can be estimated as a function of infected snail prevalence using function `I_get_Lambda`)
-#' and additional snail parameters to estimate N_eq
-#'
-#' @param I_P infected snail prevalence
-#' @param K snail population environmental carrying capacity
-#' @param mu_N snail daily mortality rate
-#' @param r snail intrinsic reproduction rate
-#' @param sigma inverse of snail pre-patency period
-#'
-#' @return Estimate of man-to-snail FOI
-#' @export
-
-Lambda_get_N_eq <- function(Lambda, K, mu_N, r, sigma){
-  as.numeric(K*(1-(mu_N+Lambda)/(r*(1+(Lambda/(mu_N+sigma))))))
-}
 
 #' Function used in multiroot to estimate worm burden and clumping parameter from egg burden, prevalence and parameters
 #'
@@ -206,17 +151,15 @@ egg_to_worm_fx <- function(x, parms){
   }
 
 
+# From equation relating mean egg burden to mean worm burden and clumping parameter
   F1 <- (2*egg_burden)/ #2* egg burden for 1:1 sex ratio
     ((1-integrate(mate_integral, 0, 2*pi)$value*((1-(x[1]/(x[1] + x[2])))^(1+x[2]))/(2*pi))* #mating probability
     m* #egg release per 10mL urine
     (1 + ((x[1]*(1-(exp(-zeta))))/x[2]))^(-x[2]-1))- #DD fecundity
     x[1]
 
-  F2 <- 1-(1+x[1]/x[2])^-x[2]-prev
-
-  #print(c(x[1], x[2], integrate(mate_integral, 0, 2*pi)$value))
-
-  #print(c(x[1], x[2], F1, F2, (1 + ((x[1]*(1-(exp(-zeta))))/x[2]))^(-x[2]-1), (1-integrate(mate_integral, 0, 2*pi)$value*((1-(x[1]/(x[1] + x[2])))^(1+x[2]))/(2*pi))))
+# From equation relating prevalence of mated pairs to mean worm burden and clumping parameter
+  F2 <- 1 - 2*(1+x[1]/(2*x[2]))^-x[2] + (1+x[1]/x[2])^-x[2]-prev
 
   return(c(F1 = F1, F2 = F2))
 }
@@ -237,8 +180,9 @@ egg_to_worm_fx <- function(x, parms){
 #' @export
 #'
 
-convert_burden_egg_to_worm <- function(W_guess, kap_guess, egg_burden, prevalence, m, zeta){
-  multiroot(egg_to_worm_fx, start = c(W_guess, kap_guess), parms = c(egg_burden, prevalence, m, zeta), positive = TRUE)$root
+convert_burden_egg_to_worm <- function(egg_burden, prevalence, m, zeta){
+  multiroot(egg_to_worm_fx, start = c(egg_burden/2, prevalence), # Use egg burden/2 and prevalence as guesses for starting W and kap estimates
+            parms = c(egg_burden, prevalence, m, zeta), positive = TRUE)$root
 }
 
 #' Function to estimate miracidial invasion rate and relative contamination coefficient from equilibirum egg burden and prevalence inputs
@@ -506,10 +450,10 @@ Lambda_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA){
 
   # Get miracidial density as function of worm burdens
     #Update clumping parameter, k from estimate of worm burden in each population
-      k_TC = k_from_log_W(W_TC)
-      k_UC = k_from_log_W(W_UC)
-      k_TA = k_from_log_W(W_TA)
-      k_UA = k_from_log_W(W_UA)
+      k_TC = k_w_fx(W_TC)
+      k_UC = k_w_fx(W_UC)
+      k_TA = k_w_fx(W_TA)
+      k_UA = k_w_fx(W_UA)
 
     #Estimate mating probability within each strata
       phi_W_TC = phi_Wk(W = W_TC, k = k_TC)  #Mating probability in treated SAC population
@@ -582,10 +526,10 @@ Lambda_Wij_linear <- function(pars, W_TC, W_UC, W_TA, W_UA){
 
   # Get miracidial density as function of worm burdens
     #Update clumping parameter, k from estimate of worm burden in each population
-      k_TC = k_from_log_W(W_TC)
-      k_UC = k_from_log_W(W_UC)
-      k_TA = k_from_log_W(W_TA)
-      k_UA = k_from_log_W(W_UA)
+      k_TC = k_w_fx(W_TC)
+      k_UC = k_w_fx(W_UC)
+      k_TA = k_w_fx(W_TA)
+      k_UA = k_w_fx(W_UA)
 
     #Estimate mating probability within each strata
       phi_W_TC = phi_Wk(W = W_TC, k = k_TC)  #Mating probability in treated SAC population
@@ -718,10 +662,10 @@ W_ij_get_N_S_E_I <- function(W_TC, W_UC, W_TA, W_UA, pars){
 
   # Get miracidial density as function of worm burdens
     #Update clumping parameter, k from estimate of worm burden in each population
-      k_TC = k_from_log_W(W_TC)
-      k_UC = k_from_log_W(W_UC)
-      k_TA = k_from_log_W(W_TA)
-      k_UA = k_from_log_W(W_UA)
+      k_TC = k_w_fx(W_TC)
+      k_UC = k_w_fx(W_UC)
+      k_TA = k_w_fx(W_TA)
+      k_UA = k_w_fx(W_UA)
 
     #Estimate mating probability within each strata
       phi_W_TC = phi_Wk(W = W_TC, k = k_TC)  #Mating probability in treated SAC population
@@ -785,13 +729,13 @@ schisto_stoch_mod <- function(x, p, t){
   Wt = x['Wt']
   Wu = x['Wu']
 
-  phi_Wt = ifelse(Wt == 0, 0, phi_Wk(W = Wt, k = k_from_log_W(Wt)))
-  phi_Wu = ifelse(Wu == 0, 0, phi_Wk(W = Wu, k = k_from_log_W(Wu)))
+  phi_Wt = ifelse(Wt == 0, 0, phi_Wk(W = Wt, k = k_w_fx(Wt)))
+  phi_Wu = ifelse(Wu == 0, 0, phi_Wk(W = Wu, k = k_w_fx(Wu)))
 
   return(c(p["f_N"] * (1-N/p["K"]) * (S + E),   #Snail birth
            p["mu_N"] * S,        #Susceptible snail death
-           ((0.5 * Wt * p["H"] * p["cvrg"] * phi_Wt * rho_Wk(Wt, p["zeta"], k_from_log_W(Wt))) +
-             (0.5 * Wu * p["H"] * (1-p["cvrg"]) * phi_Wu * rho_Wk(Wu, p["zeta"], k_from_log_W(Wu)))) *
+           ((0.5 * Wt * p["H"] * p["cvrg"] * phi_Wt * rho_Wk(Wt, p["zeta"], k_w_fx(Wt))) +
+             (0.5 * Wu * p["H"] * (1-p["cvrg"]) * phi_Wu * rho_Wk(Wu, p["zeta"], k_w_fx(Wu)))) *
               S * p["beta"],  #Snail exposure
            p["mu_N"] * E,       #Exposed snail dies
            p["sigma"] * E,      #Exposed snail becomes infected
@@ -1021,10 +965,10 @@ eqbm_snails_fit_mod <- function(x, pars, W_TC, W_UC, W_TA, W_UA){
 
   # parameters as function of Ws
     #Update clumping parameter, k from estimate of worm burden in each population
-      k_TC = k_from_log_W(W_TC)
-      k_UC = k_from_log_W(W_UC)
-      k_TA = k_from_log_W(W_TA)
-      k_UA = k_from_log_W(W_UA)
+      k_TC = k_w_fx(W_TC)
+      k_UC = k_w_fx(W_UC)
+      k_TA = k_w_fx(W_TA)
+      k_UA = k_w_fx(W_UA)
 
     #Estimate mating probability within each strata
       phi_W_TC = phi_Wk(W = W_TC, k = k_TC)  #Mating probability in treated SAC population

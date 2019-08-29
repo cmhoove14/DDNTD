@@ -62,10 +62,10 @@ Reff_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA,
 
   # Get miracidial density as function of worm burdens
     #Update clumping parameter, k from estimate of worm burden in each population
-      k_TC = k_from_log_W(W_TC)
-      k_UC = k_from_log_W(W_UC)
-      k_TA = k_from_log_W(W_TA)
-      k_UA = k_from_log_W(W_UA)
+      k_TC = k_w_fx(W_TC)
+      k_UC = k_w_fx(W_UC)
+      k_TA = k_w_fx(W_TA)
+      k_UA = k_w_fx(W_UA)
 
     #Estimate mating probability within each strata
       phi_W_TC = PDD(W = W_TC, k = k_TC)  #Mating probability in treated SAC population
@@ -191,10 +191,10 @@ Reff_Wij_I_P <- function(pars, W_TC, W_UC, W_TA, W_UA, I_P,
 
   # Get miracidial density as function of worm burdens
     #Update clumping parameter, k from estimate of worm burden in each population
-      k_TC = k_from_log_W(W_TC)
-      k_UC = k_from_log_W(W_UC)
-      k_TA = k_from_log_W(W_TA)
-      k_UA = k_from_log_W(W_UA)
+      k_TC = k_w_fx(W_TC)
+      k_UC = k_w_fx(W_UC)
+      k_TA = k_w_fx(W_TA)
+      k_UA = k_w_fx(W_UA)
 
     #Estimate mating probability within each strata
       phi_W_TC = PDD(W = W_TC, k = k_TC)  #Mating probability in treated SAC population
@@ -278,11 +278,11 @@ W_bp_N_solver <- function(x, parms){
     beta=parms["beta"]       # Man to snail trnamission probability for linear FOI
 
     #Lambda equation
-      F1 <- as.numeric(r*(1-x[1]/K)*(1+(beta*(0.5*x[2]*H*phi_Wk(x[2], k_from_log_W(x[2]))*rho_Wk(x[2], zeta, k_from_log_W(x[2]))*m*v*U_C*omega_c))/(x[1]*(mu_N+sigma)))-mu_N-beta*(0.5*x[2]*H*phi_Wk(x[2], k_from_log_W(x[2]))*rho_Wk(x[2], zeta, k_from_log_W(x[2]))*m*v*U_C*omega_c)/x[1])
+      F1 <- as.numeric(r*(1-x[1]/K)*(1+(beta*(0.5*x[2]*H*phi_Wk(x[2], k_w_fx(x[2]))*rho_Wk(x[2], zeta, k_w_fx(x[2]))*m*v*U_C*omega_c))/(x[1]*(mu_N+sigma)))-mu_N-beta*(0.5*x[2]*H*phi_Wk(x[2], k_w_fx(x[2]))*rho_Wk(x[2], zeta, k_w_fx(x[2]))*m*v*U_C*omega_c)/x[1])
 
     #W_bp equation
-      F2 <- as.numeric((alpha*omega_c*theta*sigma*(0.5*H*phi_Wk(x[2], k_from_log_W(x[2]))*rho_Wk(x[2], zeta, k_from_log_W(x[2]))*m*v*U_C*omega_c))/
-                         ((mu_I*(mu_N+sigma))*(1+(beta*(0.5*x[2]*H*phi_Wk(x[2], k_from_log_W(x[2]))*rho_Wk(x[2], zeta, k_from_log_W(x[2]))*m*v*U_C*omega_c))/(x[1]*(mu_N+sigma))+(sigma*beta*(0.5*x[2]*H*phi_Wk(x[2], k_from_log_W(x[2]))*rho_Wk(x[2], zeta, k_from_log_W(x[2]))*m*v*U_C*omega_c))/(x[1]*mu_I*(mu_N+sigma)))) - (mu_W+mu_H_C))
+      F2 <- as.numeric((alpha*omega_c*theta*sigma*(0.5*H*phi_Wk(x[2], k_w_fx(x[2]))*rho_Wk(x[2], zeta, k_w_fx(x[2]))*m*v*U_C*omega_c))/
+                         ((mu_I*(mu_N+sigma))*(1+(beta*(0.5*x[2]*H*phi_Wk(x[2], k_w_fx(x[2]))*rho_Wk(x[2], zeta, k_w_fx(x[2]))*m*v*U_C*omega_c))/(x[1]*(mu_N+sigma))+(sigma*beta*(0.5*x[2]*H*phi_Wk(x[2], k_w_fx(x[2]))*rho_Wk(x[2], zeta, k_w_fx(x[2]))*m*v*U_C*omega_c))/(x[1]*mu_I*(mu_N+sigma)))) - (mu_W+mu_H_C))
 
   #print(c(x[1], x[2], F1, F2))
 
@@ -340,7 +340,7 @@ get_Ip_W_bp <- function(N_guess, W_bp_guess, parms){
     Lambda_0=parms["Lambda_0"]         # first parameter of non-linear man-to-snail FOI
     beta=parms["beta"]       # Man to snail trnamission probability for linear FOI
 
-  I_P <- sigma/((mu_I*(mu_N+sigma))/(beta*0.5*W_bp*phi_Wk(W_bp, k_from_log_W(W_bp))*rho_Wk(W_bp, zeta, k_from_log_W(W_bp))*m*v*U_C*omega_c)/N_eq+mu_I+sigma)
+  I_P <- sigma/((mu_I*(mu_N+sigma))/(beta*0.5*W_bp*phi_Wk(W_bp, k_w_fx(W_bp))*rho_Wk(W_bp, zeta, k_w_fx(W_bp))*m*v*U_C*omega_c)/N_eq+mu_I+sigma)
 
   return(c(I_P = as.numeric(I_P),
            W_bp = as.numeric(W_bp)))

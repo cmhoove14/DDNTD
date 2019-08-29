@@ -68,6 +68,12 @@ Lots of debugging $R_{eff}$ expressions and trying to get to the bottom of wheth
 # 8/7/19  
 Gave up (at least for the moment) on the non-linear snail FOI and was finally able to make substantial progress. Have a function that takes model parameters fit to endemic infection levels and returns an estimate of the snail infection prevlance and mean worm burden at the transmission breakpoint. Was also thinking that $R_{eff}$ derived from a model with stratified worm burden compartments could be estimated as a population-weighted average of $R_{eff}$ in each population strata, but this was very wrong. Good news is I instead was able to derive an expression of $R_{eff}$ that is a function of the mean worm burden weighted by population groups and the infected snail prevalence. It's a subtle difference, but makes all the difference. Next steps will be to generate breakpoint estimations from these results and then express them in terms of infected snail prevalence and MDA coverage.
 
+# 8/26/19  
+Returning from ESA and a week vacation. Lots of mad scrambles before ESA to get functions right to produce figures and such for the conference presentation. Focusing now on the paper and a somewhat simplified version of the model with no age or treatment stratification which makes the analytic results more straightforward.
+
+# 8/27&28/19  
+Working on producing figures. Have some ideas for I by W heat map and trajectories through time with different interventions. Also think it's worth combining $\mu_H$ and $\mu_W$ and just discussing the adult worm lifespan more generically as a determinant of $W_{bp}$.
+
 # To-dos  
 ### Generalizable model structure for interventions in schisto stochastic model
 ### Generiaizable parameter intervention structure for Garchitorena et al model

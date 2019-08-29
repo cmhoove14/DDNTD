@@ -1,8 +1,8 @@
-Fitting procedure
+Analytic Work
 ================
 
-Man-to-snail FOI, *Λ*, from equilibrium solutions to snail infection dynamics and input infected snail prevalence
------------------------------------------------------------------------------------------------------------------
+Snail infection dynamics
+------------------------
 
 Beginning with a basic schistosomiasis model with *S* − *E* − *I* infection dynamics and logistic population growth among the intermediate host snail population we have three ODEs and one simple relation between each infection class and the total snail population, N:
 
@@ -46,82 +46,67 @@ Therefore with infected snail prevalence, *I*<sub>*P*</sub> = *I*<sup>\*</su
 
 ![](http://latex.codecogs.com/gif.latex?%5CLambda%3D%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5Cfrac%7B%5Csigma%7D%7BI_P%7D-%5Cmu_I-%5Csigma%7D)
 
-Contamination fraction, *Ω*, and snail FOI parameters, (*β* or *Λ*<sub>0</sub>), as function of equilibrium worm burden in children and adults
-----------------------------------------------------------------------------------------------------------------------------------------------
+*R*<sub>*e**f**f*</sub> and breakpoint derivation with single worm burden compartment
+=====================================================================================
 
-We first assume that differences in child and adult infection rates arise predominately from variation in behavior that affects both exposure and contribution to infection in the same manner. Parameter *Ω* therefore represents the relative exposure/contamination of children to adults, *Ω* = *ω*<sub>*C*</sub>/*ω*<sub>*A*</sub>, which can be estimated from the equilibrium infection ratio *Ω* = *W*<sub>*C*</sub><sup>\*</sup>/*W*<sub>*A*</sub><sup>\*</sup>.
+Effective reproduction number, *R*<sub>*e**f**f*</sub>, derivation
+------------------------------------------------------------------
 
-With this parameter, we can estimate the equilibirum miracidial density *M* as:
+The effective reproduction number, *R*<sub>*e**f**f*</sub>, for schistosomiasis is defined as the number of mated adult female worms produced by a single adult female worm over the course of her lifetime. Unlike the basic reproduction number, *R*<sub>0</sub>, *R*<sub>*e**f**f*</sub> changes as a function of the current level of infection, here measured in terms of the mean worm burden, *W*. From Anderson and May **Infectious Diseases of Humans**, we can estimate the effective reproduction number from the rate of worm burden change as:
 
-![](http://latex.codecogs.com/gif.latex?M%3D0.5%5Cmathbf%7BH%7Dm%5Comega_A(W_C%5E*%20h_C%5CPhi(W_C%5E*)%5Crho(W_C%5E*)U_C%5COmega+W_A%5E*%20h_A%5CPhi(W_A%5E*)%5Crho(W_A%5E*)U_A))
+![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdW%7D%7Bdt%7D%3D%5Clambda-%5Cmu_%5Cmathcal%7BW%7DW)
 
-### Saturating man-to-snail FOI
+![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdW%7D%7Bdt%7D%3D%5Cmu_%5Cmathcal%7BW%7DW%5CBig(%5Cfrac%7B%5Clambda%7D%7B%5Cmu_%5Cmathcal%7BW%7DW%7D-1%5CBig))
 
-Now, since *Λ* has been estimated above, *N*<sup>\*</sup> can be estimated as a function of *Λ*, and we have an equilibrium estimate of miracidial density, *M*, we can estimate the baseline miracidial invasion rate, *Λ*<sub>0</sub>, of the saturating form of the man-to-snail FOI:
+![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdW%7D%7Bdt%7D%3D%5Cmu_%5Cmathcal%7BW%7DW%5CBig(R_%7Beff%7D(W)-1%5CBig))
 
-![](http://latex.codecogs.com/gif.latex?%5CLambda_0%3D%5Cfrac%7B%5CLambda%7D%7B(1-e%5E%7B-M/N%5E*(%5CLambda)%7D)%7D)
+![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W)%3D%5Cfrac%7B%5Clambda%7D%7B%5Cmu_%5Cmathcal%7BW%7DW%7D)
 
-Except in rare circumstances, *Λ* ≈ *Λ*<sub>0</sub> because of the high *M*/*N* ratio in transmission settings that have not been intervened upon (i.e. equilibrium settings).
+Where *μ*<sub>𝒲</sub> is the mean lifespan of an adult worm and *λ* is the worm acquisition rate or snail-to-man FOI, which is a function of the exposure coefficient, *ω*, probability of worm acquisition given exposure, *α*, and cercarial concentration estimated as a function of cercarial shedding and the infected snail population size: ![](http://latex.codecogs.com/gif.latex?C%3D%5Ctheta%20I). Therefore we can express ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D) in terms of state variables *I* and *W* as:
 
-### Linear man-to-snail FOI
+![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W,%20I)%3D%5Cfrac%7B%5Calpha%5Comega%5Ctheta%20I%7D%7BW%5Cmu_%5Cmathcal%7BW%7D%7D)
 
-As an alternative, we can use the more common (but perhaps less accurate) linear form of the man-to-snail FOI:
+Alternatively, if we assume fast snail infection dynamics relative to human infection dynamics as is common, we can substitute for *I* in terms of the equilibirum snail population size, *N*, and snail FOI, *Λ*, both in terms of *W*:
 
-![](http://latex.codecogs.com/gif.latex?%5CLambda%3D%5Cfrac%7B%5Cbeta%20M%7D%7BN%5E*(%5CLambda)%7D)
-
-to estimate the probability of snail infection given miracidial density, *β* as:
-
-![](http://latex.codecogs.com/gif.latex?%5Cbeta%3D%5Cfrac%7B%5CLambda%20N%5E*(%5CLambda)%7D%7BM%7D)
-
-Worm establishment rate, *α*, as function of equilibrium worm burden
---------------------------------------------------------------------
-
-Assuming the observed mean worm burden in each population fraction prior to intervention is approximately at equilibrium, the worm acquisition rate, *λ*<sub>*i**j*</sub>, for each group can be estimated as a function of the exposure fractions, *ω*<sub>*a*</sub> and *ω*<sub>*c*</sub>, the infected snail density, *I*<sup>\*</sup> = *I*<sub>*P*</sub>*N*<sup>\*</sup>, the snail cercarial shedding rate, *θ*, and the probability of cercarial establishment per exposure, *α*, with *α* being the only unknown and estimated as:
-
-![](http://latex.codecogs.com/gif.latex?%5Calpha%3D%5Cfrac%7BW_i%5E*(%5Cmu_W+%5Cmu_H_i)%7D%7B%5Comega_i%20I%5E*%5Ctheta%7D)
-
-*R*<sub>*e**f**f*</sub> derivation with linear snail FOI
---------------------------------------------------------
-
-The effective reproduction number, *R*<sub>*e**f**f*</sub>, for schistosomiasis is defined as the number of mated adult female worms produced by a single adult female worm over the course of her lifetime. Unlike teh basic reproduction number, *R*<sub>0</sub>, *R*<sub>*e**f**f*</sub> changes as a function of the current level of infection, here measured in terms of the mean worm burden, *W*. From Anderson and May **Infectious Diseases of Humans**, we can estimate the effective reproduction number from the rate of worm burden change as:
-
-![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdW%7D%7Bdt%7D%3D%5Clambda-(%5Cmu_W+%5Cmu_H)W)
-
-![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdW%7D%7Bdt%7D%3D(%5Cmu_W+%5Cmu_H)W%5CBig(%5Cfrac%7B%5Clambda%7D%7B(%5Cmu_W+%5Cmu_H)W%7D-1%5CBig))
-
-![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdW%7D%7Bdt%7D%3D(%5Cmu_W+%5Cmu_H)W%5CBig(R_%7Beff%7D(W)-1%5CBig))
-
-![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W)%3D%5Cfrac%7B%5Clambda%7D%7B(%5Cmu_W+%5Cmu_H)W%7D)
-
-Where *λ* is the worm acquisition rate or snail-to-man FOI and is a function of the exposure coefficient, *ω*, probability of worm acquisition given exposure, *α*, and cercarial concentration estimated as a function of cercarial shedding and the infected snail population assuming fast snail infection dynamics: ![](http://latex.codecogs.com/gif.latex?C%3D%5Ctheta%20I%5E*). If we incorporate linear snail FOI and the infected snail population in terms of the total snail population, *N*, we have:
-
-![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W)%3D%5Cfrac%7B%5Calpha%5Comega%5Ctheta%7D%7BW%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%7D%5Ctimes%5Cfrac%7B%5Csigma%20N%7D%7B%5CBig(%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5CLambda%7D+%5Cmu_I+%5Csigma%5CBig)%7D)
-
-Given that N can be estimated as a function of *Λ* which is a function of *W*, we can estimate *N* and ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D) from input W by solving for each from:
-
-![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W)%3D%5Cfrac%7B%5Calpha%5Comega%5Ctheta%5Csigma%20N(W)%7D%7BW%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5CBig(%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5CLambda(W)%7D+%5Cmu_I+%5Csigma%5CBig)%7D)
+![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W)%3D%5Cfrac%7B%5Calpha%5Comega%5Ctheta%5Csigma%20N(W)%7D%7BW%5Cmu_%5Cmathcal%7BW%7D%5CBig(%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5CLambda(W)%7D+%5Cmu_I+%5Csigma%5CBig)%7D)
 
 ![](http://latex.codecogs.com/gif.latex?N(W)%3DK%5CBig(1-%5Cfrac%7B%5Cmu_N+%5CLambda(W)%7D%7Br%5Cbig(1+%5Cfrac%7B%5CLambda(W)%7D%7B%5Cmu_N+%5Csigma%7D%5Cbig)%7D%5CBig))
 
-Or:
+The particular formulation of the snail FOI, *Λ*, will determine how analytically tractable this estimate is. In the simplist case where snail infection is estimated simply as the infection probability, *β*, and miracidial concentration, *M*, we can combine the two equations to arrive at:
 
-![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W)%3D%5Cfrac%7BK%5Calpha%5Comega%5Ctheta%5Csigma%5Cbig(1+%5Cfrac%7B%5CLambda(W)%7D%7B%5Cmu_N+%5Csigma%7D-%5Cfrac%7B%5Cmu_I%7D%7Br%7D-%5Cfrac%7B%5CLambda(W)%7D%7Br%7D%5Cbig)%7D%7BW%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5CBig(%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5CLambda(W)%7D+%5Cmu_I+%5Csigma%5CBig)%5CBig(1+%5Cfrac%7B%5CLambda(W)%7D%7B%5Cmu_N+%5Csigma%7D%5CBig)%7D)
+![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W)%3D%5Cfrac%7BK%5Calpha%5Comega%5Ctheta%5Csigma%5Cbig(1+%5Cfrac%7B%5Cbeta%20M(W)%7D%7B%5Cmu_N+%5Csigma%7D-%5Cfrac%7B%5Cmu_I%7D%7Br%7D-%5Cfrac%7B%5Cbeta%20M(W)%7D%7Br%7D%5Cbig)%7D%7BW%5Cmu_%5Cmathcal%7BW%7D%5CBig(%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5Cbeta%20M(W)%7D+%5Cmu_I+%5Csigma%5CBig)%5CBig(1+%5Cfrac%7B%5Cbeta%20M(W)%7D%7B%5Cmu_N+%5Csigma%7D%5CBig)%7D)
 
-Alternatively, we can make one more substitution based on the fact that infected snail prevalence can be estimated as a function of snail FOI:
+This solution is nice in that it is analytically tractable, however, this simple treatment is likely to overestimate snail FOI at small worm burdens where we care most about estimating *R*<sub>*e**f**f*</sub>. More accurate representations of the snail FOI such as ![](http://latex.codecogs.com/gif.latex?%5CLambda%3D%5Cbeta%20M(W)/N(W)) or the saturating version of snail FOI, ![](http://latex.codecogs.com/gif.latex?%5CLambda%3D%5CLambda_0(1-e%5E%7B-%5Cbeta%20M(W)/N(W)%7D)) are less analytically tractable, but can still be used for ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D) estimation via rootsolving.
 
-![](http://latex.codecogs.com/gif.latex?I_P%3D%5Cfrac%7B%5Csigma%7D%7B%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5CLambda%7D+%5Cmu_I+%5Csigma%7D)
+Worm burden breakpoint estimation
+---------------------------------
 
-therefore we can substitute in terms of infected snail prevalence, *I*<sub>*P*</sub>, to get:
+The breakpoint worm burden population size, ![](http://latex.codecogs.com/gif.latex?W_%7Bbp%7D) is an unstable equilibrium at which each female worm replaces herself, i.e. ![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D%3D1) therefore the breakpoint is one solution for W and I of:
 
-![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W,%20I_P)%3D%5Cfrac%7B%5Calpha%5Comega%5Ctheta%20N%20I_P%7D%7BW%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%7D)
+![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W,%20I)%3D1%3D%5Cfrac%7B%5Calpha%5Comega%5Ctheta%20I%7D%7BW%5Cmu_%5Cmathcal%7BW%7D%7D)
 
-And then with linear FOI, ![](http://latex.codecogs.com/gif.latex?%5CLambda%3D%5Cbeta%20M/N)substitute for N in terms of *I*<sub>*P*</sub>:
+So:
 
-![](http://latex.codecogs.com/gif.latex?N%3D%5Cfrac%7B%5Cbeta%20M%5Cbig(%5Cfrac%7B%5Csigma%7D%7BI_P%7D-%5Cmu_I-%5Csigma%5Cbig)%7D%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%3D%5Cfrac%7B%5Cbeta%5Comega%20WHmv%5CPhi(W)%5Crho(W)U%5Cbig(%5Cfrac%7B%5Csigma%7D%7BI_P%7D-%5Cmu_I-%5Csigma%5Cbig)%7D%7B2%5Cmu_I(%5Cmu_N+%5Csigma)%7D)
+![](http://latex.codecogs.com/gif.latex?W_%7Bbp%7D%3D%5Cfrac%7B%5Calpha%5Comega%5Ctheta%20I_%7Bbp%7D%7D%7B%5Cmu_%5Cmathcal%7BW%7D%7D)
 
-and get:
+Or is the smaller solution to:
 
-![](http://latex.codecogs.com/gif.latex?R_%7Beff%7D(W,%20I_P)%3D%5Cfrac%7B%5Calpha%5Comega%5E2%5Ctheta%5Cbeta%5Cphi(W)%5Crho(W)HmvU(%5Csigma-I_P%5Cmu_I-I_P%5Csigma)%7D%7B2%5Cbig(%5Cmu_W+%5Cmu_H%5Cbig)%5Cbig(%5Cmu_I(%5Cmu_N+%5Csigma)%5Cbig)%7D)
+![](http://latex.codecogs.com/gif.latex?W_%7Bbp%7D%3D%5Cfrac%7B%5Calpha%5Comega%5Ctheta%5Csigma%20N(W_%7Bbp%7D)%7D%7B%5Cmu_%5Cmathcal%7BW%7D%5CBig(%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5CLambda(W_%7Bbp%7D)%7D+%5Cmu_I+%5Csigma%5CBig)%7D)
+
+![](http://latex.codecogs.com/gif.latex?N(W_%7Bbp%7D)%3DK%5CBig(1-%5Cfrac%7B%5Cmu_N+%5CLambda(W_%7Bbp%7D)%7D%7Br%5Cbig(1+%5Cfrac%7B%5CLambda(W_%7Bbp%7D)%7D%7B%5Cmu_N+%5Csigma%7D%5Cbig)%7D%5CBig))
+
+MDA coverage necessary to reach the breakpoint
+----------------------------------------------
+
+Another useful outcome is the MDA coverage necessary to reach the breakpoint. We can model MDA as a reduction in the mean worm burden at the following time step in terms of the MDA coverage, 𝒞, and drug efficacy, *ϵ*:
+
+![](http://latex.codecogs.com/gif.latex?W_%7Bt+1%7D%3D(1-%5Cepsilon)%5Cmathcal%7BC%7DW_t+(1-%5Cmathcal%7BC%7D)W_t)
+
+If our goal is to reduce the worm burden to or below the breakpoint (i.e. ![](http://latex.codecogs.com/gif.latex?W_%7Bt+1%7D%5Cleq%20W_%7Bbp%7D)) with MDA, we can estimate the coverage required as:
+
+![](http://latex.codecogs.com/gif.latex?%5Cmathcal%7BC%7D%3D%5Cfrac%7BW_%7Bbp%7D-W_t%7D%7B-%5Cepsilon%20W_t%7D)
+
+We can also incorporate excentricities of MDA such as systematic noncompliance by incorporating a proportion of the worm burden that is not affected by MDA
 
 ### *R*<sub>*e**f**f*</sub> for stratified worm burdens
 
@@ -160,7 +145,44 @@ Another useful outcome is the MDA coverage necessary to reach the breakpoint. We
 
 If our goal is to reduce the worm burden to or below the breakpoint (i.e. ![](http://latex.codecogs.com/gif.latex?W_%7Bt+1%7D%5Cleq%20W_%7Bbp%7D)) with MDA, we can estimate the coverage required as:
 
-![](http://latex.codecogs.com/gif.latex?cvrg%3D%5Cfrac%7B%5Cfrac%7BW_%7Bbp%7D%7D%7BW_t%7D-1%7D%7B-%5Cepsilon%7D)
+![](http://latex.codecogs.com/gif.latex?cvrg%3D%5Cfrac%7B%7BW_%7Bbp%7D-W_t%7D%7B-%5Cepsilon%20W_t%7D)
+
+Fitting parameters from equilibirum states
+==========================================
+
+Contamination fraction, *Ω*, and snail FOI parameters, (*β* or *Λ*<sub>0</sub>), as function of equilibrium worm burden in children and adults
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+We first assume that differences in child and adult infection rates arise predominately from variation in behavior that affects both exposure and contribution to infection in the same manner. Parameter *Ω* therefore represents the relative exposure/contamination of children to adults, *Ω* = *ω*<sub>*C*</sub>/*ω*<sub>*A*</sub>, which can be estimated from the equilibrium infection ratio *Ω* = *W*<sub>*C*</sub><sup>\*</sup>/*W*<sub>*A*</sub><sup>\*</sup>.
+
+With this parameter, we can estimate the equilibirum miracidial density *M* as:
+
+![](http://latex.codecogs.com/gif.latex?M%3D0.5%5Cmathbf%7BH%7Dm%5Comega_A(W_C%5E*%20h_C%5CPhi(W_C%5E*)%5Crho(W_C%5E*)U_C%5COmega+W_A%5E*%20h_A%5CPhi(W_A%5E*)%5Crho(W_A%5E*)U_A))
+
+### Saturating man-to-snail FOI
+
+Now, since *Λ* has been estimated above, *N*<sup>\*</sup> can be estimated as a function of *Λ*, and we have an equilibrium estimate of miracidial density, *M*, we can estimate the baseline miracidial invasion rate, *Λ*<sub>0</sub>, of the saturating form of the man-to-snail FOI:
+
+![](http://latex.codecogs.com/gif.latex?%5CLambda_0%3D%5Cfrac%7B%5CLambda%7D%7B(1-e%5E%7B-M/N%5E*(%5CLambda)%7D)%7D)
+
+Except in rare circumstances, *Λ* ≈ *Λ*<sub>0</sub> because of the high *M*/*N* ratio in transmission settings that have not been intervened upon (i.e. equilibrium settings).
+
+### Linear man-to-snail FOI
+
+As an alternative, we can use the more common (but perhaps less accurate) linear form of the man-to-snail FOI:
+
+![](http://latex.codecogs.com/gif.latex?%5CLambda%3D%5Cfrac%7B%5Cbeta%20M%7D%7BN%5E*(%5CLambda)%7D)
+
+to estimate the probability of snail infection given miracidial density, *β* as:
+
+![](http://latex.codecogs.com/gif.latex?%5Cbeta%3D%5Cfrac%7B%5CLambda%20N%5E*(%5CLambda)%7D%7BM%7D)
+
+Worm establishment rate, *α*, as function of equilibrium worm burden
+--------------------------------------------------------------------
+
+Assuming the observed mean worm burden in each population fraction prior to intervention is approximately at equilibrium, the worm acquisition rate, *λ*<sub>*i**j*</sub>, for each group can be estimated as a function of the exposure fractions, *ω*<sub>*a*</sub> and *ω*<sub>*c*</sub>, the infected snail density, *I*<sup>\*</sup> = *I*<sub>*P*</sub>*N*<sup>\*</sup>, the snail cercarial shedding rate, *θ*, and the probability of cercarial establishment per exposure, *α*, with *α* being the only unknown and estimated as:
+
+![](http://latex.codecogs.com/gif.latex?%5Calpha%3D%5Cfrac%7BW_i%5E*(%5Cmu_W+%5Cmu_H_i)%7D%7B%5Comega_i%20I%5E*%5Ctheta%7D)
 
 NEEDS UPDATING
 ==============
