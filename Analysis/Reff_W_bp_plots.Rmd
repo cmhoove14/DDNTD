@@ -444,7 +444,7 @@ W_get_N <- function(W, pars){
 
   # Get miracidial density as function of worm burden
     #Update clumping parameter
-      kap = k_from_log_W(W)
+      kap = k_w_fx(W)
 
     #Estimate mating probability
       phi = phi_Wk(W = W, k = kap)
@@ -530,11 +530,11 @@ inset
 ```{r dd_plots}
 dd_product <- data.frame(W = W_seq) %>% 
   mutate(phi_rho_gam = sapply(W, 
-                              function(W) phi_Wk(W, k_from_log_W(W)) * rho_Wk(W, age_strat_pars["zeta"], k_from_log_W(W)) * gam_Wxi(W, age_strat_pars["xi"])),
+                              function(W) phi_Wk(W, k_w_fx(W)) * rho_Wk(W, age_strat_pars["zeta"], k_w_fx(W)) * gam_Wxi(W, age_strat_pars["xi"])),
          phi_rho_z10_gam = sapply(W, 
-                                  function(W) phi_Wk(W, k_from_log_W(W)) * rho_Wk(W, age_strat_pars["zeta"]*10, k_from_log_W(W)) * gam_Wxi(W, age_strat_pars["xi"])),
+                                  function(W) phi_Wk(W, k_w_fx(W)) * rho_Wk(W, age_strat_pars["zeta"]*10, k_w_fx(W)) * gam_Wxi(W, age_strat_pars["xi"])),
          M = sapply(W, 
-                    function(W) phi_Wk(W, k_from_log_W(W)) * rho_Wk(W, age_strat_pars["zeta"], k_from_log_W(W)) * W*fit_pars["H"]*fit_pars["m"]*fit_pars["v"]*fit_pars["omega"]*fit_pars["U"]*0.5))
+                    function(W) phi_Wk(W, k_w_fx(W)) * rho_Wk(W, age_strat_pars["zeta"], k_w_fx(W)) * W*fit_pars["H"]*fit_pars["m"]*fit_pars["v"]*fit_pars["omega"]*fit_pars["U"]*0.5))
 
   dd_product %>% 
     ggplot(aes(x = W, y = phi_rho_gam)) + 

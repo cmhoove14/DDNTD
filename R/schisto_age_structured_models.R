@@ -126,65 +126,6 @@ schisto_age_strat_mod <- function(t, n, pars) {
 }
 
 
-#' Function used in multiroot to estimate worm burden and clumping parameter from egg burden, prevalence and parameters
-#'
-#' Function which uses equations representing 1) an estimate of prevalence given worm burden and clumping parameter and
-#' 2) estimated mean egg output per 10mL urine given worm burden, mating probability, DD fecundity, and peak egg release per 10mL
-#' to estimate the worm burden and clumping parameter from input egg burden and prevalence
-#'
-#' @param x initial estimates for the mean worm burden and clumping parameter, respectively
-#' @param parms input egg burden (measured from surveys) measured in eggs/10mL for the population group
-#'
-#' @return Value of the two equations given inputs, but is mostly irrelevant other than its use within multiroot (see function `convert_burden_egg_to_worm`)
-#' @export
-#'
-
-egg_to_worm_fx <- function(x, parms){
-
-  egg_burden <- parms[1]
-  prev <- parms[2]
-  m <- parms[3]
-  zeta <- parms[4]
-
-  mate_integral <- function(t){
-    (1-cos(t))/((1 + (x[1]/(x[1] + x[2]))*cos(t))^(1+x[2]))
-  }
-
-
-# From equation relating mean egg burden to mean worm burden and clumping parameter
-  F1 <- (2*egg_burden)/ #2* egg burden for 1:1 sex ratio
-    ((1-integrate(mate_integral, 0, 2*pi)$value*((1-(x[1]/(x[1] + x[2])))^(1+x[2]))/(2*pi))* #mating probability
-    m* #egg release per 10mL urine
-    (1 + ((x[1]*(1-(exp(-zeta))))/x[2]))^(-x[2]-1))- #DD fecundity
-    x[1]
-
-# From equation relating prevalence of mated pairs to mean worm burden and clumping parameter
-  F2 <- 1 - 2*(1+x[1]/(2*x[2]))^-x[2] + (1+x[1]/x[2])^-x[2]-prev
-
-  return(c(F1 = F1, F2 = F2))
-}
-
-#' Function to get solutions for worm burden and clumping parameter from input egg burden and prevalence
-#'
-#' Uses `egg_to_worm_fx` within `rootSolve::multiroot` equation solver to come up with estimates of mean worm burden
-#' and clumping parameter from input egg burden, prevalence and egg output parameters
-#'
-#' @param W_guess initial estimate fed to multiroot for mean worm burden
-#' @param kap_guess initial estimate of clumping parameter fed to multiroot
-#' @param egg_burden observed mean egg burden in population fraction
-#' @param prevalence observed prevalence in population fraction
-#' @param m peak egg output per 10mL per mated female worm
-#' @param zeta density dependent fecundity parameter
-#'
-#' @return estimate of the mean worm burden and clumping parameter
-#' @export
-#'
-
-convert_burden_egg_to_worm <- function(egg_burden, prevalence, m, zeta){
-  multiroot(egg_to_worm_fx, start = c(egg_burden/2, prevalence), # Use egg burden/2 and prevalence as guesses for starting W and kap estimates
-            parms = c(egg_burden, prevalence, m, zeta), positive = TRUE)$root
-}
-
 #' Function to estimate miracidial invasion rate and relative contamination coefficient from equilibirum egg burden and prevalence inputs
 #'
 #' Function which takes input infection and demographic information and estimates relative infection between adults and children

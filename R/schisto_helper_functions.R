@@ -39,7 +39,7 @@ phi_Wk <- function(W, k) {
     if(k == 0){
       rho = 1
     } else {
-      rho = (1 + ((W*(1-(exp(-zeta))))/k))^(-k-1)
+      rho = (1 + (1-exp(-zeta))*(W/k))^-(k+1)
     }
     return(rho)
   }
@@ -234,6 +234,26 @@ Lambda_get_N_eq <- function(Lambda, K, mu_N, r, sigma){
   as.numeric(K*(1-(mu_N+Lambda)/(r*(1+(Lambda/(mu_N+sigma))))))
 }
 
+#' Function to estimate beta from egg output and other parameters
+#'
+#'
+#'
+#' @param egg_output mean eggs produced per 10mL per person (observed diagnostic data)
+#' @param H number of individuals in the human population
+#' @param Lambda snail force of infection
+#' @param N_eq snail population size
+#' @param U mean urine produced per day per individual in units of 10mL
+#' @param v mean egg viability (probability an egg produced successfully hatches into miracidia)
+#' @param omega human exposure/contamination parameter that regulates proportion of eggs produced that interact with snail population
+#'
+#' @return estimate of the per miracidial contact probability of infection, beta
+#' @export
+#'
+
+beta_from_eggs <- function(egg_output, H, Lambda, N_eq, U, v, omega){
+  as.numeric((Lambda*N_eq)/(egg_output*H*U*v*omega))
+}
+
 #' Function used in `multiroot`` to fit transmission parameters
 #'
 #' Fits transmission parameters, alpha and beta, based on equilibrium solutions to snail and worm burden equations
@@ -273,7 +293,7 @@ W_Ip_eq_solns <- function(x, parms, W, Ip){
     U_A = parms["U_A"]          # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
     omega = parms["omega"]          #  infection risk/contamination of SAC  (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
 
-  M_tot = 0.5*W*H*omega*U*m*v*phi_Wk(W,k_from_log_W(W))*rho_Wk(W,parms["zeta"],k_from_log_W(W))
+  M_tot = 0.5*W*H*omega*U*m*v*phi_Wk(W,k_w_fx(W))*rho_Wk(W,parms["zeta"],k_w_fx(W))
 
   # Equilibrium snail population size from unkown beta (x[1]) and snail population size (x[3])
   F1 <- K*(1-(mu_N+(x[1]*M_tot/x[3]))/(r*(1+(x[1]*M_tot/(x[3]*(mu_N+sigma))))))-x[3]
@@ -311,3 +331,61 @@ fit_pars_from_eq_vals <- function(beta_guess, alpha_guess, Neq_guess, W, Ip, par
             W = W, Ip = Ip)$root
 
 }
+
+#' Function used in multiroot to estimate worm burden and clumping parameter from egg burden, prevalence and parameters
+#'
+#' Function which uses equations representing 1) an estimate of prevalence given worm burden and clumping parameter and
+#' 2) estimated mean egg output per 10mL urine given worm burden, mating probability, DD fecundity, and peak egg release per 10mL
+#' to estimate the worm burden and clumping parameter from input egg burden and prevalence
+#'
+#' @param x initial estimates for the mean worm burden and clumping parameter, respectively
+#' @param parms input egg burden (measured from surveys) measured in eggs/10mL for the population group
+#'
+#' @return Value of the two equations given inputs, but is mostly irrelevant other than its use within multiroot (see function `convert_burden_egg_to_worm`)
+#' @export
+#'
+
+egg_to_worm_fx <- function(x, parms){
+
+  egg_burden <- parms[1]
+  prev <- parms[2]
+  m <- parms[3]
+  zeta <- parms[4]
+
+  mate_integral <- function(t){
+      (1-cos(t))/((1 + (x[1]/(x[1] + x[2]))*cos(t))^(1+x[2]))
+  }
+
+  mate_prob <- ifelse(x[2] == 0, 1,
+                      (1-integrate(mate_integral, 0, 2*pi)$value*((1-(x[1]/(x[1] + x[2])))^(1+x[2]))/(2*pi)))
+
+
+# From equation relating mean egg burden to mean worm burden and clumping parameter
+  F1 <- 0.5*x[1]*(mate_prob*m*(1 + (1-exp(-zeta))*(x[1]/x[2]))^(-x[2]-1))- # Estimate of eggs produced per 10mL urine
+    egg_burden
+
+# From equation relating prevalence of mated pairs to mean worm burden and clumping parameter
+  F2 <- 1 - 2*(1+x[1]/(2*x[2]))^(-x[2]) + (1+x[1]/x[2])^(-x[2])-prev
+
+  return(c(F1 = F1, F2 = F2))
+}
+
+#' Function to get solutions for worm burden and clumping parameter from input egg burden and prevalence
+#'
+#' Uses `egg_to_worm_fx` within `rootSolve::multiroot` equation solver to come up with estimates of mean worm burden
+#' and clumping parameter from input egg burden, prevalence and egg output parameters
+#'
+#' @param egg_burden observed mean egg burden in population fraction
+#' @param prevalence observed prevalence in population fraction
+#' @param m peak egg output per 10mL per mated female worm
+#' @param zeta density dependent fecundity parameter
+#'
+#' @return estimate of the mean worm burden and clumping parameter
+#' @export
+#'
+
+convert_burden_egg_to_worm <- function(egg_burden, prevalence, m, zeta){
+  multiroot(egg_to_worm_fx, start = c(egg_burden/2, 0.001), # Use egg burden/2 and prevalence as guesses for starting W and kap estimates
+            parms = c(egg_burden, prevalence, m, zeta), positive = TRUE)$root
+}
+

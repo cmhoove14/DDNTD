@@ -1,0 +1,345 @@
+---
+title: "Structural modeling decisions and implications for breakpoint estimation"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+require(tidyverse)
+require(knitcitations)
+
+devtools::load_all()
+```
+
+# Aggregation parameter of the negative binomial distribution, $\kappa$    
+The aggregation or clumping parameter describing the distribution of worms amongst individuals in a population is frequently assumed constant, but in reality is likely to change in response to changes in the mean worm burden, $W$. A linear relationship has been suggested and implemented `r citet(c("10.1017/S0950268800058453", "10.1371/journal.pntd.0001774"))`, but does not necessarily have any theoretical foundation.
+
+## Clumping parameter as function of infection intensity  
+S. haematobium infection data consisting of egg burden and prevalence estimates were collected from a literature review. We restrict estimation to those studies which report an arithmetic mean egg burden and prevalence estimate 
+
+The mean worm burden, $W$, and clumping parameter, $\kappa$, are estimated as functions of the mean egg burden, $\mathcal{E}$, and prevalence of **signs of infection**, which can be interpreted as the prevalence of mated worm pairs, $\Omega$:
+
+`r latexImg("\\mathcal{E}=0.5W\\phi(W,\\kappa)\\rho(W,\\kappa,\\zeta)m")`
+
+`r latexImg("\\Omega=1-2\\big(1+\\frac{W}{2\\kappa}\\big)^{-k}+\\big(1+\\frac{W}{\\kappa}\\big)^{-k}")`
+
+### Naive estimation  
+Estimate aggregation parameter from egg intensity and prevalence assuming mean worm burden is equivalent to egg burden times 2 (for assumed 1:1 sex ratio) divided by estimate of egg output per mated female worm (assuming no DD fecundity and no mating function)  
+```{r kap_from_intensity, echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8}
+schisto_dat <- load_csv_from_googledrive("1_q1mgW1m1dHwlA40yjn72xVTtEgZMkzfiCXHTqGPz60")
+
+schisto_dat_filt <- schisto_dat %>% filter(Mean_type == "arithmetic" & 
+                                             !is.na(Intensity) & 
+                                             Intensity > 0 &
+                                             Intensity < 300 &
+                                             Includes_others == 0 &
+                                             Species == "S. haematobium") %>% 
+  mutate(Worm_est = Intensity*2/base_pars["m"],
+         kap = map2_dbl(Worm_est, Prevalence, prev_intensity_to_clump))
+
+schisto_dat_filt %>% 
+  ggplot(aes(x = Worm_est, y = kap)) +
+    geom_point(aes(shape = Age_class, size = Sample_size, col = Study)) +
+    theme_classic() +
+    labs(x = "Infection intensity",
+         y = expression(Clumping~Parameter~(kappa)),
+         size = "Sample Size",
+         shape = "Age Class",
+         title = "Mean worm burden and clumping parameter from naive estimation")
+```
+
+### Estimation incorporating mating probability  
+Uses rootsolving to solve for mean worm burden and aggregation from equations for egg output per mated female worm and prevalence of mated pairs  
+
+```{r fit_kap_w, echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8}
+w_k_from_dat <- t(mapply(convert_burden_egg_to_worm,
+                         schisto_dat_filt$Intensity, schisto_dat_filt$Prevalence,  
+                         MoreArgs =  list(m = 5.2, zeta = 0)))
+
+schisto_dat_filt <- schisto_dat_filt %>% 
+  mutate(W_fit = w_k_from_dat[,1],
+         kap_fit = w_k_from_dat[,2])
+
+schisto_dat_filt %>% 
+  ggplot(aes(x = W_fit, y = kap_fit)) +
+    geom_point(aes(shape = Age_class, size = Sample_size, col = Study)) +
+    theme_classic() +
+    labs(x = "Infection intensity",
+         y = expression(Clumping~Parameter~(kappa)),
+         size = "Sample Size",
+         shape = "Age Class",
+         title = "Mean worm burden and clumping parameter from sol'ns to prev and egg output")
+
+```
+
+```{r}
+fit_pars_from_eggs_prev <- function(pars, intensity, prev){
+  
+  W <- pars[1]
+  kap <- pars[2]
+  zeta <- pars[3]
+  m <- pars[4]
+  
+  mate_integral <- function(t){
+      (1-cos(t))/((1 + (W/(W + kap))*cos(t))^(1+kap))
+  }
+
+  mate_prob <- (1-integrate(mate_integral, 0, 2*pi)$value*((1-(W/(W + kap)))^(1+kap))/(2*pi))
+
+
+# From equation relating mean egg burden to mean worm burden and clumping parameter
+  F1 <- abs(0.5*W*(mate_prob*m*(1 + (1-exp(-zeta))*(W/kap))^(-kap-1))- # Estimate of eggs produced per 10mL urine
+    intensity)
+
+# From equation relating prevalence of mated pairs to mean worm burden and clumping parameter
+  F2 <- abs(1 - 2*(1+W/(2*kap))^(-kap) + (1+W/kap)^(-kap)-prev)
+  
+  return(F1+F2)
+
+}
+
+fit_pars_from_eggs_prev(pars = c(W = schisto_dat_filt$Intensity[1]*2/base_pars["m"],
+                                 kap = 0.1,
+                                 zeta = 0.08,
+                                 m = base_pars["m"]),
+                        intensity = schisto_dat_filt$Intensity[1],
+                        prev = schisto_dat_filt$Prevalence[1])
+
+optim(par = c(W = schisto_dat_filt$Intensity[1]*2,
+              kap = 0.1,
+              zeta = 0.08,
+              m = base_pars["m"]),
+      fn = fit_pars_from_eggs_prev,
+      intensity = schisto_dat_filt$Intensity[1],
+      prev = schisto_dat_filt$Prevalence[1],
+      lower = c(1e-6, 1e-6, 0, 1e-6),
+      upper = c(1000, 5, 1, 50),
+      method = "L-BFGS-B",
+      control = list("factr" = 1e10))
+
+w_k_z_m_optim <- t(apply(schisto_dat_filt, 1,
+                       function(x){
+                         opt_obj <- optim(par = c(W = as.numeric(x["Intensity"])*2,
+                                                     kap = 0.1,
+                                                     zeta = 0.01,
+                                                     m = base_pars["m"]),
+                                             fn = fit_pars_from_eggs_prev,
+                                             intensity = as.numeric(x["Intensity"]),
+                                             prev = as.numeric(x["Prevalence"]),
+                                             lower = c(1e-6, 1e-6, 0, 1e-6),
+                                             upper = c(1000, 5, 1, 50),
+                                             method = "L-BFGS-B",
+                                             control = list("factr" = 1e10))
+                            
+                            return(list(c(opt_obj$par), opt_obj$value, opt_obj$convergence, opt_obj$message))
+                       }))
+
+w_k_z_m_optim2 <- t(apply(schisto_dat_filt, 1,
+                          function(x){
+                            opt_obj <- optim(par = c(W = as.numeric(x["Intensity"])*2,
+                                                     kap = 0.1,
+                                                     zeta = 0.08,
+                                                     m = 20),
+                                             fn = fit_pars_from_eggs_prev,
+                                             intensity = as.numeric(x["Intensity"]),
+                                             prev = as.numeric(x["Prevalence"]),
+                                             lower = c(1e-6, 1e-6, 0, 1e-6),
+                                             upper = c(1000, 5, 1, 50),
+                                             method = "L-BFGS-B",
+                                             control = list("factr" = 1e10))
+                            
+                            return(c(opt_obj$par, opt_obj$value, opt_obj$convergence))
+                          }))
+
+```
+
+
+### Estimation incorporating mating probability and fecundity reduction due to crowding  
+```{r fit_kap_w_zeta, error = TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+w_k_from_dat2 <- t(mapply(convert_burden_egg_to_worm,
+                          schisto_dat_filt$Intensity, schisto_dat_filt$Prevalence,  
+                          MoreArgs =  list(m = 5.2, zeta = base_pars["zeta"])))
+
+w_k_from_dat3 <- t(mapply(convert_burden_egg_to_worm,
+                          schisto_dat_filt$Intensity, schisto_dat_filt$Prevalence,  
+                          MoreArgs =  list(m = 10, zeta = base_pars["zeta"])))
+
+w_k_from_dat4 <- t(mapply(convert_burden_egg_to_worm,
+                          schisto_dat_filt$Intensity, schisto_dat_filt$Prevalence,  
+                          MoreArgs =  list(m = 20, zeta = base_pars["zeta"])))
+
+w_k_from_dat5 <- t(mapply(convert_burden_egg_to_worm,
+                          schisto_dat_filt$Intensity, schisto_dat_filt$Prevalence,  
+                          MoreArgs =  list(m = 10, zeta = base_pars["zeta"]/10)))
+
+w_k_from_dat5 <- t(mapply(convert_burden_egg_to_worm,
+                          schisto_dat_filt$Intensity, schisto_dat_filt$Prevalence,  
+                          MoreArgs =  list(m = 10, zeta = base_pars["zeta"]*10)))
+```
+So this isn't working for some reason... Let's look at estimates of W and
+
+### Comp results  
+```{r comp_naive_fit, echo=FALSE, message=FALSE, warning=FALSE}
+comp_df <- bind_rows(schisto_dat_filt %>% mutate(fit = "Naive",
+                                                 id = row_number()) %>% 
+                       dplyr::select(Study, id, Worm_est, kap, fit) %>% rename(W = Worm_est,
+                                                                           kappa = kap),
+                     schisto_dat_filt %>% mutate(fit = "Rootsolve",
+                                                 id = row_number()) %>% 
+                       dplyr::select(Study, id, W_fit, kap_fit, fit) %>% rename(W = W_fit,
+                                                                            kappa = kap_fit))
+
+comp_df %>% 
+  ggplot(aes(x = W, y = kappa)) +
+    geom_point(aes(col = fit)) +
+    geom_line(aes(group = id)) +
+    theme_classic() +
+    labs(x = "Infection intensity",
+         y = expression(Clumping~Parameter~(kappa)),
+         col = "Estimation\nmethod",
+         title = "Mean worm burden and clumping parameter estimation comparison")
+```
+
+In general, it appears that the clumping parameter is most affected by including density dependence in the estimation. Kappa tends to increase with this method, as does W to some extent. Also appears W increases somewhat proportionally with its own magnitude (i.e. bigger Ws means bigger differences in W between naive and rootsolve estimations).
+
+### kappa as a non-linear (saturating) function of W  
+```{r k_w_sat_fit, echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8}
+k_w_sat_fit <- nls(kap_fit~a*(1-exp(b*W_fit)), schisto_dat_filt,
+               start = c(a = 0.2, b = -0.01))
+
+k_w_sat_fx <- function(intensity){
+  as.numeric(coef(k_w_sat_fit)[1])*(1-exp(as.numeric(coef(k_w_sat_fit)[2])*intensity))
+}
+
+schisto_dat_filt %>% 
+  ggplot(aes(x = W_fit, y = kap_fit)) +
+    geom_point(aes(shape = Age_class, size = Sample_size, col = Study)) +
+    theme_classic() +
+    geom_line(data = data.frame(W_seq = exp_seq(1e-4, 100,200),
+                                kap_est = sapply(exp_seq(1e-4, 100,200), k_w_sat_fx)),
+              aes(x = W_seq, y = kap_est)) +
+    labs(x = "Infection intensity",
+         y = expression(Clumping~Parameter~(kappa)),
+         size = "Sample Size",
+         shape = "Age Class",
+         title = "Clumping parameter as saturating function of worm burden",
+         subtitle = "Function fit to data from rootsolve estimation")
+
+
+```
+
+### kappa as a linear function of W  
+```{r k_w_lin_fit, echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8}
+k_w_lin_fit <- nls(kap_fit~a+b*W_fit, schisto_dat_filt,
+               start = c(a = 0, b = 0.1))
+
+k_w_lin_fx <- function(intensity){
+  as.numeric(coef(k_w_lin_fit)[1])+as.numeric(coef(k_w_lin_fit)[2])*intensity
+}
+
+k_w_lin_fit_int0 <- nls(kap_fit~b*W_fit, schisto_dat_filt,
+               start = c(b = 0.1))
+
+k_w_lin_fx_int0 <- function(intensity){
+  as.numeric(coef(k_w_lin_fit_int0)[1])*intensity
+}
+
+
+schisto_dat_filt %>% 
+  ggplot(aes(x = W_fit, y = kap_fit)) +
+    geom_point(aes(shape = Age_class, size = Sample_size, col = Study)) +
+    theme_classic() +
+    geom_line(data = data.frame(W_seq = exp_seq(1e-4, 100,200),
+                                kap_est = sapply(exp_seq(1e-4, 100,200), k_w_lin_fx)),
+              aes(x = W_seq, y = kap_est)) +
+    geom_line(data = data.frame(W_seq = exp_seq(1e-4, 100,200),
+                                kap_est = sapply(exp_seq(1e-4, 100,200), k_w_lin_fx_int0)),
+              aes(x = W_seq, y = kap_est),
+              col = "red") +
+    labs(x = "Infection intensity",
+         y = expression(Clumping~Parameter~(kappa)),
+         size = "Sample Size",
+         shape = "Age Class",
+         title = "Clumping parameter as linear function of worm burden",
+         subtitle = "Function fit to data from rootsolve estimation\nRed line has fixed intercept at 0")
+
+
+```
+
+
+
+### kappa as an exponential function of W  
+```{r k_w_exp_fit, echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8}
+k_w_exp_fit <- nls(kap_fit~a*exp(b*W_fit), schisto_dat_filt,
+               start = c(a = 1, b = 0.1))
+
+k_w_exp_fx <- function(intensity){
+  as.numeric(coef(k_w_exp_fit)[1])*exp(as.numeric(coef(k_w_exp_fit)[2])*intensity)
+}
+
+schisto_dat_filt %>% 
+  ggplot(aes(x = W_fit, y = kap_fit)) +
+    geom_point(aes(shape = Age_class, size = Sample_size, col = Study)) +
+    theme_classic() +
+    geom_line(data = data.frame(W_seq = exp_seq(1e-4, 100,200),
+                                kap_est = sapply(exp_seq(1e-4, 100,200), k_w_exp_fx)),
+              aes(x = W_seq, y = kap_est)) +
+    labs(x = "Infection intensity",
+         y = expression(Clumping~Parameter~(kappa)),
+         size = "Sample Size",
+         shape = "Age Class",
+         title = "Clumping parameter as exponential function of worm burden",
+         subtitle = "Function fit to data from rootsolve estimation")
+
+
+```
+
+## Implications for mating probability  
+```{r mate_prob_kappa, echo=FALSE, message=FALSE, warning=FALSE}
+test_ws <- exp_seq(1e-4, 200, 200)
+
+phi_k0.01 <- sapply(test_ws, phi_Wk, k = 0.01)
+phi_k0.1 <- sapply(test_ws, phi_Wk, k = 0.1)
+phi_k1 <- sapply(test_ws, phi_Wk, k = 1)
+phi_satk <- mapply(phi_Wk, test_ws, sapply(test_ws, k_w_sat_fx))
+phi_link <- mapply(phi_Wk, test_ws, sapply(test_ws, k_w_lin_fx))
+phi_lin0k <- mapply(phi_Wk, test_ws, sapply(test_ws, k_w_lin_fx_int0))
+phi_expk <- mapply(phi_Wk, test_ws, sapply(test_ws, k_w_exp_fx))
+
+as.data.frame(cbind(test_ws,
+                    phi_k0.01,
+                    phi_k0.1,
+                    phi_k1,
+                    phi_satk,
+                    phi_link,
+                    phi_lin0k,
+                    phi_expk)) %>% 
+  gather("clump_function", "Mate_Prob", phi_k0.01:phi_expk) %>% 
+  ggplot(aes(x = test_ws, y = Mate_Prob, col = clump_function)) +
+    geom_line(size = 1.2) +
+    theme_classic() +
+    scale_x_continuous(trans = "log",
+                       breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100),
+                       labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
+                       limits = c(0.0001, 200)) +
+    ylim(c(0,1)) +
+    scale_color_manual(breaks = c("phi_k0.01", "phi_k0.1", "phi_k1", "phi_satk", "phi_link", "phi_lin0k", "phi_expk"),
+                       labels = c(expression(kappa~0.01),
+                                  expression(kappa~0.1),
+                                  expression(kappa~1),
+                                  expression(kappa~saturating~W),
+                                  expression(kappa~linear~W),
+                                  expression(kappa~linear~fixed~intcpt~W),
+                                  expression(kappa~exponential~W)),
+                       values = c("green", "blue", "red", "purple", "black", "orange", "brown")) +
+    labs(x = expression(Mean~Worm~Burden~(italic(W))),
+         y = expression(Mating~Probability~(italic(Phi))),
+         title = "Mating probability across clumping parameter",
+         subtitle = "Influence of various formulations of clumping parameter") #+ theme(legend.position = "none")
+
+```
+
+So if the clumping parameter approaches 0 as the worm burden approaches 0 (as with the saturating function, brown line above, or for a linear function with fixed intercept at $\kappa$=0, black line above) the mating probability stays quite high even as the worm burden decreases. This could have serious implications for the breakpoint which could only exist at extremely small worm burdens as a result.
+
+`r write.bibtex(file = "structural_decisions_refs.bib")`

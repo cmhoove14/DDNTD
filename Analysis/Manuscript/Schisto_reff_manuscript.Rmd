@@ -361,44 +361,12 @@ Positive density dependent sources in other helminth infections: L3 suppression 
 
 Non-linear snail FOI, $\Lambda=\Lambda_0\big(1-e^{-\beta M/N}\big)$ where the miracidium invasion rate, $\Lambda_0$, is moderated by the probability of invasion assuming a Poisson distribution of miracidia per snail (see `r citet("10.1371/journal.pntd.0006514")`).
 
+Contextual evidence from elimination and reintroduction scenarios: Brazil, China, Corsica, SSA (Senegal)
+
 # References  
 `r write.bibtex(file = "references.bib")`
 
 # Supplementary Information  
-
-## Clumping parameter as function of infection intensity  
-```{r kap_from_intensity, echo=FALSE, fig.height=6, fig.width=8, message=FALSE, warning=FALSE}
-schisto_dat <- load_csv_from_googledrive("1_q1mgW1m1dHwlA40yjn72xVTtEgZMkzfiCXHTqGPz60")
-
-schisto_dat_filt <- schisto_dat %>% filter(Mean_type == "arithmetic" & 
-                                             !is.na(Intensity) & 
-                                             Intensity > 0 &
-                                             Species == "S. haematobium") %>% 
-  mutate(Worm_est = Intensity/2,
-         kap = map2_dbl(Worm_est, Prevalence, prev_intensity_to_clump))
-
-k_w_fit <- nls(kap~a*(1-exp(b*Worm_est)), schisto_dat_filt,
-               start = c(a = 0.2, b = -0.01))
-
-k_w_fx <- function(intensity){
-  as.numeric(coef(k_w_fit)[1])*(1-exp(as.numeric(coef(k_w_fit)[2])*intensity))
-}
-
-schisto_dat_filt %>% 
-  ggplot(aes(x = Worm_est, y = kap)) +
-    geom_point(aes(shape = Age_class, size = Sample_size, col = Study)) +
-    theme_bw() +
-    geom_line(data = data.frame(w = exp_seq(1e-4,200,200),
-                                kap = sapply(exp_seq(1e-4,200,200), k_w_fx)),
-              aes(x = w, y = kap)) +
-    labs(x = "Infection intensity",
-         y = expression(Clumping~Parameter~(kappa)),
-         size = "Sample Size",
-         shape = "Age Class",
-         title = "Clumping parameter as a function of infection intensity",
-         subtitle = "Function fit to S. haematobium infection data from literature review")
-
-```
 
 #### Density dependent fecundity  
 $\rho(W, \zeta,\kappa)=\bigg(1+\frac{(1-e^{-\zeta})W}{\kappa}\bigg)^{-(\kappa+1)}$

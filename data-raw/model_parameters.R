@@ -15,10 +15,10 @@ base_pars <- c("r" = 0.1,
                "alpha" = 2e-4,
                "beta" = 2e-4,
                "cvrg" = 0.43,
-               "zeta" = 5e-4,
+               "zeta" = 0.08,
                "xi" = 2.8e-3,
-               "a" = 0.932053935, # intensity to clump parameter from fit to S. haematobium data
-               "b" = -0.009365101) # intensity to clump parameter from fit to S. haematobium data
+               "a" = 1.10822500, # intensity to clump parameter from fit to S. haematobium data
+               "b" = -0.01678877 ) # intensity to clump parameter from fit to S. haematobium data
 
 usethis::use_data(base_pars, overwrite = TRUE)
 

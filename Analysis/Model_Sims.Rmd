@@ -22,16 +22,15 @@ require(tidyverse)
 plot(mapply(est_prev_W_k, 
             (exp_seq(0.00001,1000, 200)), 
             sapply(exp_seq(0.00001,1000, 200), 
-                   k_from_log_W)), 
+                   k_w_fx)), 
      sapply(exp_seq(0.00001,1000, 200), 
-            k_from_log_W), 
+            k_w_fx), 
      type = "l", lwd = 2, xlab = "Prevalence", ylab = expression(kappa))
 ```
 
 ## Worm aggregation and mating probability  
 ```{r mate_prob_across_W, fig.height=5, fig.width=7}
-test_ws <- seq(1e-2, sqrt(100), 
-               by = sqrt(100*2)/1000)^2
+test_ws <- exp_seq(1e-4, 100,200)
 
 phi_k0.1 <- sapply(test_ws, phi_Wk, k = 0.1)
 
@@ -91,7 +90,7 @@ test_ws <- seq(1e-2, sqrt(100),
 phi_k0.1 <- sapply(test_ws, phi_Wk, k = 0.1)
 phi_k1 <- sapply(test_ws, phi_Wk, k = 1)
 phi_k10 <- sapply(test_ws, phi_Wk, k = 10)
-phi_dynak <- mapply(phi_Wk, test_ws, sapply(test_ws, k_from_log_W))
+phi_dynak <- mapply(phi_Wk, test_ws, sapply(test_ws, k_w_fx))
 
 as.data.frame(cbind(test_ws,
                     phi_k0.1,
@@ -111,7 +110,7 @@ as.data.frame(cbind(test_ws,
                        labels = c(expression(kappa~0.1),
                                   expression(kappa~1),
                                   expression(kappa~10),
-                                  expression(kappa~W)),
+                                  expression(kappa~(W))),
                        values = c("green", "blue", "red", "purple")) +
     labs(x = expression(Mean~Worm~Burden~(italic(W))),
          y = expression(Mating~Probability~(italic(Phi))),

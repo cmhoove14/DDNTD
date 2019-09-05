@@ -74,6 +74,12 @@ Returning from ESA and a week vacation. Lots of mad scrambles before ESA to get 
 # 8/27&28/19  
 Working on producing figures. Have some ideas for I by W heat map and trajectories through time with different interventions. Also think it's worth combining $\mu_H$ and $\mu_W$ and just discussing the adult worm lifespan more generically as a determinant of $W_{bp}$.
 
+# 8/29&30/19  
+Worm burden breakpoint estimation wasn't quite working right because of the log term in the function I was using to estimate the clumping parameter as a function of the worm burden, so dove down that rabit hole to try and fit a function relating kappa to W from data. Seems as though a saturating function fits the data the best, but in this formulation, kappa rapidly approaches 0 as W approaches 0 which may mean that there is no breakpoint...  
+
+# 9/2-9/5  
+Looked into fitting a function of the clumping parameter to infection intensity data a bit more which involved a lot of details regarding how exactly to estimate the worm burden and clumping parameter from egg burden and prevalence data, while incorporating density dependent fecundity and the mating probability. Still working on this, but thinking it best to explicitly discuss how structural uncertainties in the model (e.g. how does the clumping parameter change in response to infection intensity) affect the breakpoint.  
+
 # To-dos  
 ### Generalizable model structure for interventions in schisto stochastic model
 ### Generiaizable parameter intervention structure for Garchitorena et al model
