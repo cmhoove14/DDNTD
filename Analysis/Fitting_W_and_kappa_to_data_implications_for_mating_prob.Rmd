@@ -32,7 +32,7 @@ schisto_dat <- load_csv_from_googledrive("1_q1mgW1m1dHwlA40yjn72xVTtEgZMkzfiCXHT
 schisto_dat_filt <- schisto_dat %>% filter(Mean_type == "arithmetic" & 
                                              !is.na(Intensity) & 
                                              Intensity > 0 &
-                                             Intensity < 300 &
+                                             Study != "Senegal unpublished" &
                                              Includes_others == 0 &
                                              Species == "S. haematobium") %>% 
   mutate(Worm_est = Intensity*2/base_pars["m"],

@@ -2,7 +2,7 @@
 title: "Estimating transmission breakpoints for human helminths: methods and implications for control strategies"
 author: "Chris Hoover, Suzanne Lenhart, Jason Rohr, Giulio de Leo, Sanna Sokolow, Justin V. Remais"
 bibliography: "references.bib"
-csl: "plos.csl"
+csl: "../plos.csl"
 output: 
   word_document
 ---

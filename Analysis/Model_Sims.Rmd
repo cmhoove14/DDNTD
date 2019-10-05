@@ -222,7 +222,7 @@ mda.events = data.frame(var = rep('Wt', years/2),
 schisto_base_sim <- sim_schisto_mod(nstart = base_eqbm, 
                                     time = base_time, 
                                     model = schisto_base_mod,
-                                    parameters = base_pars,
+                                    pars = base_pars,
                                     events_df = mda.events)
 
 schisto_base_sim %>% 
@@ -323,13 +323,13 @@ k_from_W <- function(W){
 ```{r Reff_curve, fig.height=5, fig.width=10}
 #Get values of mean worm burden to plot R effective curve over
 Reffs <- data.frame(test_ws = test_ws) %>% 
-  mutate(kap = sapply(test_ws, k_from_log_W),
+  mutate(kap = sapply(test_ws, k_from_W),
          Absent = pmap_dbl(list(parameters = list(base_pars),
                                      W = test_ws,
-                                     kap = kap), getReff_noPDD),
+                                     kap = kap), Reff_W),
          Present = pmap_dbl(list(parameters = list(base_pars),
                                    W = test_ws,
-                                   kap = kap), getReff))
+                                   kap = kap), Reff_W))
 
 Reffs %>% 
   gather("PDD", "Reff", Absent:Present) %>% 

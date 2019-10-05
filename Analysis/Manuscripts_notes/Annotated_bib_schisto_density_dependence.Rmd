@@ -1,0 +1,73 @@
+---
+title: "Schisto Density Dependence Annotated Bibliography"
+author: "Chris Hoover"
+date: "October 4, 2019"
+bibliography: "references.bib"
+csl: "plos.csl"
+output: 
+  word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+require(knitcitations)
+  cleanbib()
+  cite_options(cite.style = "numeric",
+               citation_format = "pandoc")
+
+```
+
+## Male-female schistosome details  
+#### Lu ... Webster 2018: Single-sex schistosome infections of definitive hosts: implications for epidemiology and disease control in a changing world (and cited studies)  
+Laboratory studies suggests that single-sex infections are likely due to a number of factors. Male **S. mansoni** cercariae may be more infective than female cercariae, but male worms may subsequently increase the infectivity of female cercariae once established. Furthermore, unpaired male worms are able to establish and mature, waiting for a female mate, whereas unpaired females may not mature, and may die within 8 weeks due to starvation. `r citet(c("10.1371/journal.ppat.1006817", "10.1017/S0031182099006393"))`  
+
+Other experimental studies with **S. japonicum** suggest that immature female worms may survive for up to a year. `r citet("10.1371/journal.ppat.1006817")`
+
+Experimental infection of pigs with **S. japonicum** cercariae at doses of 100, 500, and 2000 cercariae implies acute phase associated with heavy infection initially in high dose group, followed by low-level chronic infection, similar to the low-dosage groups. Also evidence for non-linear density-dependence in number of worms acquired from dose with highest rate of worm establishment in lowest cercarial dose group. Highest egg shedding across al time points in highest dose group. *PARAMETER* mean cercarial infectivity (worms/cercaria) is time since exposure and exposure dose dependent, ranges from ~2% to ~10% `r citet("10.4269/ajtmh.1998.58.248")`
+
+Field studies have also found evidence for single-sex infections. In a field study of wild rats in Guadeloupe, around 40% of rats were infected with **S. mansoni**. Of these, ~80% had dual-sex infections, 18% had single adult male infections, and only 2% had single adult female infections. Pairing probabilities of adult female worms ranged from ~0.83 - 0.97, in agreement with the probabilities derived analytically by May `r citet("10.2307/1939595")`. 
+
+Single-sex **S. japonicum** infections were also common among sentinel mice used to estimate cercarial concentrations in China. `r citet("10.1371/journal.ppat.1006817")`  
+
+Single-sex infections can remain dormant and successfully mate with acquired worms of the opposite sex at later intervals. `r citet(c("10.1371/journal.ppat.1006817", "10.1007/BF01022380", "10.1007/s00436-013-3700-0"))`
+
+There is variability in the efficacy of PZQ to unmated and mated worm pairs. Unmated worms of either sex require higher doses of PZQ to die. `r citet("10.1016/j.ijpara.2003.12.003")` Since mated females reside within the groove of males, females may be shielded from PZQ exposure and survive treatment, a potential explanation for observed variability in cure rates over the course of multiple PZQ administrations. `r citet(c("10.1111/eva.12341", "10.1016/S1471-4922(01)02209-7"))`
+
+Cure rate may be reduced in Senegal, suggesting potential for resistance. Other explanations include very high initial worm burdens whereby egg shedding rates remain high due to remaining worms and relaxation of negative density dependent crowding effects, intense transmission whereby individuals are rapidly reinfected or are harboring immature worms acquired just before treatment that are less susceptible to PZQ. `r citet("10.1016/S1471-4922(01)02209-7")`
+
+#### Boissier & Mone 2000: Experimental observations on the sex ratio of adult **S. mansoni**  
+Infectivity between male and female cercariae is equivalent when mice exposed to equal sex ratios. Sex ratios of male/female adult worms not different from sex ratios of male/female cercarial exposure. Infectivity maximized at balanced sex ratios. Male cercariae more infective than female cercariae in single-sex exposures, could suggest that male infection stimulates female infectivity. *PARAMETER* mean cercarial infectivity (worms/cercarial exposure) is ~0.25. `r citet("10.1017/S0031182099006393")`
+
+## Genetic studies  
+#### Norton ... Webster: Genetic consequences of mass human chemotherapy for **S. mansoni**  
+Allelic richness and heterozygosity decrease, implying significant decrease in genetic diversity following a single PZQ treatment, not only in treated children, but also in other cohorts of children, implying that the entire local population was affected by treatment. Another interesting idea is that treatment with PZQ kills adult parasites and the host immune system is able to develop specific antibodies to the strain(s) of parasite that are killed. This psuedo-vaccination then prevents re-infection with these same strains, but other strains are able to reinfect, therefore post-PZQ genetic diversity is restricted to those strains which were not present previously. `r citet("10.4269/ajtmh.2010.10-0283")`
+
+#### Huyse et al: Regular treatments of praziquantel do not impact on the genetic make-up of Schistosoma mansoni in Northern Senegal
+No significant change in genetic diversity or population structure of **S. mansoni** in Nder, a community on the wester side of Lac-de-Guiers, about 30km from Richard Toll with a population of ~500 in Northern Senegal. Children were assessed at baseline, treated with PZQ twice (three weeks apart) and then up to five times total over 13 months. Treatment associated with large, rapid decrease in egg production 6 weeks after treatment that rebounded rapidly to heavy egg shedding 6 months post-treatment `citet("10.1016/J.MEEGID.2013.05.007")`
+
+#### Lelo et al: No Apparent Reduction in Schistosome Burden or Genetic Diversity Following Four Years of School-Based Mass Drug Administration in Mwea, Central Kenya, a Heavy Transmission Area  
+In depth sampling of 15 "phenotypically susceptible"" children who had high egg burdens at baseline and every year of follow-up shows that gene diversity, allelic richness, effective number of breeders, and full sibling families did not change over 4 years of annual school-based MDA, implying no signficicant effects on transmission intensity or parasite population size. `citet("10.1371/journal.pntd.0003221")`
+
+#### Barbosa et al: Repeated praziquantel treatments remodel the genetic and spatial landscape of schistosomiasis risk and transmission (in Brazil) 
+**S. mansoni** nfection intensity reduced by 57% over three rounds of treatment in 2009, 2012, and 2013. Prevalence reduced from 45% to 24% and then to 16%. Number of eggs transmitted to the environment decreased by 92% (from an estimated 3.28 million eggs shed per day to 0.26 millions eggs/day). Observed sustained reductions in incidence and reinfection with little intervention other than treating infected individuals in 2009, 2012, 2013. This success (compared to results in SSA) attributed to relatively small community size, better sanitation, treatment of all individuals regardless of age. Successful transmission reduction attributed to reductions in egg output to the environment which was due to treatment of individuals >15 years old. Genetic analyses suggest that those who were treated and subsequently found to have infection were indeed reinfected with new parasites, rather than having parasites that persisted through treatment due to resistance or other mechanisms. Allelic frequency and variance effective population size (Ne) both decreased over the treatment rounds, with Ne values approaching those suggested to be associated with extinction due to a lack of genetic diversity. This reduced genetic diversity also suggests lower likelihood of developing PZQ resistance `citet("10.1016/J.IJPARA.2016.01.007")`
+
+#### Gower ... Webster: Phenotypic and genotypic monitoring of **S. mansoni** in tanzanian school children 5 years into a PC national control program  
+Parentage analysis on miracidia from infected children implies declining adult worm burden, but increasing adult worm fecundity, suggesting relaxation of density-dependent reductions in egg output per adult worm that explain minimal changes in actual infection intensity as measured by egg burden. Genetic diversity as measured by allelic richness and heterozygosity was reduced in 2006 (when compared to 2005), but had returned to similar levels by 2010. In vitro phenotypic monitoring of individual miracidia suggests some reduced susceptibility to PZQ, but not resistance. Furthermore, decreased susceptibility was not clustered with genetic data, implying that the mechanism for reduced susceptibility was not the emergence of a resistant strain `r citet("10.1186/s13071-017-2533-6")`
+
+## Drug resistance  
+
+
+## Unclassified  
+
+#### Colley et al 2017: Schistosomiasis is more prevalence than previousl thought...  
+Using point-of-care circulating anodic or cathodic antigen assays that detect evidence of antibodies developed against adult worms, prevalence found to be substantially higher than when using egg-based diagnostic tests such as kato-katz or urine-filtration. These egg-negative, antigen-positive results could suggest very low levels of egg output that egg-detection tests may not be able to detect, temporary cessation of egg-laying by worms harmed, but not killed by PZQ, or single sex infections, all of which may contribute to schistosomiasis persistence ` r citet("10.1186/s40249-017-0275-5")`  
+
+#### Boissier et al: Outbreak of urogenital schistosomiasis in Corsica  
+Outbreak in Corsica associated with high densities of **Bulinus truncatus** intermediate host snails and likely introduction of individuals harboring adult parasites from Senegal. First described evidence of potentially purely-zoonotic transmission of **S. bovis** as miracidia isolated from urine of infected individuals were genotyped as **S. bovis** and **S. haematobium** hybrids as well as pure **S. bovis**. Suggests that breakpoint threshold is very achievable in areas where sufficient snail populations and potential zoonotic transmission are present `r citet("10.1016/S1473-3099(16)00175-4")`  
+
+#### Harris et al 1984: Review of schistosomiasis in immigrants to Western Australia demonstrating unusual longevity of **S. mansoni**  
+Individuals with symptomatic schistomiasis infection had immigrated to Australia >30 years prior, suggesting adult worms may live for three decades  `r citet("10.1016/0035-9203(84)90129-9")`
+
+## References  
+`r write.bibtex(file = "references.bib")`

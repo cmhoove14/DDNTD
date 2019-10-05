@@ -52,6 +52,37 @@ Therefore with infected snail prevalence, $I_P=I^*/N^*$, and other snail populat
 
 `r latexImg("\\Lambda=\\frac{\\mu_I(\\mu_N+\\sigma)}{\\frac{\\sigma}{I_P}-\\mu_I-\\sigma}")`
 
+# $R_0$ derivation  
+We employ the next generation matrix method to develop an analytic expression of the basic reproduction number, $R_0$. We begin by linearizing the disease system about the disease-free steady state to solve for the equilibrium snail population size, $N^*$:
+
+`r latexImg("N^*=K\\Big(1-\\frac{\\mu_N}{r}\\Big)")`
+
+We next consider the linearized subsystem of equations governing infectious state dynamics (state variables $E$, $I$, and $W$) and subsititute in for $N^*$:
+
+`r latexImg("\\frac{dE}{dt}=\\Lambda N^*-(\\mu_N+\\sigma)E")`
+
+`r latexImg("\\frac{dI}{dt}=\\sigma E - \\mu_I I")`
+
+`r latexImg("\\frac{dW}{dt}=\\lambda I-(\\mu_W+\\mu_H)W")`
+
+We then build matrices representing the rate of generation of new infections, $T$, and transitions between infectious classes, $\Sigma$:  
+
+`r latexImg("T=\\begin{bmatrix} 0 & 0 & \\Lambda N^* \\\\ 0 & 0 & 0 \\\\ 0 & \\lambda & 0 \\\\ \\end{bmatrix}")` 
+
+`r latexImg("\\Sigma=\\begin{bmatrix} (\\mu_N+\\sigma) & 0 & 0 \\\\ -\\sigma & \\mu_I & 0 \\\\ 0 & 0 & (\\mu_W+\\mu_H) \\\\ \\end{bmatrix}")`
+
+And then estimate the next generation matrix as $K_L=T(-\Sigma^-)$:  
+
+`r latexImg("K_L=\\begin{bmatrix} 0 & 0 & \\frac{\\Lambda N^*}{(\\mu_W+\\mu_H)} \\\\ 0 & 0 & 0 \\\\ \\frac{\\sigma\\lambda}{(\\mu_N+\\sigma)(\\mu_I)} & \\frac{\\lambda}{\\mu_I} & 0 \\\\ \\end{bmatrix}")`
+
+the largest eigen value of which is $R_0$, giving:
+
+`r latexImg("R_0=\\Big(\\frac{\\Lambda N^*\\sigma\\lambda}{\\mu_I(\\mu_N+\\sigma)(\\mu_W+\\mu_H)}\\Big)^{0.5}")`  
+
+We can also arrive at this estimate (without the square root) by considering the relative rates of change of each infection class:
+
+`r latexImg("R_0=\\frac{\\Lambda N^*}{(\\mu_N+\\sigma)}\\times\\frac{\\sigma}{\\mu_I}\\times\\frac{\\lambda}{(\\mu_W+\\mu_H)}=\\frac{\\Lambda N^*\\sigma\\lambda}{\\mu_I(\\mu_N+\\sigma)(\\mu_W+\\mu_H)}")`
+
 # $R_{eff}$ and breakpoint derivation with single worm burden compartment  
 ## Effective reproduction number, $R_{eff}$, derivation    
 The effective reproduction number, $R_{eff}$, for schistosomiasis is defined as the number of mated adult female worms produced by a single adult female worm over the course of her lifetime. Unlike the basic reproduction number, $R_0$, $R_{eff}$ changes as a function of the current level of infection, here measured in terms of the mean worm burden, $W$. From Anderson and May **Infectious Diseases of Humans**, we can estimate the effective reproduction number from the rate of worm burden change as:

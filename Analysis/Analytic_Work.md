@@ -46,6 +46,39 @@ Therefore with infected snail prevalence, *I*<sub>*P*</sub> = *I*<sup>\*</su
 
 ![](http://latex.codecogs.com/gif.latex?%5CLambda%3D%5Cfrac%7B%5Cmu_I(%5Cmu_N+%5Csigma)%7D%7B%5Cfrac%7B%5Csigma%7D%7BI_P%7D-%5Cmu_I-%5Csigma%7D)
 
+*R*<sub>0</sub> derivation
+==========================
+
+We employ the next generation matrix method to develop an analytic expression of the basic reproduction number, *R*<sub>0</sub>. We begin by linearizing the disease system about the disease-free steady state to solve for the equilibrium snail population size, *N*<sup>\*</sup>:
+
+![](http://latex.codecogs.com/gif.latex?N%5E*%3DK%5CBig(1-%5Cfrac%7B%5Cmu_N%7D%7Br%7D%5CBig))
+
+We next consider the linearized subsystem of equations governing infectious state dynamics (state variables *E*, *I*, and *W*) and subsititute in for *N*<sup>\*</sup>:
+
+![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdE%7D%7Bdt%7D%3D%5CLambda%20N%5E*-(%5Cmu_N+%5Csigma)E)
+
+![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdI%7D%7Bdt%7D%3D%5Csigma%20E%20-%20%5Cmu_I%20I)
+
+![](http://latex.codecogs.com/gif.latex?%5Cfrac%7BdW%7D%7Bdt%7D%3D%5Clambda%20I-(%5Cmu_W+%5Cmu_H)W)
+
+We then build matrices representing the rate of generation of new infections, *T*, and transitions between infectious classes, *Σ*:
+
+![](http://latex.codecogs.com/gif.latex?T%3D%5Cbegin%7Bbmatrix%7D%200%20&%200%20&%20%5CLambda%20N%5E*%20%5C%5C%200%20&%200%20&%200%20%5C%5C%200%20&%20%5Clambda%20&%200%20%5C%5C%20%5Cend%7Bbmatrix%7D)
+
+![](http://latex.codecogs.com/gif.latex?%5CSigma%3D%5Cbegin%7Bbmatrix%7D%20(%5Cmu_N+%5Csigma)%20&%200%20&%200%20%5C%5C%20-%5Csigma%20&%20%5Cmu_I%20&%200%20%5C%5C%200%20&%200%20&%20(%5Cmu_W+%5Cmu_H)%20%5C%5C%20%5Cend%7Bbmatrix%7D)
+
+And then estimate the next generation matrix as *K*<sub>*L*</sub> = *T*(−*Σ*<sup>−</sup>):
+
+![](http://latex.codecogs.com/gif.latex?K_L%3D%5Cbegin%7Bbmatrix%7D%200%20&%200%20&%20%5Cfrac%7B%5CLambda%20N%5E*%7D%7B(%5Cmu_W+%5Cmu_H)%7D%20%5C%5C%200%20&%200%20&%200%20%5C%5C%20%5Cfrac%7B%5Csigma%5Clambda%7D%7B(%5Cmu_N+%5Csigma)(%5Cmu_I)%7D%20&%20%5Cfrac%7B%5Clambda%7D%7B%5Cmu_I%7D%20&%200%20%5C%5C%20%5Cend%7Bbmatrix%7D)
+
+the largest eigen value of which is *R*<sub>0</sub>, giving:
+
+![](http://latex.codecogs.com/gif.latex?R_0%3D%5CBig(%5Cfrac%7B%5CLambda%20N%5E*%5Csigma%5Clambda%7D%7B%5Cmu_I(%5Cmu_N+%5Csigma)(%5Cmu_W+%5Cmu_H)%7D%5CBig)%5E%7B0.5%7D)
+
+We can also arrive at this estimate by considering the relative rates of change of each infectious class:
+
+![](http://latex.codecogs.com/gif.latex?R_0%3D%5Cfrac%7B%5CLambda%20N%5E*%7D%7B(%5Cmu_N+%5Csigma)%7D%5Ctimes%5Cfrac%7B%5Csigma%7D%7B%5Cmu_I%7D%5Ctimes%5Cfrac%7B%5Clambda%7D%7B(%5Cmu_W+%5Cmu_H)%7D%3D%5Cfrac%7B%5CLambda%20N%5E*%5Csigma%5Clambda%7D%7B%5Cmu_I(%5Cmu_N+%5Csigma)(%5Cmu_W+%5Cmu_H)%7D)
+
 *R*<sub>*e**f**f*</sub> and breakpoint derivation with single worm burden compartment
 =====================================================================================
 

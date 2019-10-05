@@ -47,7 +47,7 @@ reff_crv <- Reff_R0 %>%
     theme_classic() +
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 14))  +
-    ylim(c(0,2)) +
+    #ylim(c(0,2)) +
     scale_x_continuous(trans = "log",
                        breaks = c(1e-4, 1e-3, 1e-2, 0.1, 1, 10, 100),
                        labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),
@@ -64,7 +64,7 @@ Reff_R0 %>%
     geom_line(size = 1.2) +
     geom_hline(yintercept = 1, lty = 2) +
     theme_classic() +
-    ylim(c(0,10)) +
+    #ylim(c(0,10)) +
         scale_x_continuous(trans = "log",
                        breaks = c(1e-4, 1e-3, 1e-2, 0.1, 1, 10, 100),
                        labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100"),

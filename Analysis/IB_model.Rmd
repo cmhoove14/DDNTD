@@ -1,0 +1,41 @@
+---
+title: "Schisto ABM"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+require(tidyverse)
+```
+
+```{r human_infection}
+
+```
+
+
+```{r snail_foi}
+lin_snail_foi <- function(M, N, par_beta){
+  par_beta*M/N
+}
+
+sat_snail_foi <- function(M, N, par_lam0, par_beta){
+  par_lam0*(1-exp(-M/N))
+}
+```
+
+
+```{r snail_mod}
+S_change <- function(S, E, I, M, Lambda_fun, pars){
+  pars["r"]*(1-(S+E+I)/pars["K"])*(S+E)-pars["mu_N"]*S - Lambda_fun(M, (S+E+I))*S
+}
+
+E_change <- function(S, E, I, M, Lambda_fun, pars){
+  Lambda_fun(M, (S+E+I))*S-pars["mu_N"]*E-pars["sigma"]*E
+}
+
+I_change <- function(S, E, I, M, Lambda_fun, pars){
+  pars["sigma"]*E - pars["mu_I"]*I
+}
+```
+
