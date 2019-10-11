@@ -570,3 +570,21 @@ cvrg_from_pars<- function(use_pars,
     return(c(Wbp, cvrg))
 
   }
+
+#' Estimate R_0 from input egg burden and density dependence parameters
+#'
+#' @param eggs mean population egg burden
+#' @param kap dispersion parameter
+#' @param zeta negative density dependence parameter
+#' @param m peak egg output
+#'
+#' @return estimate of basic reproduction number, R0
+#' @export
+
+R0_egg_kap_zeta_m <- function(eggs, kap, zeta, m){
+  W_est <- eggs_kap_get_W(eggs, kap, zeta, m)
+
+  R0 <- 1/(phi_Wk(W = W_est, k = kap)*rho_Wk(W = W_est, zeta = zeta, k = kap))
+
+  return(R0)
+}

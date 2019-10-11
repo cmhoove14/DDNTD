@@ -1,0 +1,370 @@
+---
+title: "Schisto questions and hypotheses"
+author: "Chris Hoover"
+date: "October 6, 2019"
+bibliography: "ideas_refs.bib"
+csl: "plos.csl"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+require(tidyverse)
+require(viridis)
+require(knitcitations)
+  cleanbib()
+  cite_options(cite.style = "numeric",
+               citation_format = "pandoc")
+
+sen_dat <- read_rds("../../data/senegal_community_haematobium_summaries.rds")  
+devtools::load_all()
+```
+
+# Question 1: How does the population dist'n of infection intensity change following interventions and what are the implications for control?  
+## Hypothesis 1: Individual susceptibility is the main determinant of risk and of reinfection patterns, and does not change over time, therefore the dist'n of infection intensity is likely to remain relatively stable over time, but mean infection intensity is likely to decrease (same $\kappa$, decreased mean infection intensity)  
+## Hypothesis 2: Individual exposures become more rare, and worm acquisition becomes more stochastic, leading to even more skewed distributions as transmission is reduced and mean intensity decreases (decreased $\kappa$ and mean infection intensity)  
+## Datasets  
+## Approaches  
+### IBM model linked with (Spatially distributed?) snail infection model
+Explicitly model individual variability in susceptibility and cercarial exposure as in `r citet("10.4269/ajtmh.14-0691")`, but link it with a snail infection model. Key phenomena to consider are extremely rare detections of both cercariae and infected snails at low human worm burdens.
+
+### Village-level individual infection intensities moving from ~endemic setting to low/near elimination setting  
+Does negative binomial dist'n remain a good descriptor of population dist'n of infection? If so, what is the relationship between its parameters and control efforts? What are the implications of dynamic distributions for control and elimination efforts?
+
+* Goodness of fit test of NB dist'n as intensity decreases  
+* Statistical model relating mean intensity and clumping parameter to control efforts  
+
+# Question 2: What explains high rebound rates following MDA and persistent hotspot phenomenon?  
+## Hypotheses
+### Hypothesis 1: High transmission rates cause individuals to re-acquire infection rapidly following MDA. High transmission could be explained by a number of factors including a large reservoir of infection in the snail population, in connected human populations, or in zoonotic reservoirs; high exposure rates due to common water contact with infected water bodies; or poor sanitation that causes a steady input of infectious material into the environmental reservoir even after treatment (related to infection reservoir)
+### Hypothesis 2: Imperfect treatment causes individuals, particularly those with heavy infections, to remain infected, albeit with reduced intensity  
+### Hypothesis 3: Negative density dependent effects allow for increased egg output even among reduced parasite populations, meaning infection intensity is reduced, but transmission intensity remains similar (could be related to H2 if heavily infected individuals retain a few mated pairs that produce more eggs)  
+## Datasets  
+## Approaches  
+
+### Theory of critical transitions  
+Critical transitions thought of in terms of a general process
+$$dx=f(x,\theta)g(x,\theta)dW$$
+where x is the state of the system, $f(x,\theta)$ describes the deterministic part of the system, and $g(x,\theta)$ describes how stochasticity interacts with the system. Changes in $\theta$ can move the system closer to a threshold where a transition is likely to occur. In a disease setting, particularly for parasitic diseases where transmission is a function of infection intensity, $f(x,\theta)\approx R_{eff}$, $\theta\approx R_0$, $x\approx W$ (system state = infection intensity), and $g(x,\theta)$ is related to stochastic components of transmission such as heterogeneities in egg shedding, susceptibility, and unkown inputs from external sources.
+
+For schistosomiasis and other helminths, $R_{eff}$ can be measured as the product of $R_0$ and the magnitude of density dependencies at a particular system state, measured in terms of worm burden, $W$. Density dependencies common to helminths include positive density dependent mate limitation,$\Phi$, and negative density dependent fecundity due to crowding, $\rho$. Both of these quantities can be estimated from data on the distribution of parasites among definitive hosts, often assumed to be negative binomially distributed and measured in terms of the mean worm burden, $W$, and its dispersion among the population, $\kappa$, thus we have:
+$$R_{eff}(W)=R_0\Phi(W,\kappa)\rho(W,\kappa, \zeta)$$
+Before any sort of intervention such as PZQ administration (e.g. perturbation to the system), we can assume the system is at its endemic equilibrium where $R_{eff}=1$, thus we can estimate $R_0=\big(\Phi(W,\kappa)\rho(W,\kappa, \zeta)\big)^{-1}$. 
+
+#### Model and connection to epidemiological data    
+We can connect this to a simplified helminth model as presented in `r citet("10.1371/journal.pone.0115875")` with two state variables: the prevalence of infection in the environmental reservoir, $y$, (e.g. snail infection prevalence for schistosomiasis) and the mean parasite burden in the definitive human host population, $W$:
+$$\frac{dW}{dt}=\alpha y-\mu_WW$$  
+
+$$\frac{dy}{dt}=\beta 0.5W\Phi(W,\kappa)\rho(W,\kappa)(1-y)-\mu_yy$$  
+We can then use equilibrated mean worm burden, $W^*=\frac{\alpha yN}{\mu_W}$, and $R_0=\frac{\alpha\beta}{2\mu_W\mu_y}$ to reduce the snail equation to:
+
+$$\frac{dy}{dt}=y[R_0\Phi(W^*,\kappa)\rho(W^*,\kappa)(1-y)-1]$$  
+
+
+
+We can also express snail infection dynamics in terms of egg output from infected individuals, estimated as $\mathcal{E}=0.5W\Phi(W,\kappa)\rho(W,\kappa)$ to give:  
+$$\frac{dy}{dt}=\beta\mathcal{E}(W,\kappa)(1-y)-\mu_yy$$
+
+
+
+Methods for detecting "early warning signals" of critical transitions abound and typically draw from the theory that the rate of return to an equilibirum is decreased as the system approaches a transition (i.e. perturb an unstable system far from the equilibrium and it takes a long time to return). This can be measured e.g. via increased autocorrelation in dense time series. 
+
+This also implies that systems that return rapidly to the pre-purturbation equilibrium are very stable and are far from a critical transition. Persistent hotspot phenomena in which community infection intensities return to pre-treatment levels even before the next treatment can be thought of as a highly stable system, far from a critical transition. This is why perturbations to the system (MDA) have little long term impact. Communities with lower bounce back rates are less stable and therefore take longer to return to their endemic (pre-treatment) equilibirum. This implies lower transmission potential, here embodied by $R_0$.
+
+Rebound can be measured by the bounce back rate, $BBR$, an empirical estimator of $R_{eff}$. It is expected to be high in areas with conditions suggestive of a high $R_0$, indicative of a stable system far from a tipping point. This could be tested in an empirical statistical model with sufficient data pertaining to the determinants of $R_0$ through time and longitudinal measurement of $BBR$. For instance, Spear et al `r citet("10.3390/tropicalmed2030035")` express $R_0$ in terms of invariant biological components of schistosomiasis transmission, $P_b$, and site-specific parameters related to the behavioral and environmental determinants of transmission, $P_s$. Parameters included in $P_s$ relate to human water contact, uninfected snail density, contamination behaviors related to sanitation, the amount of snail habitat, the amount of surface water, and seasonally varying factors such as temperature, rainfall, vegetation indices, and seasonal water contact patterns.
+
+## Data  
+### Longitudinal infection data and $R_0$ estimates from Senegal communities  
+```{r}
+comm_haem_sums %>% 
+  mutate(base_prev_class = factor(base_prev_class, levels = c("High", "Med", "Low"))) %>% 
+  ggplot(aes(x = year.x, y = prev, col = school, group = school, lty = Intervention)) +
+    geom_line(size = 1.1) +
+    geom_point(aes(size = samp_size)) +
+    theme_classic() +
+    facet_wrap(~base_prev_class) +
+    theme(legend.position = "right",
+          strip.background = element_rect(fill = "black"),
+          strip.text = element_text(color = "white")) +
+    scale_x_discrete(name = "Study Year",
+                     breaks = c(2016, 2017, 2018),
+                     labels = c("Y0", "Y1", "Y2")) +
+    ylim(c(0,1)) +
+    labs(y = "Community prevalence",
+         title = "S. haematobium prevalence among SAC over time",
+         subtitle = "Stratified by high, medium, and low starting prevalence") +
+    guides(col=guide_legend(ncol=4))
+
+comm_haem_sums %>% 
+  mutate(base_prev_class = factor(base_prev_class, levels = c("High", "Med", "Low"))) %>% 
+  ggplot(aes(x = year.x, y = epmL_mean, col = school, group = school, lty = Intervention)) +
+    geom_line(size = 1.2) +
+    geom_point(aes(size = samp_size)) +
+    theme_classic() +
+    facet_wrap(~base_prev_class) +
+    theme(legend.position = "right",
+          strip.background = element_rect(fill = "black"),
+          strip.text = element_text(color = "white")) +
+    scale_x_discrete(name = "Study Year",
+                     breaks = c(2016, 2017, 2018),
+                     labels = c("Y0", "Y1", "Y2")) +
+    labs(y = "mean infection intensity eggs per 10mL urine",
+         title = "S. haematobium infection intensity among SAC over time",
+         subtitle = "Stratified by high, medium, and low starting prevalence") +
+    guides(col=guide_legend(ncol=4))
+
+comm_haem_sums %>% 
+  filter(year.x == 2016) %>% 
+  ggplot(aes(x = cheev_worms, y = cheev_worms_r0, col = school, pch = base_prev_class, size = samp_size)) +
+    geom_point() +
+    theme_bw() +
+    labs(x = "Mean egg burden (eggs/10mL)",
+         y = expression(R[0]~estimate),
+         title = "Baseline egg burdens and resulting R0 estimates",
+         pch = "Base class") +
+    guides(col=guide_legend(ncol=4))
+
+```
+
+## Simulations  
+
+```{r sim_w_r0}
+sim_w <- function(w_start, kap, m, zeta, n_ppl,
+                  t_tot, t_step, events){
+  #Estimate R0 from starting worm burden
+    R0 <- w_start_get_r0(w_start, kap, zeta)
+  
+  # Initiate vector to fill
+    w_vec <- vector("numeric", length = t_tot/t_step)
+    w_vec[1] <- w_start
+  
+  # Simulate by t_step for total time, implementing events
+    for(t in c(1:t_tot/t_step)){
+      if(t %in% events[["times"]]){
+        w_vec[t+1] = w_vec[t]*R0*phi_Wk(w_vec[t], kap)*rho_Wk(w_vec[t], zeta, kap)*events[["event"]][which(events[["times"]] == t)]
+      } else {
+        w_vec[t+1] = w_vec[t]*R0*phi_Wk(w_vec[t], kap)*rho_Wk(w_vec[t], zeta, kap)
+      }
+      
+    }
+  
+  # Convert time series of worm burden to egg output and prevalence estimates with stochasticity
+    egg_vec = sapply(w_vec, function(w){
+      mean(rnbinom(n_ppl, size = kap, 
+                   mu = w*0.5*phi_Wk(w, kap)*rho_Wk(w, zeta, kap)*m))
+    })
+    
+    prev_vec = 1-(2*(1+w_vec/(2*kap))^-kap)+(1+w_vec/kap)^-kap
+  
+  # Return time series of worm burden and simulated egg output
+    return(data.frame(time = c(0:t_tot/t_step),
+                      W = w_vec,
+                      E = egg_vec,
+                      P = prev_vec))
+}
+
+R0_2.kap_04.m_20.z_05 <- sim_w(w_start = 20,
+                               kap = 0.4, m = 20, 
+                               zeta = 0.05, n_ppl = 50,
+                               t_tot = 365*3, t_step = 1,
+                               events = data.frame(times = c(1:2)*365,
+                                                   event = 0.06))
+
+  R0_2.kap_04.m_35.z_05 %>% 
+    gather("Var", "Val", W:P) %>% 
+    ggplot(aes(x = time, y = Val)) +
+      geom_line() +
+      theme_bw() +
+      facet_grid(Var~., scales = "free_y") +
+      scale_x_continuous(breaks = c(1:3)*365,
+                         labels = c(1:3),
+                         name = "time (yrs)")
+```
+
+Looks like rebound is way too fast, maybe because the effect of negative density dependence is too strong?
+
+```{r}
+R0_2.kap_04.m_20.z_01 <- sim_w(w_start = 20,
+                               kap = 0.4, m = 20, 
+                               zeta = 0.01, n_ppl = 50,
+                               t_tot = 365*3, t_step = 1,
+                               events = data.frame(times = c(1:2)*365,
+                                                   event = 0.06))
+
+  R0_2.kap_04.m_35.z_01 %>% 
+    gather("Var", "Val", W:P) %>% 
+    ggplot(aes(x = time, y = Val)) +
+      geom_line() +
+      theme_bw() +
+      facet_grid(Var~., scales = "free_y") +
+      scale_x_continuous(breaks = c(1:3)*365,
+                         labels = c(1:3),
+                         name = "time (yrs)")
+
+```
+
+### Relationship between egg shedding, $\mathcal{E}(W,\kappa)$, and mean worm burden, $W$
+In order to reduce the dimensionality of the system, we want a simple algebraic relationship between mean egg output, $\mathcal{E}$, and mean worm burden, $W$, that incorporates assumptions of mean egg output per mated female worm and density dependencies on mating probability and fecundity.
+
+
+```{r w_to_eggs}
+get_egg_output <- function(W, kap, zeta, m){
+  0.5*W*phi_Wk(W, kap)*rho_Wk(W, zeta, kap)*m
+}
+
+w_to_eggs <- expand.grid(W = exp_seq(1e-4, 100, 200),
+                         kap = c(0.01, 0.1, 1.0),
+                         zeta = c(0.01, 0.05, 0.1),
+                         m = c(5, 15, 25)) %>% 
+  mutate(eggs = mapply(get_egg_output, 
+                       W, kap, zeta, m))
+
+w_to_eggs %>% 
+  mutate(zeta2 = factor(zeta, labels = c("zeta=0.01", "zeta=0.05", "zeta=0.1")),
+         m2 = factor(m, labels = c("m=5", "m=15", "m=25"))) %>% 
+  ggplot(aes(x = W, y = eggs, col = as.factor(kap))) +
+    geom_line() +
+    theme_bw() +
+    facet_grid(zeta2~m2) +
+    labs(x = "Mean worm burden (W)",
+         y = "Mean egg output (eggs/10mL)",
+         title = "Factors affecting mean egg output given mean worm burden")
+```
+
+From Senegal infection data, values of egg output range from about 1 to 150 and values of kappa range from about 0.05 to 0.9. This implies that $m\approx15$ and $\zeta\approx0.01$, but let's see how the data match up with these estimates
+
+```{r w_from_E_test}
+plot(exp_seq(1e-4,200,200),
+     sapply(exp_seq(1e-4,200,200), R0_egg_kap_zeta_m, 
+            kap = 0.25, zeta = 0.01, m = 15),
+     type = "l")
+
+
+sen_dat <- sen_dat %>% 
+  mutate(W_from_eggs = mapply(eggs_kap_get_W,
+                              nb_mu, nb_k,
+                              MoreArgs = list(zeta = 0.01, m = 15)),
+         R0_from_eggs = mapply(R0_egg_kap_zeta_m,
+                               nb_mu, nb_k,
+                               MoreArgs = list(zeta = 0.01, m = 15)))
+
+base_r0s <- sen_dat %>% filter(year.x == 2018) %>% 
+  mutate(r0_from_eggs = mapply(R0_egg_kap_zeta_m,
+                               nb_mu, nb_k,
+                               MoreArgs = list(zeta = 0.01, m = 15)))
+
+w_egg_test <- expand.grid(W = exp_seq(1e-4, 200, 200),
+                          kap = exp_seq(0.01, 1.0, 15)) %>% 
+  mutate(eggs = mapply(get_egg_output,
+                       W, kap,
+                       MoreArgs = list(zeta = 0.01, m = 15)))
+
+w_egg_test %>% 
+  ggplot(aes(x = eggs, y = kap)) +
+    geom_line()
+
+```
+
+
+```{r}
+Reff_from_R0_W <- function(R0, W, kap, zeta){
+  Reff <- R0*phi_Wk(W, kap)*rho_Wk(W, zeta, kap)
+
+  return(Reff)
+}
+
+Intensity_from_W_kap_zeta_m <- function(W, kap, zeta, m){
+  0.5*W*phi_Wk(W, kap)*rho_Wk(W, zeta, kap)*m
+}
+
+Prev_from_W_kap <- function(W, kap){
+  1-(2*(1+W/(2*kap))^-kap)+(1+W/kap)^-kap
+}
+
+Reff_Grid <- expand.grid(R0 = seq(1,7,0.1),
+                         W = exp_seq(1e-3, 200, 500),
+                         kap = c(0.01, 0.1, 1),
+                         zeta = 0.01) %>% 
+  mutate(Intensity = mapply(Intensity_from_W_kap_zeta_m, 
+                            W, kap, zeta,
+                            MoreArgs = list(m = 15)),
+         Prevalence = mapply(Prev_from_W_kap,
+                             W, kap),
+         Reff = mapply(Reff_from_R0_W, 
+                       R0, W, kap, zeta))
+
+Reff_Grid %>% ggplot(aes(x = W, y = Intensity, col = as.factor(kap))) + 
+  geom_line() + theme_bw() 
+
+Reff_Grid %>% 
+  ggplot(aes(x = R0, y = W, fill = Reff, z = Reff)) +
+    theme_classic() +
+    geom_tile() +
+    geom_contour(breaks = 1, col = "white") +
+    scale_y_continuous(trans = "log", 
+                       breaks = c(1e-3, 1, 100, 500), 
+                       labels = c("0.001", "1", "100", "500")) +
+    scale_fill_viridis(option = "magma") +
+    facet_grid(kap~.) +
+    labs(title = "Phase planes of W/R0 relationships across values of dispersion parameter")
+
+```
+
+### Is $R_0$ correlated with net change in infection intensity following MDA?  
+```{r}
+comm_wide <- comm_haem_sums %>% 
+  dplyr::select(school, year.x, samp_size, epmL_mean, epmL_disp, prev, Intervention) %>% 
+  spread(year.x, epmL_mean) %>% 
+  group_by(school) %>% 
+  summarise(w_2016 = `2016`[!is.na(`2016`)],
+            w_2017 = `2017`[!is.na(`2017`)],
+            w_2018 = `2018`[!is.na(`2018`)]) %>% 
+  mutate(w_change_16_17 = w_2017-w_2016,
+         w_change_17_18 = w_2018-w_2017,
+         w_change_16_18 = w_2018-w_2016,
+         post_2016 = w_2016*0.06,
+         post_2017 = w_2017*0.06,
+         post_2018 = w_2018*0.06,
+         lambda_2016 = w_2016*(1/(5*365)),
+         lambda_2017 = (w_2017-post_2016)/365,
+         lambda_2018 = (w_2018-post_2017)/365,
+         bbr_2017 = ((w_2017-post_2016)/(((post_2016+w_2017)/2)*365)),
+         bbr_2018 = ((w_2018-post_2017)/(((post_2017+w_2018)/2)*365)),
+         Reff_2017 = bbr_2017/(1/(5*365))+1,
+         Reff_2018 = bbr_2018/(1/(5*365))+1) %>% 
+  left_join(comm_haem_sums %>% 
+              filter(year.x == 2016) %>% 
+              dplyr::select(school, cheev_worms_r0))
+
+comm_wide %>% 
+  ggplot(aes(x = cheev_worms_r0, y = w_change_16_17)) +
+    geom_point() +
+    theme_bw()
+lm(w_change_16_17 ~ cheev_worms_r0, data = comm_wide) %>% summary()
+```
+
+
+```{r r0_mean_disp_mod}
+r0_mean_disp_mod <- lm(cheev_worms_r0 ~ epmL_mean + epmL_disp, data = comm_haem_sums %>% filter(year.x == 2016))
+  summary(r0_mean_disp_mod)
+
+comm_haem_sums_2016 <- comm_haem_sums %>% 
+  filter(year.x == 2016) %>% 
+  mutate(r0_mean_disp_pred = predict(r0_mean_disp_mod))
+  
+comm_haem_sums_2016 %>% 
+  ggplot(aes(x = cheev_worms_r0, y = r0_mean_disp_pred)) +
+    geom_point() +
+    theme_bw() +
+    geom_abline(slope = 1, intercept = 0) +
+    labs(x = expression(Estimated~R[0]),
+         y = expression(Modelled~R[0]),
+         title = expression(Modelled~vs~Predicted~R[0]))
+
+```
+
+$R_0$ estimates derived from converting egg burden to worm burden based on relationship in cheever study with model based on mean egg burden and distribution of eggs amongst SAC, so they're not exactly independent samples...
+
+## References  
+`r write.bibtex(file = "ideas_refs.bib")`

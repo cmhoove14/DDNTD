@@ -389,3 +389,55 @@ convert_burden_egg_to_worm <- function(egg_burden, prevalence, m, zeta){
             parms = c(egg_burden, prevalence, m, zeta), positive = TRUE)$root
 }
 
+#' Function to estimate worm burden given mean egg burden and dispersion of egg burden
+#'
+#' Uses `uniroot` to solve for W assuming mean egg burden = 0.5Wphi(W,k)rho(W,k)m
+#'
+#' @param eggs mean egg output
+#' @param kap disperion parameter on egg output
+#' @param zeta fecundity reduction parameter
+#' @param m mean egg output per mated female worm with no fecundity reduction
+#'
+#' @return estimate of the mean worm burden
+#' @export
+#'
+
+eggs_kap_get_W <- function(eggs, kap, zeta, m){
+  uniroot(function(W){
+    mate_integral <- integrate(f = function(x, W, kap){(1-cos(x))/((1 + (W/(W + kap))*cos(x))^(1+kap))},
+                               lower = 0,
+                               upper = 2*pi,
+                               stop.on.error = FALSE,
+                               W = W, k = kap)$value
+    0.5*W*m*((1 + (1-exp(-zeta))*(W/kap))^-(kap+1))*(1-((1-(W/(W + kap)))^(1+kap))/(2*pi)*mate_integral)-eggs
+  }, interval = c(0,1000))$root
+}
+
+#' Cheever eggs to females function
+#'
+#' Uses reported log-log relationship between eggs in urine and female worms to estimate worm burden from egg burden
+#'
+#' @param eggs observed egg burden in eggs/10mL urine
+#'
+#' @return estimate of fecund female worms from egg burden
+#' @export
+#'
+
+cheever_eggs_to_females <- function(eggs){
+  exp((log(1+eggs)-0.75)/1.467) - 1
+}
+
+#' Estimate R0 from starting worm burden and density dependence parameters
+#'
+#'
+#'
+#' @param w_start endemic equilibrium mean worm burden
+#' @param kap endemic equilibrium dispersion parameter
+#' @param zeta negative densiy dependent fecundity parameter
+#'
+#' @return estimate of basic reproduction number, R0
+#' @export
+
+w_start_get_r0 <- function(w_start, kap, zeta){
+  1/(phi_Wk(w_start, kap)*rho_Wk(w_start, zeta, kap))
+}

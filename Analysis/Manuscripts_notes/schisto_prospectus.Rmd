@@ -1,0 +1,16 @@
+---
+title: "Density dependence, critical transitions and schistosomiasis control"
+author: "Chris Hoover"
+date: "October 10, 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Individual contributions to transmission approaching elimination  
+In endemic settings, parasite distributions among a population of definitive human hosts are well-represented by a negative binomial distribution with dispersion parameter generally well below 1, implying a heavy right-skew. While this dispersion parameter is often considered constant in models, there is reason to believe that it approaches 0 as transmission decreases, implying increasingly skewed distributions that can be realistically interpreted as all parasites being harbored by one individual. Breakpoints in helminth transmission arise from theoretical mate limitation in low transmission settings whereby the probability of individuals being infected with mature, mated male and female worms decreases as parasite burden and transmission decrease. However, this probability is heavily reliant on the distribution of parasites among people, as measured by the dispersion parameter. Investigating transmission in elimination settings necessitates a model framework that is capable of capturing individual behaviors to better understand their contributions to sustaining or eliminating transmission. 
+
+# Critical transitions and the control of helminthic parasites  
+Control
