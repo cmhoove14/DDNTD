@@ -29,17 +29,17 @@ phi_Wk <- function(W, k) {
 #' Reductions in egg output due to crowding of adult female worms at high worm burdens
 #'
 #' @param W Mean worm burden in human population
-#' @param zeta shape parameter regulating response of egg ouptut to worm burden
+#' @param gamma shape parameter regulating response of egg ouptut to worm burden
 #' @param k clumping parameter of the negative binomial distribution
 #'
 #' @return Proportional reduction in female worm egg output due to crowding
 #' @export
 
-  rho_Wk <- function(W, zeta, k) {
+  rho_Wk <- function(W, gamma, k) {
     if(k == 0){
       rho = 1
     } else {
-      rho = (1 + (1-exp(-zeta))*(W/k))^-(k+1)
+      rho = (1 + (1-exp(-gamma))*(W/k))^-(k+1)
     }
     return(rho)
   }
@@ -135,6 +135,19 @@ prev_W_get_k <- function(W, prev){
     rootSolve::uniroot.all(function(w) 1-Prev-(1+w/(exp(DDNTD::base_pars["a"] + DDNTD::base_pars["b"]*log(w))))^-(exp(DDNTD::base_pars["a"] + DDNTD::base_pars["b"]*log(w))),
                            interval = c(0,1000))
   }
+
+#' Estimate mean worm burden from egg prevalence and clumping parameter
+#'
+#'  @param prev prevalence of signs of infection (e.g. eggs in urine)
+#'  @param kap dispersion parameter of infection intensity
+#'
+#' @return Estimate of the mean worm burden
+#' @export
+
+prev_kappa_solve_W <- function(prev, kap){
+  uniroot.all(function(W) 1-(2*(1+W/(2*kap))^-kap)+(1+W/kap)^-kap-prev,
+              interval = c(0,1000))
+}
 
 
 #' Generate seasonal model forcing function
@@ -284,7 +297,7 @@ W_Ip_eq_solns <- function(x, parms, W, Ip){
     v = parms["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = parms["zeta"]       # parameter of fecundity reduction function
+    gamma = parms["gamma"]       # parameter of fecundity reduction function
     xi = parms["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -293,7 +306,7 @@ W_Ip_eq_solns <- function(x, parms, W, Ip){
     U_A = parms["U_A"]          # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
     omega = parms["omega"]          #  infection risk/contamination of SAC  (related to sanitation/education/water contact) 10.1186/s13071-016-1681-4
 
-  M_tot = 0.5*W*H*omega*U*m*v*phi_Wk(W,k_w_fx(W))*rho_Wk(W,parms["zeta"],k_w_fx(W))
+  M_tot = 0.5*W*H*omega*U*m*v*phi_Wk(W,k_w_fx(W))*rho_Wk(W,parms["gamma"],k_w_fx(W))
 
   # Equilibrium snail population size from unkown beta (x[1]) and snail population size (x[3])
   F1 <- K*(1-(mu_N+(x[1]*M_tot/x[3]))/(r*(1+(x[1]*M_tot/(x[3]*(mu_N+sigma))))))-x[3]
@@ -350,7 +363,7 @@ egg_to_worm_fx <- function(x, parms){
   egg_burden <- parms[1]
   prev <- parms[2]
   m <- parms[3]
-  zeta <- parms[4]
+  gamma <- parms[4]
 
   mate_integral <- function(t){
       (1-cos(t))/((1 + (x[1]/(x[1] + x[2]))*cos(t))^(1+x[2]))
@@ -361,7 +374,7 @@ egg_to_worm_fx <- function(x, parms){
 
 
 # From equation relating mean egg burden to mean worm burden and clumping parameter
-  F1 <- 0.5*x[1]*(mate_prob*m*(1 + (1-exp(-zeta))*(x[1]/x[2]))^(-x[2]-1))- # Estimate of eggs produced per 10mL urine
+  F1 <- 0.5*x[1]*(mate_prob*m*(1 + (1-exp(-gamma))*(x[1]/x[2]))^(-x[2]-1))- # Estimate of eggs produced per 10mL urine
     egg_burden
 
 # From equation relating prevalence of mated pairs to mean worm burden and clumping parameter
@@ -378,15 +391,15 @@ egg_to_worm_fx <- function(x, parms){
 #' @param egg_burden observed mean egg burden in population fraction
 #' @param prevalence observed prevalence in population fraction
 #' @param m peak egg output per 10mL per mated female worm
-#' @param zeta density dependent fecundity parameter
+#' @param gamma density dependent fecundity parameter
 #'
 #' @return estimate of the mean worm burden and clumping parameter
 #' @export
 #'
 
-convert_burden_egg_to_worm <- function(egg_burden, prevalence, m, zeta){
+convert_burden_egg_to_worm <- function(egg_burden, prevalence, m, gamma){
   multiroot(egg_to_worm_fx, start = c(egg_burden/2, 0.001), # Use egg burden/2 and prevalence as guesses for starting W and kap estimates
-            parms = c(egg_burden, prevalence, m, zeta), positive = TRUE)$root
+            parms = c(egg_burden, prevalence, m, gamma), positive = TRUE)$root
 }
 
 #' Function to estimate worm burden given mean egg burden and dispersion of egg burden
@@ -395,21 +408,21 @@ convert_burden_egg_to_worm <- function(egg_burden, prevalence, m, zeta){
 #'
 #' @param eggs mean egg output
 #' @param kap disperion parameter on egg output
-#' @param zeta fecundity reduction parameter
+#' @param gamma fecundity reduction parameter
 #' @param m mean egg output per mated female worm with no fecundity reduction
 #'
 #' @return estimate of the mean worm burden
 #' @export
 #'
 
-eggs_kap_get_W <- function(eggs, kap, zeta, m){
+eggs_kap_get_W <- function(eggs, kap, gamma, m){
   uniroot(function(W){
     mate_integral <- integrate(f = function(x, W, kap){(1-cos(x))/((1 + (W/(W + kap))*cos(x))^(1+kap))},
                                lower = 0,
                                upper = 2*pi,
                                stop.on.error = FALSE,
                                W = W, k = kap)$value
-    0.5*W*m*((1 + (1-exp(-zeta))*(W/kap))^-(kap+1))*(1-((1-(W/(W + kap)))^(1+kap))/(2*pi)*mate_integral)-eggs
+    0.5*W*m*((1 + (1-exp(-gamma))*(W/kap))^-(kap+1))*(1-((1-(W/(W + kap)))^(1+kap))/(2*pi)*mate_integral)-eggs
   }, interval = c(0,1000))$root
 }
 
@@ -433,11 +446,11 @@ cheever_eggs_to_females <- function(eggs){
 #'
 #' @param w_start endemic equilibrium mean worm burden
 #' @param kap endemic equilibrium dispersion parameter
-#' @param zeta negative densiy dependent fecundity parameter
+#' @param gamma negative densiy dependent fecundity parameter
 #'
 #' @return estimate of basic reproduction number, R0
 #' @export
 
-w_start_get_r0 <- function(w_start, kap, zeta){
-  1/(phi_Wk(w_start, kap)*rho_Wk(w_start, zeta, kap))
+w_start_get_r0 <- function(w_start, kap, gamma){
+  1/(phi_Wk(w_start, kap)*rho_Wk(w_start, gamma, kap))
 }

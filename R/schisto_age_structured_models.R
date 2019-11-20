@@ -34,7 +34,7 @@ schisto_age_strat_mod <- function(t, n, pars) {
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -82,13 +82,13 @@ schisto_age_strat_mod <- function(t, n, pars) {
       # eggs produced per female worm per 10mL urine,
       # urine produced per day /10mL
       # and reduction in fecundity due to crowding
-        eggs_W_TC = 0.5*(W_TC*phi_W_TC) * m * rho_Wk(W_TC, zeta, k_TC) * U_C
+        eggs_W_TC = 0.5*(W_TC*phi_W_TC) * m * rho_Wk(W_TC, gamma, k_TC) * U_C
 
-        eggs_W_UC = 0.5*(W_UC*phi_W_UC) * m * rho_Wk(W_UC, zeta, k_UC) * U_C
+        eggs_W_UC = 0.5*(W_UC*phi_W_UC) * m * rho_Wk(W_UC, gamma, k_UC) * U_C
 
-        eggs_W_TA = 0.5*(W_TA*phi_W_TA) * m * rho_Wk(W_TA, zeta, k_TA) * U_A
+        eggs_W_TA = 0.5*(W_TA*phi_W_TA) * m * rho_Wk(W_TA, gamma, k_TA) * U_A
 
-        eggs_W_UA = 0.5*(W_UA*phi_W_UA) * m * rho_Wk(W_UA, zeta, k_UA) * U_A
+        eggs_W_UA = 0.5*(W_UA*phi_W_UA) * m * rho_Wk(W_UA, gamma, k_UA) * U_A
 
     #Estimate total miracidia produced by each strata as product of
       # mean eggs produced by individuals in each strata,
@@ -176,7 +176,7 @@ eq_Ws_get_Omega_Lambda0 <- function(W_A,
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -191,7 +191,7 @@ eq_Ws_get_Omega_Lambda0 <- function(W_A,
     omega_a = omega_c/Omega
 
   #Miracidal concentration from inputs
-    M = 0.5*H*omega_a*m*v*(W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,zeta,kap_C)*U_C*h_c*Omega + W_A*phi_Wk(W_A, kap_A)*rho_Wk(W_A,zeta,kap_A)*U_A*h_a)
+    M = 0.5*H*omega_a*m*v*(W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,gamma,kap_C)*U_C*h_c*Omega + W_A*phi_Wk(W_A, kap_A)*rho_Wk(W_A,gamma,kap_A)*U_A*h_a)
 
   #Lambda_0 estimate for non-linear snail FOI
     Lambda_0 <- Lambda/(1-exp(-M/N_eq))
@@ -258,7 +258,7 @@ infection_inputs_get_pars <- function(W_A, kap_A, H_A, cvrg_A, W_C, kap_C, H_C, 
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -318,17 +318,17 @@ infection_inputs_get_pars <- function(W_A, kap_A, H_A, cvrg_A, W_C, kap_C, H_C, 
     #Miricidia concentration from inputs
     if(H_A == 0){
 
-      M = 0.5*H*omega_c*m*v*W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,zeta,kap_C)*U_C*h_c
+      M = 0.5*H*omega_c*m*v*W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,gamma,kap_C)*U_C*h_c
 
     } else if(H_C == 0){
 
-      M = 0.5*H*omega_c*m*v*W_A*phi_Wk(W_A, kap_A)*rho_Wk(W_A,zeta,kap_A)*U_A*h_a
+      M = 0.5*H*omega_c*m*v*W_A*phi_Wk(W_A, kap_A)*rho_Wk(W_A,gamma,kap_A)*U_A*h_a
 
     } else {
 
       M = 0.5*H*omega_a*m*v*
-        (W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,zeta,kap_C)*U_C*h_c*Omega +
-           W_A*phi_Wk(W_A, kap_A)*rho_Wk(W_A,zeta,kap_A)*U_A*h_a)
+        (W_C*phi_Wk(W_C, kap_C)*rho_Wk(W_C,gamma,kap_C)*U_C*h_c*Omega +
+           W_A*phi_Wk(W_A, kap_A)*rho_Wk(W_A,gamma,kap_A)*U_A*h_a)
 
     }
       new_pars["Lambda_0"] <- Lambda/(1-exp(-M/N_eq))
@@ -370,7 +370,7 @@ Lambda_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA){
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -403,10 +403,10 @@ Lambda_Wij <- function(pars, W_TC, W_UC, W_TA, W_UA){
       phi_W_UA = phi_Wk(W = W_UA, k = k_UA)  #Mating probability in untreated adult population
 
     # Estimate total miracidia entering snail habitat
-      M_tot = 0.5*H*omega_a*v*m*((W_TC*phi_W_TC) * rho_Wk(W_TC, zeta, k_TC) * U_C*h_tc*Omega +
-                                   (W_UC*phi_W_UC) * rho_Wk(W_UC, zeta, k_UC) * U_C*h_uc*Omega +
-                                   (W_TA*phi_W_TA) * rho_Wk(W_TA, zeta, k_TA) * U_A*h_ta +
-                                   (W_UA*phi_W_UA) * rho_Wk(W_UA, zeta, k_UA) * U_A*h_ua)
+      M_tot = 0.5*H*omega_a*v*m*((W_TC*phi_W_TC) * rho_Wk(W_TC, gamma, k_TC) * U_C*h_tc*Omega +
+                                   (W_UC*phi_W_UC) * rho_Wk(W_UC, gamma, k_UC) * U_C*h_uc*Omega +
+                                   (W_TA*phi_W_TA) * rho_Wk(W_TA, gamma, k_TA) * U_A*h_ta +
+                                   (W_UA*phi_W_UA) * rho_Wk(W_UA, gamma, k_UA) * U_A*h_ua)
 
   # Get man-to-snail FOI as solution given M_tot and other parameters
     Lambda <- uniroot(function(L) Lambda_0*(1-exp(-M_tot/(K*(1-(mu_N+L)/(r*(1+L/(mu_N+sigma)))))))-L,
@@ -446,7 +446,7 @@ Lambda_Wij_linear <- function(pars, W_TC, W_UC, W_TA, W_UA){
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -479,10 +479,10 @@ Lambda_Wij_linear <- function(pars, W_TC, W_UC, W_TA, W_UA){
       phi_W_UA = phi_Wk(W = W_UA, k = k_UA)  #Mating probability in untreated adult population
 
     # Estimate total miracidia entering snail habitat
-      M_tot = 0.5*H*omega_a*v*m*((W_TC*phi_W_TC) * rho_Wk(W_TC, zeta, k_TC) * U_C*h_tc*Omega +
-                                   (W_UC*phi_W_UC) * rho_Wk(W_UC, zeta, k_UC) * U_C*h_uc*Omega +
-                                   (W_TA*phi_W_TA) * rho_Wk(W_TA, zeta, k_TA) * U_A*h_ta +
-                                   (W_UA*phi_W_UA) * rho_Wk(W_UA, zeta, k_UA) * U_A*h_ua)
+      M_tot = 0.5*H*omega_a*v*m*((W_TC*phi_W_TC) * rho_Wk(W_TC, gamma, k_TC) * U_C*h_tc*Omega +
+                                   (W_UC*phi_W_UC) * rho_Wk(W_UC, gamma, k_UC) * U_C*h_uc*Omega +
+                                   (W_TA*phi_W_TA) * rho_Wk(W_TA, gamma, k_TA) * U_A*h_ta +
+                                   (W_UA*phi_W_UA) * rho_Wk(W_UA, gamma, k_UA) * U_A*h_ua)
 
   # Get man-to-snail FOI as solution given M_tot and other parameters
       Lambda <- uniroot(function(L) beta*M/(K*(1-(mu_N+L)/(r*(1+L/(mu_N+sigma)))))-L,
@@ -520,7 +520,7 @@ I_P_get_W_eq <- function(I_P, pars){
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -581,7 +581,7 @@ W_ij_get_N_S_E_I <- function(W_TC, W_UC, W_TA, W_UA, pars){
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -615,10 +615,10 @@ W_ij_get_N_S_E_I <- function(W_TC, W_UC, W_TA, W_UA, pars){
       phi_W_UA = phi_Wk(W = W_UA, k = k_UA)  #Mating probability in untreated adult population
 
     # Estimate total miracidia entering snail habitat
-      M = 0.5*H*omega_a*v*m*((W_TC*phi_W_TC) * rho_Wk(W_TC, zeta, k_TC) * U_C*h_tc*Omega +
-                               (W_UC*phi_W_UC) * rho_Wk(W_UC, zeta, k_UC) * U_C*h_uc*Omega +
-                               (W_TA*phi_W_TA) * rho_Wk(W_TA, zeta, k_TA) * U_A*h_ta +
-                               (W_UA*phi_W_UA) * rho_Wk(W_UA, zeta, k_UA) * U_A*h_ua)
+      M = 0.5*H*omega_a*v*m*((W_TC*phi_W_TC) * rho_Wk(W_TC, gamma, k_TC) * U_C*h_tc*Omega +
+                               (W_UC*phi_W_UC) * rho_Wk(W_UC, gamma, k_UC) * U_C*h_uc*Omega +
+                               (W_TA*phi_W_TA) * rho_Wk(W_TA, gamma, k_TA) * U_A*h_ta +
+                               (W_UA*phi_W_UA) * rho_Wk(W_UA, gamma, k_UA) * U_A*h_ua)
 
   #Estimate N
     N <- uniroot.all(function(N) r*(1-N/K)*(1+(beta*M)/(N*(mu_N+sigma)))-mu_N-beta*M/N,
@@ -675,8 +675,8 @@ schisto_stoch_mod <- function(x, p, t){
 
   return(c(p["f_N"] * (1-N/p["K"]) * (S + E),   #Snail birth
            p["mu_N"] * S,        #Susceptible snail death
-           ((0.5 * Wt * p["H"] * p["cvrg"] * phi_Wt * rho_Wk(Wt, p["zeta"], k_w_fx(Wt))) +
-             (0.5 * Wu * p["H"] * (1-p["cvrg"]) * phi_Wu * rho_Wk(Wu, p["zeta"], k_w_fx(Wu)))) *
+           ((0.5 * Wt * p["H"] * p["cvrg"] * phi_Wt * rho_Wk(Wt, p["gamma"], k_w_fx(Wt))) +
+             (0.5 * Wu * p["H"] * (1-p["cvrg"]) * phi_Wu * rho_Wk(Wu, p["gamma"], k_w_fx(Wu)))) *
               S * p["beta"],  #Snail exposure
            p["mu_N"] * E,       #Exposed snail dies
            p["sigma"] * E,      #Exposed snail becomes infected
@@ -733,22 +733,22 @@ age_strat_fit_mod <- function(x, I, W_A, prev_A, H_A, W_C, prev_C, H_C, pars){
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
     U_C = pars["U_C"]          # mL urine produced per child per day /10mL https://doi.org/10.1186/s13071-016-1681-4
     U_A = pars["U_A"]          # mL urine produced per adult per day /10mL https://doi.org/10.1186/s13071-016-1681-4
 
-  E_C <- 0.5*W_C*phi_Wk(W_C, kap_C)*m*rho_Wk(W_C,zeta,kap_C)*U_C*v*H_C
+  E_C <- 0.5*W_C*phi_Wk(W_C, kap_C)*m*rho_Wk(W_C,gamma,kap_C)*U_C*v*H_C
 
-    F1 <- I*((mu_I*(mu_N+sigma))*(1+(Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,zeta,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_N+sigma)+(sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,zeta,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_I*(mu_N+sigma))))*(1/(sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,zeta,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))) - 1
+    F1 <- I*((mu_I*(mu_N+sigma))*(1+(Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,gamma,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_N+sigma)+(sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,gamma,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_I*(mu_N+sigma))))*(1/(sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,gamma,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))) - 1
 
-    F2 <- x[3]*theta*gam_Wxi(W_A, xi)*((sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,zeta,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2])))*x[2])/(mu_I*(mu_N+sigma)*(1+(Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,zeta,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_N+sigma)+(sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,zeta,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_I*(mu_N+sigma))))) - (mu_H_A+mu_W)*W_A
+    F2 <- x[3]*theta*gam_Wxi(W_A, xi)*((sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,gamma,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2])))*x[2])/(mu_I*(mu_N+sigma)*(1+(Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,gamma,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_N+sigma)+(sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,gamma,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_I*(mu_N+sigma))))) - (mu_H_A+mu_W)*W_A
 
-    F3 <- x[3]*x[4]*theta*gam_Wxi(W_C, xi)*((sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,zeta,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2])))*x[2])/(mu_I*(mu_N+sigma)*(1+(Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,zeta,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_N+sigma)+(sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,zeta,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_I*(mu_N+sigma))))) - (mu_H_A+mu_W)*W_C
+    F3 <- x[3]*x[4]*theta*gam_Wxi(W_C, xi)*((sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,gamma,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2])))*x[2])/(mu_I*(mu_N+sigma)*(1+(Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,gamma,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_N+sigma)+(sigma*Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,gamma,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_I*(mu_N+sigma))))) - (mu_H_A+mu_W)*W_C
 
-    F4 <- r*(1-x[2]/K)*(1+(Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,zeta,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_N+sigma))-(mu_N + Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,zeta,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))
+    F4 <- r*(1-x[2]/K)*(1+(Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,gamma,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))/(mu_N+sigma))-(mu_N + Lambda_0*(1-exp(-(x[1]*(0.5*W_A*phi_Wk(W_A, kap_A)*m*rho_Wk(W_A,gamma,kap_A)*U_A*v*H_A*(1/x[4])+E_C)/x[2]))))
 
   c(F1 = F1, F2 = F2, F3 = F3, F4 = F4)
 }
@@ -897,7 +897,7 @@ eqbm_snails_fit_mod <- function(x, pars, W_TC, W_UC, W_TA, W_UA){
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -918,13 +918,13 @@ eqbm_snails_fit_mod <- function(x, pars, W_TC, W_UC, W_TA, W_UA){
       phi_W_UA = phi_Wk(W = W_UA, k = k_UA)  #Mating probability in untreated adult population
 
      #Miracidial contribution of each group to estimate M
-        M_W_TC = 0.5*(W_TC*phi_W_TC) * m * rho_Wk(W_TC, zeta, k_TC) * U_C * v * H_TC
+        M_W_TC = 0.5*(W_TC*phi_W_TC) * m * rho_Wk(W_TC, gamma, k_TC) * U_C * v * H_TC
 
-        M_W_UC = 0.5*(W_UC*phi_W_UC) * m * rho_Wk(W_UC, zeta, k_UC) * U_C * v * H_UC
+        M_W_UC = 0.5*(W_UC*phi_W_UC) * m * rho_Wk(W_UC, gamma, k_UC) * U_C * v * H_UC
 
-        M_W_TA = 0.5*(W_TA*phi_W_TA) * m * rho_Wk(W_TA, zeta, k_TA) * U_A * v * H_TA / omega
+        M_W_TA = 0.5*(W_TA*phi_W_TA) * m * rho_Wk(W_TA, gamma, k_TA) * U_A * v * H_TA / omega
 
-        M_W_UA = 0.5*(W_UA*phi_W_UA) * m * rho_Wk(W_UA, zeta, k_UA) * U_A * v * H_UA / omega
+        M_W_UA = 0.5*(W_UA*phi_W_UA) * m * rho_Wk(W_UA, gamma, k_UA) * U_A * v * H_UA / omega
 
         M_tot = M_W_TC + M_W_UC + M_W_TA + M_W_UA
 

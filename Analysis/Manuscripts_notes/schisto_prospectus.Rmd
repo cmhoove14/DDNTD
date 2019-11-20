@@ -1,16 +1,52 @@
 ---
-title: "Density dependence, critical transitions and schistosomiasis control"
+title: "From control to elimination of schistosomiasis: what can models tell us?"
 author: "Chris Hoover"
 date: "October 10, 2019"
+bibliography: "schisto_prosp.bib"
+csl: "plos.csl"
 output: word_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+require(knitcitations)
+  cleanbib()
+  cite_options(cite.style = "numeric",
+               citation_format = "pandoc")
+
 ```
 
-# Individual contributions to transmission approaching elimination  
-In endemic settings, parasite distributions among a population of definitive human hosts are well-represented by a negative binomial distribution with dispersion parameter generally well below 1, implying a heavy right-skew. While this dispersion parameter is often considered constant in models, there is reason to believe that it approaches 0 as transmission decreases, implying increasingly skewed distributions that can be realistically interpreted as all parasites being harbored by one individual. Breakpoints in helminth transmission arise from theoretical mate limitation in low transmission settings whereby the probability of individuals being infected with mature, mated male and female worms decreases as parasite burden and transmission decrease. However, this probability is heavily reliant on the distribution of parasites among people, as measured by the dispersion parameter. Investigating transmission in elimination settings necessitates a model framework that is capable of capturing individual behaviors to better understand their contributions to sustaining or eliminating transmission. 
+## Background  
+Schistosomiasis is one of many neglected tropical diseases (NTDs) slated for elimination in the coming decades. In many areas, control strategies focused on the wide administration of the anthelminthic drug Praziquantel have reduced schistosomiasis prevalence and burden. [CITE] National control programs across sub-Saharan Africa, large philanthropic donations from national, international, and private organizations, and donations of the anthelminthic drug Praziquantel from Merck have contributed to this success. [CITE WHO](https://www.who.int/neglected_diseases/resources/9789241503174/en/) `r citet("https://www.who.int/neglected_diseases/resources/9789241503174/en/")` `r citet("10.1371/journal.pntd.0006484")` However, more than **X** people still require treatment, and **Y** people remain at risk in areas with active schistosomiasis transmission. Furthermore, there is ever increasing understanding of the wide array of disability caused by schistosomiasis infection [CITE] suggesting even more disability-adjusted life-years (DALYs) lost due to schistosomiasis infection than the **Z** estimated by the most recent global burden of disease study.
 
-# Critical transitions and the control of helminthic parasites  
-Control
+In addition to shortcomings caused by drug shortages and implementation challenges, schistosomiasis prevalence in many communities remains stable even after multiple years of MDA. `r citet(c("10.1017/S0022149X11000290", "10.1086/520515", "10.1371/journal.pntd.0001774"))` In these communities, prevalence quickly rebounds back to pre-MDA levels, often within a year of treatment. In a large group of studies conducted by the Schistosomiasis Consortium for Operational Research and Evaluation (SCORE; https://score.uga.edu/), multiple community- and school-based MDA strategies with different frequencies and "drug holiday years" were tested. Across these strategies, many communities experienced substantial reductions in prevalence between baseline surveys and reassessment at five years. Still other communities, termed "persistent hot-spots", experienced minor changes or even increases in prevalence. `r citet("10.4269/ajtmh.19-0193")` Finescale variation between so-called "responder" communities and persistent hot spots also suggests that highly local factors determine the success or failure of MDA-based control. 
+
+Meanwhile, over the last two decades, China has embarked on a mission to eliminate schistosomiasis using an "integrated"" control strategy that focuses on reducing snail habitat, treating or removing infected zoonotic reservoirs, and improving sanitation practices in addition to treating infectious individuals. `r citet(c("10.1186/s40249-017-0290-6", "10.1073/pnas.0701878104", "10.1016/bs.apar.2016.02.004"))` This strategy has been extremely successful, with incidence rates of acute schistosomiasis cases as well as prevalence rates in some areas decreasing to 0. Translating the successful strategies employed in China into control programs in sub-Saharan Africa--where more than 90% of schistosomiasis cases occur--represents a major opportunity. However, progress along this front remains elusive in part due to the lack of a generalizable framework to simultaneously quantify the effects of transmission control, MDA, and their interactions. `r citet("10.1186/s40249-018-0506-4")`
+
+## Individual contributions to transmission approaching elimination  
+In endemic settings, parasite distributions among a population of definitive human hosts are well-represented by a negative binomial distribution with dispersion parameter generally well below 1, implying a heavy right-skew. While this dispersion parameter is often considered constant in models, there is reason to believe that it approaches 0 as transmission decreases, implying increasingly skewed distributions that can be realistically interpreted as all parasites being harbored by one individual. Breakpoints in helminth transmission arise from theoretical mate limitation in low transmission settings whereby the probability of individuals being infected with mature, mated male and female worms decreases as parasite burden and transmission decrease. However, the analytic expression of this probability is heavily reliant on the distribution of parasites among people, as measured by the dispersion parameter. Investigating transmission in elimination settings necessitates a model framework that is capable of capturing individual behaviors, their variability through time,and their interactions with intermediate host populations to better understand their contributions to sustaining or eliminating transmission. 
+
+### Model framework  
+Hybrid IBM and mass-action model which simulates individual susceptibility, exposure, worm acquisition, and contamination behaviors in the human population and their effect on snail infection dynamics in an SEI model. Explicitly model individual variability in susceptibility and cercarial exposure as in `r citet("10.4269/ajtmh.14-0691")`, but link it with a snail infection model. Key phenomena to consider are extremely rare detections of both cercariae and infected snails at low human worm burdens.  
+
+### Data  
+- Individual-level infection intensity, susceptibility, contamination behavior  
+
+## Critical transitions and the control of helminthic parasites  
+Critical transitions whereby a system shifts from one equilibrium state to another are common throughout the natural world. Due to the hypothesized breakpoint present in helminthic systems, these diseases may experience a critical transition that shifts them from a state in which the endemic equilibirum is the attractor to one in which elimination is the attractor. Here, I propose that disease elimination (or the prevention of emergence) can be usefully investigated through the lense of critical transitions.  
+
+### Model framework  
+Critical transitions thought of in terms of a general process
+$$dx=f(x,\theta)g(x,\theta)dW$$
+where $x$ is the state of the system, $f(x,\theta)$ describes the deterministic part of the system, and $g(x,\theta)$ describes how stochasticity interacts with the system. Changes in $\theta$ can move the system closer to a threshold where a transition is likely to occur. In a disease setting, particularly for parasitic diseases where transmission is a function of infection intensity, $f(x,\theta)\approx R_{eff}$, $\theta\approx R_0$, $x\approx W$ (system state = infection intensity), and $g(x,\theta)$ is related to stochastic components of transmission such as heterogeneities in egg shedding, susceptibility, and unkown inputs from external sources.
+
+For schistosomiasis and other helminths, $R_{eff}$ can be measured as the product of $R_0$ and the magnitude of density dependencies at a particular system state, measured in terms of worm burden, $W$. Density dependencies common to helminths include positive density dependent mate limitation,$\Phi$, and negative density dependent fecundity due to crowding, $\rho$. Both of these quantities can be estimated from data on the distribution of parasites among definitive hosts, often assumed to be negative binomially distributed and measured in terms of the mean worm burden, $W$, and its dispersion among the population, $\kappa$, thus we have:
+$$R_{eff}(W)=R_0\Phi(W,\kappa)\rho(W,\kappa, \zeta)$$
+Before any sort of intervention such as PZQ administration (e.g. perturbation to the system), we can assume the system is at its endemic equilibrium where $R_{eff}=1$, thus we can estimate $R_0=\big(\Phi(W,\kappa)\rho(W,\kappa, \zeta)\big)^{-1}$. 
+
+### Early Warning Signals and connection to data  
+As a system approaches a critical transition, it exhibits early warning signals (EWS). A common, easily interpretable EWS is critical slowing down, whereby the system takes longer to return to its equilibrium state following a perturbation as it approaches a critical transition. This EWS can be useful in a disease elimination setting, particularly one that is consistently perturbed away from its endemic equilibrium, by measuring the time it takes to rebound. We have previously proposed methods for estimating rebound via the bounce back rate $BBR$, an empirical estimator of $R_{eff}$ that could be used to measure critical slowing down. `r citet("10.1371/journal.pntd.0006794")` Due to the nature of disease interventions, long time series with high measurement frequency are rare, making the detection of EWS challenging. As such, we draw on [x method for detecting early warning signals from coarse time series]
+
+## References  
+`r write.bibtex(file = "schisto_prosp.bib")`

@@ -4,12 +4,12 @@
 \alias{rho_Wk}
 \title{Schistosomiasis density dependent fecundity}
 \usage{
-rho_Wk(W, zeta, k)
+rho_Wk(W, gamma, k)
 }
 \arguments{
 \item{W}{Mean worm burden in human population}
 
-\item{zeta}{shape parameter regulating response of egg ouptut to worm burden}
+\item{gamma}{shape parameter regulating response of egg ouptut to worm burden}
 
 \item{k}{clumping parameter of the negative binomial distribution}
 }

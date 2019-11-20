@@ -32,7 +32,7 @@ schisto_mod <- function(t, n, pars) {
   alpha <- pars["alpha"]
   beta <- pars["beta"]
   cvrg <- pars["cvrg"]
-  zeta <- pars["zeta"]
+  gamma <- pars["gamma"]
   xi <- pars["xi"]
 
     S=n[1]
@@ -46,7 +46,7 @@ schisto_mod <- function(t, n, pars) {
     k_W = k_w_fx(W)
 
   #Miracidial estimate from treated and untreated populations assuming 1:1 sex ratio, mating probability, density dependence
-    M = 0.5*W*H*phi_Wk(W, k_W)*rho_Wk(W, zeta, k_W)*omega*U*m*v
+    M = 0.5*W*H*phi_Wk(W, k_W)*rho_Wk(W, gamma, k_W)*omega*U*m*v
 
     dSdt= r*(1-(N/K))*(S+E) - (mu_N + (beta*M)/N)*S #Susceptible snails
 
@@ -99,7 +99,7 @@ schisto_base_mod <- function(t, n, pars) {
   alpha <- pars["alpha"]
   beta <- pars["beta"]
   cvrg <- pars["cvrg"]
-  zeta <- pars["zeta"]
+  gamma <- pars["gamma"]
   xi <- pars["xi"]
 
     S=n[1]
@@ -117,8 +117,8 @@ schisto_base_mod <- function(t, n, pars) {
     k_Wu = k_w_fx(Wu)
 
   #Miracidial estimate from treated and untreated populations assuming 1:1 sex ratio, mating probability, density dependence
-    M = 0.5*Wt*H*cvrg*phi_Wk(Wt, k_Wt)*rho_Wk(Wt, zeta, k_Wt)*omega*U*m*v +
-        0.5*Wu*H*(1-cvrg)*phi_Wk(Wu, k_Wu)*rho_Wk(Wu, zeta, k_Wu)*omega*U*m*v
+    M = 0.5*Wt*H*cvrg*phi_Wk(Wt, k_Wt)*rho_Wk(Wt, gamma, k_Wt)*omega*U*m*v +
+        0.5*Wu*H*(1-cvrg)*phi_Wk(Wu, k_Wu)*rho_Wk(Wu, gamma, k_Wu)*omega*U*m*v
 
 
     dSdt= r*(1-(N/K))*(S+E) - (mu_N + (beta*M)/N)*S #Susceptible snails
@@ -190,8 +190,8 @@ schisto_stoch_mod <- function(x, p, t){
   phi_Wu = ifelse(Wu == 0, 0, phi_Wk(W = Wu, k = k_w_fx(Wu)))
 
 #Miracidia as sum of contribution from treated and untreated populations
-  M = 0.5*Wt*p["H"]*p["cvrg"]*phi_Wt*rho_Wk(Wt, p["zeta"], k_w_fx(Wt))*p["omega"]*p["U"]*p["m"]*p["v"] +
-      0.5*Wu*p["H"]*(1-p["cvrg"])*phi_Wu*rho_Wk(Wu, p["zeta"], k_w_fx(Wu))*p["omega"]*p["U"]*p["m"]*p["v"]
+  M = 0.5*Wt*p["H"]*p["cvrg"]*phi_Wt*rho_Wk(Wt, p["gamma"], k_w_fx(Wt))*p["omega"]*p["U"]*p["m"]*p["v"] +
+      0.5*Wu*p["H"]*(1-p["cvrg"])*phi_Wu*rho_Wk(Wu, p["gamma"], k_w_fx(Wu))*p["omega"]*p["U"]*p["m"]*p["v"]
 
   return(c(p["r"] * (1-N/p["K"]) * (S + E),   #Snail birth
            p["mu_N"] * S,        #Susceptible snail death

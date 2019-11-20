@@ -24,7 +24,7 @@ get_R0 <- function(pars){
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -73,7 +73,7 @@ Reff_W <- function(W, pars,
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -93,7 +93,7 @@ Reff_W <- function(W, pars,
       phi = PDD(W = W, k = kap)
 
     #Estimate density dependent fecundity
-      rho = DDF(W, zeta, kap)
+      rho = DDF(W, gamma, kap)
 
     # Estimate total miracidia entering snail habitat
       M_tot = 0.5*H*omega*v*m*W*phi*rho*U
@@ -153,7 +153,7 @@ Reff_W_kap <- function(W, kap, pars,
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -173,7 +173,7 @@ Reff_W_kap <- function(W, kap, pars,
       phi = PDD(W = W, k = kap)
 
     #Estimate density dependent fecundity
-      rho = DDF(W, zeta, kap)
+      rho = DDF(W, gamma, kap)
 
     # Estimate total miracidia entering snail habitat
       M_tot = 0.5*H*omega*v*m*W*phi*rho*U
@@ -235,7 +235,7 @@ R_eff_W_I <- function(W, I, pars,
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -284,7 +284,7 @@ dWdt_W <- function(W, pars,
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -304,7 +304,7 @@ dWdt_W <- function(W, pars,
       phi = PDD(W = W, k = kap)
 
     #Estimate density dependent fecundity
-      rho = DDF(W, zeta, kap)
+      rho = DDF(W, gamma, kap)
 
     # Estimate total miracidia entering snail habitat
       M_tot = 0.5*H*omega*v*m*W*phi*rho*U
@@ -357,7 +357,7 @@ W_bp_I_P <- function(I_P, pars, PDD, DDF, DDI){
     v = pars["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = pars["zeta"]       # parameter of fecundity reduction function
+    gamma = pars["gamma"]       # parameter of fecundity reduction function
     xi = pars["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -382,7 +382,7 @@ W_bp_I_P <- function(I_P, pars, PDD, DDF, DDI){
       print("R_0 is less than 1, there is no breakpoint!")
     } else {
       test_Ws <- exp_seq(1e-6, 100, 10000)
-      DDs_product <- sapply(test_Ws, function(W) DDI(W, xi)*PDD(W, k_w_fx(W))*DDF(W, zeta, k_w_fx(W)))
+      DDs_product <- sapply(test_Ws, function(W) DDI(W, xi)*PDD(W, k_w_fx(W))*DDF(W, gamma, k_w_fx(W)))
 
       constants_product <- (2*(mu_W+mu_H)*(mu_I*(mu_N+sigma))) /
         (alpha*omega^2*theta*beta*H*m*v*U*I_P*(sigma/I_P-mu_I-sigma))
@@ -432,7 +432,7 @@ wbp_fx <- function(x, parms){
     v = parms["v"]           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = parms["zeta"]       # parameter of fecundity reduction function
+    gamma = parms["gamma"]       # parameter of fecundity reduction function
     xi = parms["xi"]        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters
@@ -455,13 +455,13 @@ wbp_fx <- function(x, parms){
     ((mu_W+mu_H)*((mu_I*(mu_N+sigma)) /
                     (beta*0.5*H*omega*v*m*x[1]*U*
                        (1-integrate(mate_integral, 0, 2*pi)$value*((1-(x[1]/(x[1] + (DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1]))))))^(1+(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))))/(2*pi))* #Phi
-                       ((1 + ((x[1]*(1-(exp(-zeta))))/(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))))^(-(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))-1))/x[2])+mu_I+sigma)) - x[1]
+                       ((1 + ((x[1]*(1-(exp(-gamma))))/(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))))^(-(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))-1))/x[2])+mu_I+sigma)) - x[1]
 
   F2 <- K*(1-(mu_N + (beta*0.5*H*omega*v*m*x[1]*U*
                        (1-integrate(mate_integral, 0, 2*pi)$value*((1-(x[1]/(x[1] + (DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1]))))))^(1+(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))))/(2*pi))* #Phi
-                       ((1 + ((x[1]*(1-(exp(-zeta))))/(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))))^(-(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))-1))/x[2]))/(r*(1+(beta*0.5*H*omega*v*m*x[1]*U*
+                       ((1 + ((x[1]*(1-(exp(-gamma))))/(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))))^(-(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))-1))/x[2]))/(r*(1+(beta*0.5*H*omega*v*m*x[1]*U*
                        (1-integrate(mate_integral, 0, 2*pi)$value*((1-(x[1]/(x[1] + (DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1]))))))^(1+(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))))/(2*pi))* #Phi
-                       ((1 + ((x[1]*(1-(exp(-zeta))))/(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))))^(-(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))-1))/(x[2]*(mu_N+sigma)))))) - x[2]
+                       ((1 + ((x[1]*(1-(exp(-gamma))))/(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))))^(-(DDNTD::base_pars["a"]*(1-exp(DDNTD::base_pars["b"]*x[1])))-1))/(x[2]*(mu_N+sigma)))))) - x[2]
 
   return(c(F1 = F1, F2 = F2))
 
@@ -501,18 +501,18 @@ get_breakpoint_W_N <- function(Wbp_guess, Nbp_guess, pars){
 #' @param PDD positive density dependence function
 #' @param DDF density dependent fecundity function
 #' @param DDI density dependent acquired immunity function
-#' @param zeta DDF parameter
+#' @param gamma DDF parameter
 #' @param DDI parameter
 #'
 #' @return estimate of the breakpoint mean worm burden
 #' @export
 #'
 
-W_bp_R_0 <- function(R_0, PDD, DDF, DDI, zeta, xi){
+W_bp_R_0 <- function(R_0, PDD, DDF, DDI, gamma, xi){
   test_Ws <- exp_seq(1e-6, 20, 10000)
 
   candidates <- sapply(test_Ws,
-                       function(W) R_0*W*PDD(W, k_w_fx(W))*DDF(W, zeta, k_w_fx(W))*DDI(W, xi)-1)
+                       function(W) R_0*W*PDD(W, k_w_fx(W))*DDF(W, gamma, k_w_fx(W))*DDI(W, xi)-1)
 
   W_bp = min(test_Ws[which(abs(0-candidates) <= 1e-3)])
 
@@ -575,16 +575,16 @@ cvrg_from_pars<- function(use_pars,
 #'
 #' @param eggs mean population egg burden
 #' @param kap dispersion parameter
-#' @param zeta negative density dependence parameter
+#' @param gamma negative density dependence parameter
 #' @param m peak egg output
 #'
 #' @return estimate of basic reproduction number, R0
 #' @export
 
-R0_egg_kap_zeta_m <- function(eggs, kap, zeta, m){
-  W_est <- eggs_kap_get_W(eggs, kap, zeta, m)
+R0_egg_kap_gamma_m <- function(eggs, kap, gamma, m){
+  W_est <- eggs_kap_get_W(eggs, kap, gamma, m)
 
-  R0 <- 1/(phi_Wk(W = W_est, k = kap)*rho_Wk(W = W_est, zeta = zeta, k = kap))
+  R0 <- 1/(phi_Wk(W = W_est, k = kap)*rho_Wk(W = W_est, gamma = gamma, k = kap))
 
   return(R0)
 }

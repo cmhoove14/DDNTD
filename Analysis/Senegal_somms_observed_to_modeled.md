@@ -1,24 +1,12 @@
----
-title: "Model parameters from Senegal data"
-output: github_document
----
+Model parameters from Senegal data
+================
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+Community-level summaries of Senegal communities
+================================================
 
-require(tidyverse)
-
-devtools::load_all()
-
-sen_dat <- readRDS("../data/senegal_comms_village_level_summaries.rds")
-
-ctrl_vils <- c("DF", "DT", "MB", "MT", "NM", "MG", "NE", "ST") #Communities in control group that only received MDA
-```
-
-# Community-level summaries of Senegal communities  
-```{r worm_burden_plot}
+``` r
 sen_dat %>% 
-  filter(var %in% c("w", "post")) %>% 
+  filter(var %in% c("w", "post") & school %in% ctrl_vils) %>% 
   mutate(date = case_when(var == "w" ~ as.Date(paste0(year, "-03-01")),
                           var == "post" ~ as.Date(paste0(year, "-03-02")) + 1)) %>% 
   ggplot(aes(x = date, y = value, col = school)) +
@@ -29,10 +17,12 @@ sen_dat %>%
          title = "Worm burden over two years of MDA")
 ```
 
-```{r lambda_plot}
+![](Senegal_somms_observed_to_modeled_files/figure-markdown_github/worm_burden_plot-1.png)
+
+``` r
 sen_dat %>% 
-  filter(var == "Reff") %>% 
-  ggplot(aes(x = school, y = value, fill = year, col = school)) +
+  filter(var == "bbr" & school %in% ctrl_vils) %>% 
+  ggplot(aes(x = school, y = value*365, fill = year, col = school)) +
     geom_bar(stat = "identity", 
              position = position_dodge(),
              width = 0.5,
@@ -41,17 +31,21 @@ sen_dat %>%
     theme(axis.text = element_text(size = 10),
           axis.title = element_text(size = 14),
           legend.position = "bottom") +
-    scale_fill_manual(values = c("grey90", "grey10")) +
-    ylim(c(0,10)) +
+    scale_fill_manual(values = c("grey60", "grey40")) +
+    #ylim(c(0,10)) +
     labs(x = "Community",
-         y = expression(italic(R[eff])~estimate),
+         y = expression(italic(BBR)~estimate),
          col = "Community")
 ```
 
-```{r alpha_ests}
+![](Senegal_somms_observed_to_modeled_files/figure-markdown_github/lambda_plot-1.png)
+
+``` r
 sen_alphas <- sen_dat %>% 
-  filter(var == "lambda" & year == 2017) %>% 
-  mutate(alpha = value/(base_pars["omega"]*base_pars["theta"]*10))
+  filter(var == "lambda" & school %in% ctrl_vils) %>% 
+  mutate(alpha = value/(base_pars["omega"]*base_pars["theta"]*10)) %>% 
+  group_by(school) %>% 
+  summarise(alpha = mean(alpha))
 
 comm_reff_profile <- function(comm){
   
@@ -72,7 +66,7 @@ comm_reff_profile <- function(comm){
   
 }
 
-comm_reff_profiles <- bind_rows(lapply(unique(sen_dat$school), comm_reff_profile))
+comm_reff_profiles <- bind_rows(lapply(ctrl_vils, comm_reff_profile))
 
 comm_reff_profiles %>% 
   ggplot(aes(x = W, y = Reff, col = school)) +
@@ -82,7 +76,11 @@ comm_reff_profiles %>%
                        breaks = c(1e-4, 1e-2,1,100)) +
     labs(x = "mean worm burden (W)",
          y = expression(italic(R[eff])))
+```
 
+![](Senegal_somms_observed_to_modeled_files/figure-markdown_github/alpha_ests-1.png)
+
+``` r
 comm_reff_profiles %>% 
   ggplot(aes(x = W, y = Reff, col = school)) +
     geom_line(size = 1.2) +
@@ -94,6 +92,8 @@ comm_reff_profiles %>%
                        limits = c(1e-4, 1)) +
     labs(x = "mean worm burden (W)",
          y = expression(italic(R[eff])))
-
 ```
 
+    ## Warning: Removed 1186 rows containing missing values (geom_path).
+
+![](Senegal_somms_observed_to_modeled_files/figure-markdown_github/alpha_ests-2.png)

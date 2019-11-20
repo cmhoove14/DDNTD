@@ -1,18 +1,229 @@
 ---
-title: "Schisto ABM"
-output: github_document
+title: "Schisto IBM"
+bibliography: "IB_mod.bib"
+csl: "plos.csl"
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 require(tidyverse)
+require(parallel)
+require(doParallel)
+require(foreach)
+require(knitcitations)
+  cleanbib()
+  cite_options(cite.style = "numeric",
+               citation_format = "pandoc")
+
+  n_cores <- detectCores()
 ```
+
+# Human component  
+Each individual $i$ is assigned a static susceptibility parameter, $\alpha_i$ to start. This parameter is drawn from a log-normal distribution with parameters described in ` r citet("10.4269/ajtmh.14-0691")`. Cercarial exposure, worm acquisition, sex determination, death, and egg output from infected individuals are all simulated as stochastic events as follows:
+
+Cercarial exposure events, $C_i$, drawn from NB dist'n  
+Worm acquisition is the sum over all cercarial exposure events that result in an adult worm, with each exposure subject to a Bernoulli trial with success determined by individual host susceptibility: $\sum_{C_i}B(1, e^{-\alpha_i})$  
+Each worm acquired is then assigned sex with equal probability of being male or female.
+Once worms are acquired, any unmated males and females are assumed to succesfully mate, therefore the number of worm pairs, $W_\phi$ is simply the minimum of whichever sex is present  
+Worm death is assumed independent of mating, therefore all worms are subject to a daily Bernoulli trial with probability of death based on the mean adult worm lifespan, $\mu_W$: $B(1, e^{-\mu_W})$
+Egg shedding follows a negative binomial distribution with mean dependent on the number of mated pairs and the mean number of eggs produced per worm pair, $\mathcal{E}_\phi$, and dispersion parameter, $\kappa_\mathcal{E}$, taken from previous estimates `r citet("")`:$NB(W_\phi\mathcal{E}_\phi,\kappa_\phi)$  
 
 ```{r human_infection}
+#Function for daily probability of adult worm to die
+  prob_w_death <- function(w_i, mu_w){
+    sum(rbinom(w_i, 1, 1-exp(-mu_w)))
+  }
+  
+#Function for probability worm matures into male
+  prob_male <- function(wi){
+    sum(rbinom(wi, 1, 0.5))
+  }
+ 
+# Function for random egg release
+  sim_eggs <- function(w_phi, e_phi, kap_phi){
+    sum(rnbinom(n = w_phi, mu = e_phi, size = kap_phi))
+  }
+  
+#These distributions roughly match those presented in Wang and Spear 2015  
+  
+# Function to generate distribution of susceptibility  
+  sim_susc <- function(n, GM = 1e-2, GSD = 4.5){
+    rlnorm(n, meanlog = log(GM), sdlog = log(GSD))
+  }  
+  
+# Function to simulate cercarial exposures  
+  sim_cerc <- function(n, C_mu, C_kap){
+    rnbinom(n, mu = C_mu, size = C_kap)
+  }
+
+# Function to probabilistically simulate wrom acquisition given cercarial exposure and susceptibility
+  sim_acquisition <- function(susc_i, cerc_i){
+    sum(rbinom(cerc_i, 1, 1-exp(-susc_i)))
+  }
+
+#Function to simulate worm dynamics in individuals through time    
+  full_sim <- function(pars){
+    
+    n = pars[["n"]]
+    GM = pars[["GM"]]
+    GSD = pars[["GSD"]]
+    C_mu = pars[["C_mu"]]
+    C_kap = pars[["C_kap"]]
+    e_phi = pars[["e_phi"]]
+    kap_phi = pars[["kap_phi"]]
+    mu_w = pars[["mu_w"]]
+    t_sim = pars[["t_sim"]]
+    
+    susc_i <- sim_susc(n, GM, GSD)
+    
+    to_fill <- array(data = NA, dim = c(t_sim, n, 5))
+    to_fill[1, , ] <- 0
+    
+    for(t in 2:t_sim){
+      #simulate worm death
+        male_deaths <- sapply(to_fill[t-1, , 3], prob_w_death, mu_w = mu_w)
+        female_deaths <- sapply(to_fill[t-1, , 2] - to_fill[t-1, , 3], prob_w_death, mu_w = mu_w)
+        worm_deaths <- female_deaths + male_deaths
+      #Simulate cercarial exposures
+        to_fill[t, , 1] <- sim_cerc(n, C_mu, C_kap)
+      #Simulate worm acquisitions given cercarial exposures and add to existing worms  
+        new_worms <- mapply(sim_acquisition, susc_i, to_fill[t, , 1])
+        to_fill[t, , 2] <- new_worms + to_fill[t-1, , 2] - worm_deaths
+      #Generate sex determination of new worms and add to existing worms  
+        to_fill[t, , 3] <- sapply(new_worms, prob_male) + to_fill[t-1, , 3] - male_deaths
+      #Determine new number of mated worm pairs
+        to_fill[t, , 4] <- if_else(to_fill[t, , 3] < (to_fill[t, , 2]-to_fill[t, , 3]),
+                                   to_fill[t, , 3], (to_fill[t, , 2]-to_fill[t, , 3]))
+      #Simulate egg output from individuals harboring mated worm pairs 
+        to_fill[t, , 5] <- sapply(to_fill[t, , 4], sim_eggs,
+                                  e_phi = e_phi, kap_phi = kap_phi)
+    }
+    
+    return(list(susc_i, to_fill))
+  }
+
+# Function to summarize data generated in IBM sim 
+  sum_sim <- function(sim_obj){
+    time <- 1:nrow(sim_obj[, , 5])
+    mean_cerc <- apply(sim_obj[, , 1], 1, mean)
+    mean_eggs <- apply(sim_obj[, , 5], 1, mean)
+    var_eggs <- apply(sim_obj[, , 5], 1, var)
+    disp_eggs <- (mean_eggs + mean_eggs^2)/var_eggs  
+    prev_eggs <- apply(sim_obj[, , 5], 1, function(x) sum(if_else(x > 0, 1, 0))) / ncol(sim_obj[, , 5])
+    mean_worms <- apply(sim_obj[, , 2], 1, mean)
+    mean_worm_pairs <- apply(sim_obj[, , 4], 1, mean)
+
+    return(data.frame(cbind(time, 
+                            mean_cerc,
+                            mean_eggs,
+                            var_eggs,
+                            disp_eggs,
+                            prev_eggs,
+                            mean_worms,
+                            mean_worm_pairs)))
+  }
+  
+```
+
+Initial simulations were returning worm and egg burdens that were too high and increasing in perpetuity, so had to tune the susceptibility and daily exposure parameters until worm and egg burdens leveled out at reasonable levels
+
+## Test Run  
+```{r test_sim}
+set.seed(430)  
+n_ppl <- 1000
+n_days <- 10000
+
+test_pars <- list(n = n_ppl,
+                  GM = 1e-4, 
+                  GSD = 4.5,
+                  C_mu = 10, 
+                  C_kap = 0.4,
+                  e_phi = 5,
+                  kap_phi = 0.5,
+                  mu_w = 1/(4*365),
+                  t_sim = n_days)
+
+test <- full_sim(test_pars)
+
+test_sum <- sum_sim(test[[2]])
+
+test_sum %>% 
+  dplyr::select(time, mean_cerc, mean_worm_pairs, mean_eggs, prev_eggs) %>% 
+  gather("Var", "Val", mean_cerc:prev_eggs) %>% 
+  ggplot(aes(x = time, y = Val)) +
+    geom_line() +
+    theme_classic() +
+    facet_grid(Var~., scales = "free_y")
+
+hist(test[[2]][n_days, ,5], breaks = 50,
+     xlab = "Individual egg burden (eggs/10mL)",
+     main = "")
 
 ```
 
+## Simulate across values of cercarial exposure and variability in susceptibility  
+```{r sim_scenarios, cache=TRUE}
+exp_susc_grid <- expand.grid(n = 1000, GM = c(1e-2, 1e-4), GSD = c(2.5, 4.5),
+                             C_mu = c(10, 100), C_kap = c(0.1, 10, 1000),
+                             e_phi = 5, kap_phi = 0.5, mu_w = 1/(4*365), t_sim = n_days)
+
+clust <- makeCluster(n_cores-1)
+
+clusterExport(clust, c("exp_susc_grid", "sum_sim", "full_sim",
+                       "prob_w_death", "prob_male", "sim_eggs", "sim_susc", 
+                       "sim_cerc", "sim_acquisition", "if_else"))
+
+exp_susc_grid_sims <- parApply(clust,
+                               exp_susc_grid, 1, function(x) sum_sim(full_sim(x)[[2]]))
+```
+
+```{r plot_scenarios}
+exp_susc_results1 <- bind_rows(list(exp_susc_grid_sims[[1]],
+                                    exp_susc_grid_sims[[2]],
+                                    exp_susc_grid_sims[[3]],
+                                    exp_susc_grid_sims[[4]],
+                                    exp_susc_grid_sims[[5]],
+                                    exp_susc_grid_sims[[6]],
+                                    exp_susc_grid_sims[[7]],
+                                    exp_susc_grid_sims[[8]],
+                                    exp_susc_grid_sims[[9]],
+                                    exp_susc_grid_sims[[10]],
+                                    exp_susc_grid_sims[[11]],
+                                    exp_susc_grid_sims[[12]])) %>% 
+  mutate(GM = rep(exp_susc_grid$GM, each = n_days),
+         C_mu = rep(exp_susc_grid$C_mu, each = n_days),
+         C_kap = rep(exp_susc_grid$C_kap, each = n_days))
+
+exp_susc_results1 %>% 
+  filter(time >= (n_days-500) & GM == 1e-4) %>% 
+  group_by(GM, C_mu, C_kap) %>% 
+  summarise(mean_eqbm_egg_burden = mean(mean_eggs),
+            mean_eqbm_kappa = mean(disp_eggs),
+            mean_eqbm_worm_burden = mean(mean_worms))
+
+exp_susc_grid_sims[[12]] %>% 
+  dplyr::select(time, mean_worm_pairs, mean_eggs, prev_eggs) %>% 
+  gather("Var", "Val", mean_worm_pairs:prev_eggs) %>% 
+  ggplot(aes(x = time, y = Val)) +
+    geom_line() +
+    theme_classic() +
+    facet_grid(Var~., scales = "free_y")
+
+hist(exp_susc_grid_sims[[12]]$mean_eggs)
+```
+
+## Simulate extreme cases  
+### Uniform cercarial exposure and susceptibility  
+
+### Uniform cercarial exposure, but heterogeneous susceptibility  
+
+### Uniform susceptibility and heterogeneous cercarial exposure  
+
+### Heterogeneous cercarial exposure and susceptibility  
+
+# Snail model  
 
 ```{r snail_foi}
 lin_snail_foi <- function(M, N, par_beta){

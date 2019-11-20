@@ -4,7 +4,7 @@
 \alias{W_bp_R_0}
 \title{Estimate W_bp from R_0}
 \usage{
-W_bp_R_0(R_0, PDD, DDF, DDI, zeta, xi)
+W_bp_R_0(R_0, PDD, DDF, DDI, gamma, xi)
 }
 \arguments{
 \item{R_0}{basic reproduction number}
@@ -15,7 +15,7 @@ W_bp_R_0(R_0, PDD, DDF, DDI, zeta, xi)
 
 \item{DDI}{density dependent acquired immunity function}
 
-\item{zeta}{DDF parameter}
+\item{gamma}{DDF parameter}
 
 \item{DDI}{parameter}
 }

@@ -4,14 +4,14 @@
 \alias{w_start_get_r0}
 \title{Estimate R0 from starting worm burden and density dependence parameters}
 \usage{
-w_start_get_r0(w_start, kap, zeta)
+w_start_get_r0(w_start, kap, gamma)
 }
 \arguments{
 \item{w_start}{endemic equilibrium mean worm burden}
 
 \item{kap}{endemic equilibrium dispersion parameter}
 
-\item{zeta}{negative densiy dependent fecundity parameter}
+\item{gamma}{negative densiy dependent fecundity parameter}
 }
 \value{
 estimate of basic reproduction number, R0

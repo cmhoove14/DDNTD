@@ -1,0 +1,42 @@
+---
+title: "Empirical estimation of Allee effects"
+author: "Chris Hoover"
+date: "November 10, 2019"
+bibliography: "pdd_est.bib"
+csl: "plos.csl"
+output: word_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+require(knitcitations)
+  cleanbib()
+  cite_options(cite.style = "numeric",
+               citation_format = "pandoc")
+
+```
+
+# Simple ecological models fit to breeding population/offspring relationship  
+## Applied to fisheries data  
+Where $S$ is spawner population size and $R$ is recruitment, simple ecological models such as the Myers model[ $R=(\alpha S^\delta)/(1+(S^\delta/K)) $] in which $\delta=1$ represents Beverton-Holt dynamics and $\delta>1$ implies presence of depensation or Allee effects.
+
+### Myers et al *Science* 1995  
+Fit Myers model above to fisheries data with >15 year time series with $\delta=1$ or $\delta$ as a free parameter then used likelihood ratio test to test for significance of $\delta\neq1$
+
+# Statistical models with penalized splines to estimate the shape of the relationship between pop size and pop growth rate  
+## Stenglein and van Deelen 2016  
+The per capita population growth rate at time $t$ in population $i$ is estimated as $pgr_{i,t}=ln(N_{i,t}/N_{i,t-1})$. The shape of the relationship between $N_{i,t}$ and $pgr_{i,t}$ is then estimated via the regression:
+
+$$pgr_{it}\sim N(\mu_{i,t},\sigma_i^2)\\
+\mu_{i,t}=\beta_i\times ln(N_{i,t})+\alpha_{i,t,k}\times Z_{i,t,k}$$
+
+where $\alpha_{i,t,k}\times Z_{i,t,k}$ is the spline portion which provides flexibility in the shape between $\mu_{i,t}$ and $ln(N_{i,t})$. The authors claim that a hump-shaped spline function resulting from a fit to the data is evidence for an Allee effect  
+
+`r citet("10.1371/journal.pone.0150535")`
+
+Commonly applied to fisheries data in which stock size and offspring population are measured. `r citet(c("10.1098/rspb.2017.1284", ))`
+
+## References  
+`r write.bibtex(file = "pdd_est.bib")`

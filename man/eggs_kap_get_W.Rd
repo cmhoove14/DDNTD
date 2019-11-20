@@ -4,14 +4,14 @@
 \alias{eggs_kap_get_W}
 \title{Function to estimate worm burden given mean egg burden and dispersion of egg burden}
 \usage{
-eggs_kap_get_W(eggs, kap, zeta, m)
+eggs_kap_get_W(eggs, kap, gamma, m)
 }
 \arguments{
 \item{eggs}{mean egg output}
 
 \item{kap}{disperion parameter on egg output}
 
-\item{zeta}{fecundity reduction parameter}
+\item{gamma}{fecundity reduction parameter}
 
 \item{m}{mean egg output per mated female worm with no fecundity reduction}
 }

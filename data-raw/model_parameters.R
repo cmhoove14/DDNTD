@@ -15,7 +15,7 @@ base_pars <- c("r" = 0.1,
                "alpha" = 2e-4,
                "beta" = 2e-4,
                "cvrg" = 0.43,
-               "zeta" = 0.08,
+               "gamma" = 0.08,
                "xi" = 2.8e-3,
                "a" = 1.10822500, # intensity to clump parameter from fit to S. haematobium data
                "b" = -0.01678877 ) # intensity to clump parameter from fit to S. haematobium data
@@ -39,7 +39,7 @@ age_strat_pars <- c(
     v = 0.08,           # mean egg viability (miracidia per egg)
 
   #Density dependence parameters
-    zeta = 5e-4,        # parameter of fecundity reduction function
+    gamma = 5e-4,        # parameter of fecundity reduction function
     xi = 2.8e-3,        # parameter for acquired immunity function http://doi.wiley.com/10.1111/j.1365-3024.1992.tb00029.x
 
   #Human parameters

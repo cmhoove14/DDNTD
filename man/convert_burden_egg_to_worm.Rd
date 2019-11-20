@@ -4,7 +4,7 @@
 \alias{convert_burden_egg_to_worm}
 \title{Function to get solutions for worm burden and clumping parameter from input egg burden and prevalence}
 \usage{
-convert_burden_egg_to_worm(egg_burden, prevalence, m, zeta)
+convert_burden_egg_to_worm(egg_burden, prevalence, m, gamma)
 }
 \arguments{
 \item{egg_burden}{observed mean egg burden in population fraction}
@@ -13,7 +13,7 @@ convert_burden_egg_to_worm(egg_burden, prevalence, m, zeta)
 
 \item{m}{peak egg output per 10mL per mated female worm}
 
-\item{zeta}{density dependent fecundity parameter}
+\item{gamma}{density dependent fecundity parameter}
 }
 \value{
 estimate of the mean worm burden and clumping parameter
